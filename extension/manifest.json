@@ -1,0 +1,49 @@
+{
+  "manifest_version": 3,
+  "name": "OntoWebPT",
+  "version": "1.0.0",
+  "description": "Estensione OntoWebPT",
+  "author": "Francesco Scognamiglio, Felice Micillo",
+  "icons": {
+    "48": "images/icon_48.png"
+  },
+  "action": {
+    "default_popup": "./index.html",
+    "default_icon": {
+      "48": "images/icon_48.png"
+    },
+    "default_title": "OntoWebPT"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "content_script/*",
+        "content_script/*/*",
+        "content_script/*/*/*"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "permissions": [
+    "activeTab",
+    "cookies",
+    "notifications",
+    "storage",
+    "unlimitedStorage",
+    "tabs",
+    "webRequest",
+    "background",
+    "debugger",
+    "scripting",
+    "declarativeNetRequest",
+    "declarativeNetRequestWithHostAccess"
+  ],
+  "host_permissions": [
+    "<all_urls>",
+    "*://*/*"
+  ]
+}
