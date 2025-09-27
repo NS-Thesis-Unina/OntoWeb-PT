@@ -42,6 +42,72 @@ class TechStackReactController {
     const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
     return tab?.id ?? null;
   }
+
+  // --- Persistence API (waterfall helpers) ---
+
+  // session per tab
+  async getSessionLastResultForTab(tabId) {
+    try {
+      if (!browser.storage?.session?.get) return null;
+      const obj = await browser.storage.session.get("techstack_lastByTab");
+      const map = obj?.techstack_lastByTab ?? {};
+      return map[tabId] ?? null;
+    } catch {
+      return null;
+    }
+  }
+
+  // session general
+  async getSessionLastResult() {
+    try {
+      if (!browser.storage?.session?.get) return null;
+      const obj = await browser.storage.session.get("techstack_lastResult");
+      return obj?.techstack_lastResult ?? null;
+    } catch {
+      return null;
+    }
+  }
+
+  // local archive results (mirror of analyzer behavior)
+  async getLocalResults() {
+    try {
+      const response = await browser.runtime.sendMessage({ type: "techstack_getLocalResults" });
+      return response?.localResults ?? [];
+    } catch {
+      return [];
+    }
+  }
+
+  // convenience: waterfall load (tab -> session -> local)
+  async loadLastAvailable(tabId) {
+    // tab-specific
+    if (tabId != null) {
+      const tabRes = await this.getSessionLastResultForTab(tabId);
+      if (tabRes) return { source: "session_by_tab", data: tabRes };
+    }
+    // session general
+    const sRes = await this.getSessionLastResult();
+    if (sRes) return { source: "session", data: sRes };
+
+    // local: return the most recent local result (if any)
+    const local = await this.getLocalResults();
+    if (Array.isArray(local) && local.length > 0) {
+      // local comes as array of { key, results } like analyzer; pick the latest (already sorted? ensure)
+      // sort by key timestamp suffix if possible, fall back to first
+      try {
+        const sorted = local.slice().sort((a, b) => {
+          const as = a.key.split("_")[1] || "0";
+          const bs = b.key.split("_")[1] || "0";
+          return Number(bs) - Number(as);
+        });
+        return { source: "local", data: sorted[0].results };
+      } catch {
+        return { source: "local", data: local[0].results };
+      }
+    }
+
+    return { source: "none", data: null };
+  }
 }
 
 const techStackReactController = new TechStackReactController();

@@ -174,6 +174,7 @@ function checkSecureHeaders(requests = []) {
 
 
 class TechStackEngine {
+  // keep existing public scanning method (unchanged logic) but add persistence
   async runOneTimeStackScan(tabId, callback) {
     try {
       const td = ensureTabSession(tabId);
@@ -259,10 +260,87 @@ class TechStackEngine {
         raw: { resolved, wafResolved }
       };
 
-      callback(results);
+      // === PERSISTENCE: salvataggio in sessione e locale (manteniamo struttura simile a Analyzer) ===
+      try {
+        const timestamp = Date.now();
+        const metaSaved = {
+          timestamp,
+          tabId,
+          url: pageUrl || null
+        };
+
+        const key = `techstackResults_${timestamp}`;
+        // local store (archive)
+        try {
+          await browser.storage.local.set({ [key]: { meta: metaSaved, results } }).catch(() => {});
+        } catch {}
+
+        // session last result
+        try {
+          if (browser.storage?.session?.set) {
+            await browser.storage.session.set({ techstack_lastResult: { meta: metaSaved, results } });
+          }
+        } catch {}
+
+        // session per tab map
+        try {
+          if (browser.storage?.session?.get && browser.storage?.session?.set) {
+            const obj = await browser.storage.session.get("techstack_lastByTab");
+            const map = obj?.techstack_lastByTab ?? {};
+            map[tabId] = { meta: metaSaved, results };
+            await browser.storage.session.set({ techstack_lastByTab: map });
+          }
+        } catch {}
+      } catch (e) {
+        console.warn("[TechStackEngine] session/local save failed", e);
+      }
+
+      // callback to UI
+      callback({ meta: { tabId, url: pageUrl, timestamp: Date.now() }, results });
+
     } catch (err) {
       throw new Error(err?.message || "Errore nell’analisi TechStack");
     }
+  }
+
+  // ===== Persistence retrieval helpers =====
+
+  // get local archive similar to analyzer
+  async getLocalStackResults() {
+    try {
+      const all = await browser.storage.local.get(null);
+      return Object.entries(all)
+        .filter(([key]) => key.startsWith("techstackResults_"))
+        .map(([key, value]) => ({ key, results: value }));
+    } catch {
+      return [];
+    }
+  }
+
+  async getSessionLast() {
+    try {
+      if (!browser.storage?.session?.get) return null;
+      const obj = await browser.storage.session.get("techstack_lastResult");
+      return obj?.techstack_lastResult ?? null;
+    } catch {
+      return null;
+    }
+  }
+
+  async getSessionLastForTab(tabId) {
+    try {
+      if (!browser.storage?.session?.get) return null;
+      const obj = await browser.storage.session.get("techstack_lastByTab");
+      const map = obj?.techstack_lastByTab ?? {};
+      return map[tabId] ?? null;
+    } catch {
+      return null;
+    }
+  }
+
+  // keep a stub for runtime status if needed
+  getRuntimeStatus() {
+    return { runtimeActive: false };
   }
 }
 

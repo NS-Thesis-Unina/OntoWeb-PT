@@ -15,6 +15,7 @@ class TechStackBackgroundController {
         case "techstack_startOneTimeScan": {
           this.engine
             .runOneTimeStackScan(message.tabId, (data) => {
+              // invia anche il meta + results in un formato coerente, come fatto per analyzer
               this.sendMessageToReact({ type: "techstack_scanComplete", data });
             })
             .catch((error) => {
@@ -29,11 +30,27 @@ class TechStackBackgroundController {
         }
 
         case "techstack_getScanStatus": {
-          const s = this.engine.getRuntimeStatus();
+          const s = this.engine.getRuntimeStatus?.() || {};
           sendResponse({ active: s.runtimeActive, ...s });
           return true;
         }
 
+        /* Persistence retrievals requested by UI */
+        case "techstack_getLocalResults": {
+          this.engine.getLocalStackResults().then(localResults => sendResponse({ localResults })).catch(() => sendResponse({ localResults: [] }));
+          return true;
+        }
+
+        /* (Optional) retrieve session-last for tab */
+        case "techstack_getSessionLastForTab": {
+          this.engine.getSessionLastForTab(message.tabId).then(res => sendResponse({ res })).catch(() => sendResponse({ res: null }));
+          return true;
+        }
+
+        case "techstack_getSessionLast": {
+          this.engine.getSessionLast().then(res => sendResponse({ res })).catch(() => sendResponse({ res: null }));
+          return true;
+        }
 
         default:
           console.warn("[TechStack Background] Unknown type:", message.type);
