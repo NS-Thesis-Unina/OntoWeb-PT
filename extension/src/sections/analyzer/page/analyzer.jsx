@@ -11,9 +11,6 @@ function Analyzer() {
         <button onClick={() => navigate("/analyzer")}>One-Time Scan</button>
         <button onClick={() => navigate("/analyzer/runtime")}>Runtime Scan</button>
         <button onClick={() => navigate("/analyzer/archive")}>Archive</button>
-
-        {/* 🔗 nuovo pulsante per TechStack */}
-        <button onClick={() => navigate("/techstack")}>TechStack</button>
       </div>
       <Outlet />
     </div>

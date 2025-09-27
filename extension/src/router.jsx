@@ -17,24 +17,23 @@ import RuntimeScanArchiveAnalyzer from "./sections/analyzer/page/subpages/archiv
 
 // TechStack
 import TechStack from "./sections/techstack/page/techstack";
+import Home from "./sections/home/home";
 
 function Router() {
   return (
     <Routes>
       <Route path="/" element={<App />}>
-        {/* appena apri "/" vai a /analyzer */}
-        <Route index element={<Navigate to="analyzer" replace />} />
+        <Route index element={<Navigate to="home" replace />} />
+        <Route path="home" element={<Home />} />
         <Route path="analyzer" element={<Analyzer />}>
             <Route index element={<OneTimeScanAnalyzer />} />
             <Route path="runtime" element={<RuntimeScanAnalyzer />} />
             <Route path="archive" element={<ArchiveAnalyzer />}>
-            {/* ✅ se apri /analyzer/archive mostra direttamente la sottopagina One-Time */}
             <Route index element={<OneTimeScanArchiveAnalyzer />} />
             <Route path="onetime" element={<OneTimeScanArchiveAnalyzer />} />
             <Route path="runtime" element={<RuntimeScanArchiveAnalyzer />} />
           </Route>
         </Route>
-        {/* ---------- TechStack ---------- */}
         <Route path="techstack" element={<TechStack />} />
       </Route>
     </Routes>
