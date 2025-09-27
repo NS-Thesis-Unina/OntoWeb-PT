@@ -35,13 +35,11 @@ class TechStackBackgroundController {
           return true;
         }
 
-        /* Persistence retrievals requested by UI */
         case "techstack_getLocalResults": {
           this.engine.getLocalStackResults().then(localResults => sendResponse({ localResults })).catch(() => sendResponse({ localResults: [] }));
           return true;
         }
 
-        /* (Optional) retrieve session-last for tab */
         case "techstack_getSessionLastForTab": {
           this.engine.getSessionLastForTab(message.tabId).then(res => sendResponse({ res })).catch(() => sendResponse({ res: null }));
           return true;

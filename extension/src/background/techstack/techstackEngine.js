@@ -1,9 +1,7 @@
 import browser from "webextension-polyfill";
 import { Wappalyzer } from "../../../public/packages/wappalyzer/wappalyzer.js";
 
-// -----------------------------
 // Caricamento regole Wappalyzer
-// -----------------------------
 async function loadJson(path) {
   const res = await fetch(browser.runtime.getURL(path));
   return res.json();
@@ -24,9 +22,7 @@ let WAF_CATS = {};
   WAF_CATS = waf.categories;
 })();
 
-// -----------------------------
 // Helpers sessione richieste
-// -----------------------------
 const tabSessions = new Map();
 
 function ensureTabSession(tabId) {
@@ -50,9 +46,7 @@ function resetWappalyzer(mod, tech, cats) {
   mod.setCategories(cats);
 }
 
-// -----------------------------
 // Capture headers
-// -----------------------------
 if (typeof chrome !== "undefined" && chrome.webRequest) {
   chrome.webRequest.onHeadersReceived.addListener(
     (details) => {
@@ -86,9 +80,7 @@ if (typeof chrome !== "undefined" && chrome.webRequest) {
   );
 }
 
-// -----------------------------
 // Helpers
-// -----------------------------
 function headerSetsToMap(hsets = new Map()) {
   const out = {};
   for (const [k, set] of hsets.entries()) {
@@ -174,7 +166,6 @@ function checkSecureHeaders(requests = []) {
 
 
 class TechStackEngine {
-  // keep existing public scanning method (unchanged logic) but add persistence
   async runOneTimeStackScan(tabId, callback) {
     try {
       const td = ensureTabSession(tabId);
@@ -215,7 +206,6 @@ class TechStackEngine {
       // analisi tech
       resetWappalyzer(Wappalyzer, TECH, CATS);
       let detections = Wappalyzer.analyze({ headers, meta: metaMap, scriptSrc, scripts, html, url: pageUrl, cookies: cookieMap });
-      // integra domFindings e jsFindings come nel vecchio
       detections = detections.concat(
         ...domFindings.map(({ name, selector, exists, text, property, attribute, value }) => {
           const tech = Wappalyzer.technologies.find(t => t.name === name);
@@ -260,7 +250,6 @@ class TechStackEngine {
         raw: { resolved, wafResolved }
       };
 
-      // === PERSISTENCE: salvataggio in sessione e locale (manteniamo struttura simile a Analyzer) ===
       try {
         const timestamp = Date.now();
         const metaSaved = {
@@ -304,8 +293,6 @@ class TechStackEngine {
   }
 
   // ===== Persistence retrieval helpers =====
-
-  // get local archive similar to analyzer
   async getLocalStackResults() {
     try {
       const all = await browser.storage.local.get(null);
@@ -338,7 +325,6 @@ class TechStackEngine {
     }
   }
 
-  // keep a stub for runtime status if needed
   getRuntimeStatus() {
     return { runtimeActive: false };
   }
