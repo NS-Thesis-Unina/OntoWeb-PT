@@ -1,0 +1,33 @@
+.home-div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  width: 100%;
+  padding: 10px;
+  padding-top: 0px;
+}
+
+.home-div .logo {
+  display: flex;
+  width: 400px;
+  margin: 10px;
+}
+
+.home-div .logo img {
+  width: 100%;
+  object-fit: contain;
+}
+
+.home-div .description {
+  display: flex;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.home-div .cards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  width: 100%;
+  gap: 10px;
+}

@@ -8,7 +8,9 @@ function App(){
         <div className="app-div">
           <RoutePersistence />
           <Navbar />
-          <Outlet />
+          <div className="page-div">
+            <Outlet />
+          </div>
         </div>
     )
 }

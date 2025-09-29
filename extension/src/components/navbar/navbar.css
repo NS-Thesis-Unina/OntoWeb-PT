@@ -1,10 +1,12 @@
 .navbar-paper {
     display: flex;
-    position: relative;
+    position: fixed;
     padding: 5px;
+    padding-inline: 20px;
     width: 100%;
     border-start-start-radius: 0px !important;
     border-start-end-radius: 0px !important;
+    z-index: 200;
 }
 
 .navbar-paper .logo-div {

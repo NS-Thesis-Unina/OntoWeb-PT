@@ -4,14 +4,26 @@ import PageNavigation from "../../../components/pageNavigation/pageNavigation";
 import Button from "@mui/material/Button";
 import { selectedSubSection } from "../../../libs/navigation";
 import LayersIcon from "@mui/icons-material/Layers";
+import { useEffect, useState } from "react";
 
 function TechStack() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
+  const [subsection, setSubsection] = useState("");
+
+  useEffect(() => {
+    switch(pathname){
+      case "/techstack/archive": {
+        setSubsection("Archive");
+        break;
+      }
+      default: setSubsection("Scan");
+    }
+  },[pathname])
 
   return (
     <div className="techstack-div">
-      <PageNavigation title={"Technology Stack"} icon={<LayersIcon />}>
+      <PageNavigation title={"Technology Stack"} icon={<LayersIcon />} subsection={subsection}>
         <Button disabled={selectedSubSection(pathname, "techstack", "")} onClick={() => navigate("/techstack")}>Scan</Button>
         <Button disabled={selectedSubSection(pathname, "techstack", "archive")} onClick={() => navigate("/techstack/archive")}>Archive</Button>
       </PageNavigation>

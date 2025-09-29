@@ -1,0 +1,6 @@
+.homecard .title {
+  display: flex;
+  width: 100%;
+  gap: 5px;
+  align-items: center;
+}

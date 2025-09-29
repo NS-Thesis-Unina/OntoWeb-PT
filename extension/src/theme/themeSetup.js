@@ -45,6 +45,7 @@ export function createNeutralTheme(mode = "dark") {
         'Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial',
       h1: { fontSize: "1.25rem", fontWeight: 700 },
       h2: { fontSize: "1.05rem", fontWeight: 700 },
+      h6: { color: isDark ? "rgba(255, 255, 255, 0.5)" : "rgba(0, 0, 0, 0.5)"},
       body1: { fontSize: 14 },
       button: { textTransform: "none", fontWeight: 600 },
     },
@@ -83,10 +84,16 @@ export function createNeutralTheme(mode = "dark") {
               ? "linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01))"
               : "linear-gradient(180deg, rgba(0,0,0,0.02), rgba(0,0,0,0.01))",
             border: `1px solid ${theme.palette.divider}`,
-            borderRadius: theme.shape.borderRadius,
-            padding: 12,
+            borderRadius: theme.shape.borderRadius
           },
         },
+      },
+      MuiCardActionArea: {
+        styleOverrides: {
+          root: {
+            height: "100%"
+          }
+        }
       },
       MuiButton: {
         styleOverrides: {

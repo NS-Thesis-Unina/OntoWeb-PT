@@ -18,3 +18,9 @@ body {
     flex-direction: column;
     align-items: center;
 }
+
+.app-div .page-div {
+  display: flex;
+  width: 100%;
+  margin-top: 58px;
+}

@@ -5,6 +5,8 @@
   align-items: center;
   padding: 5px;
   border-top: none !important;
+  border-start-start-radius: 0px !important;
+  border-start-end-radius: 0px !important;
 }
 
 .pageNavigation-div .icon {
@@ -15,11 +17,22 @@
 
 .pageNavigation-div .title {
   display: flex;
-  margin-right: auto;
+  flex-direction: row;
+  margin-right: 5px;
+}
+
+.pageNavigation-div .subsection {
+  display: flex;
+  margin-left: 5px;
+}
+
+.pageNavigation-div .divider {
+  height: 80%;
 }
 
 .pageNavigation-div .options {
   display: flex;
+  margin-left: auto;
 }
 
 .pageNavigation-div .options button {
