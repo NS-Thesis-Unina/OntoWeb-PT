@@ -8,7 +8,7 @@ class AnalyzerBackgroundController {
   }
 
   initListener() {
-    console.log("Init controller background");
+
     browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
       switch (message.type) {
         /* ---------- ONE-TIME ---------- */
@@ -75,7 +75,7 @@ class AnalyzerBackgroundController {
         }
 
         default:
-          console.warn("[Background] Unknown type:", message.type);
+          //console.warn("[AnalyzerBackground] Unknown type:", message.type);
       }
     });
   }

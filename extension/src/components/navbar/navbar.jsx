@@ -1,5 +1,5 @@
 import "./navbar.css";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import LogoDark from "/images/logo/LogoDark.png";
 import LogoLight from "/images/logo/LogoLight.png";
 import Button from '@mui/material/Button';
@@ -7,11 +7,13 @@ import Divider from "@mui/material/Divider";
 import Paper from "@mui/material/Paper";
 import DarkLightButton from "../darkLightButton/darkLightButton";
 import { useThemeMode } from "../../theme/themeModeProvider";
+import { selectedSection } from "../../libs/navigation";
 
 function Navbar(){
 
   const { mode } = useThemeMode();
 	const navigate = useNavigate();
+  const {pathname} = useLocation();
 
 	return(
 		<Paper className="navbar-paper">
@@ -19,11 +21,11 @@ function Navbar(){
         <img src={mode === "dark" ? LogoLight : LogoDark} alt="OntoWeb-PT" className="logo" />
       </div>
       <div className="buttons-div">
-        <Button className="button" onClick={() => navigate("/home")}>Home</Button>
+        <Button disabled={selectedSection(pathname, "home")} onClick={() => navigate("/home")}>Home</Button>
         <Divider orientation="vertical" />
-        <Button onClick={() => navigate("/techstack")}>Technology Stack</Button>
+        <Button disabled={selectedSection(pathname, "techstack")} onClick={() => navigate("/techstack")}>Technology Stack</Button>
         <Divider orientation="vertical" />
-        <Button onClick={() => navigate("/analyzer")}>Analyzer</Button>
+        <Button disabled={selectedSection(pathname, "analyzer")} onClick={() => navigate("/analyzer")}>Analyzer</Button>
       </div>
       <div className="options-div">
         <DarkLightButton />

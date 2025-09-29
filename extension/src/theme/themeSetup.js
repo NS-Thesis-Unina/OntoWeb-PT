@@ -29,11 +29,11 @@ export function createNeutralTheme(mode = "dark") {
       primary: isDark ? "#f3f3f3" : "#0b0b0b",
       secondary: isDark ? "#cfcfcf" : "#4f4f4f",
     },
-    divider: isDark ? "rgba(255,255,255,0.06)" : "rgba(255, 255, 255, 0.81)",
+    divider: isDark ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.2)",
     action: {
       hover: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)",
       selected: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)",
-      disabled: isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.38)",
+      disabled: isDark ? "rgba(255, 255, 255, 0.36)" : "rgba(0,0,0,0.38)",
     },
   };
 

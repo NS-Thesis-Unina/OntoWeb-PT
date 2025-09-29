@@ -1,0 +1,27 @@
+.pageNavigation-div {
+  display: flex;
+  width: 100%;
+  flex-direction: row;
+  align-items: center;
+  padding: 5px;
+  border-top: none !important;
+}
+
+.pageNavigation-div .icon {
+  display: flex;
+  margin-right: 5px;
+  margin-top: 2px;
+}
+
+.pageNavigation-div .title {
+  display: flex;
+  margin-right: auto;
+}
+
+.pageNavigation-div .options {
+  display: flex;
+}
+
+.pageNavigation-div .options button {
+  border-radius: 0px;
+}

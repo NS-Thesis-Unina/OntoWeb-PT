@@ -1,5 +1,4 @@
-// src/theme/ThemeModeProvider.jsx
-import React, { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { ThemeProvider, CssBaseline } from "@mui/material";
 import { createNeutralTheme } from "./themeSetup";
 import browser from "webextension-polyfill";

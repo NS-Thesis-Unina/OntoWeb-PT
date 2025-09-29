@@ -3,6 +3,8 @@
     position: relative;
     padding: 5px;
     width: 100%;
+    border-start-start-radius: 0px !important;
+    border-start-end-radius: 0px !important;
 }
 
 .navbar-paper .logo-div {

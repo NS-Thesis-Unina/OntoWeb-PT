@@ -4,11 +4,3 @@
     align-items: center;
     width: 100%;
 }
-
-.analyzer-div .navigation-div {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    gap: 10px;
-    width: 100%;
-}

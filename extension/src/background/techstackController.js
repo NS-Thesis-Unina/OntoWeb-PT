@@ -8,7 +8,6 @@ class TechStackBackgroundController {
   }
 
   initListener() {
-    console.log("[TechStack Background] Controller inizializzato");
 
     browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
       switch (message.type) {
@@ -51,7 +50,7 @@ class TechStackBackgroundController {
         }
 
         default:
-          console.warn("[TechStack Background] Unknown type:", message.type);
+          //console.warn("[TechStack Background] Unknown type:", message.type);
       }
     });
   }
