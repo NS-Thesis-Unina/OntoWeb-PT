@@ -6,10 +6,9 @@ import RoutePersistence from "./routePersistence";
 function App(){
     return(
         <div className="app-div">
-            <RoutePersistence />
-            <h1>App</h1>
-            <Navbar />
-            <Outlet />
+          <RoutePersistence />
+          <Navbar />
+          <Outlet />
         </div>
     )
 }

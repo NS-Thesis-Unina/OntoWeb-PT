@@ -1,7 +1,31 @@
-.navbar-div{
+.navbar-paper {
     display: flex;
-    flex-direction: row;
+    position: relative;
+    padding: 5px;
     width: 100%;
-    justify-content: center;
-    gap: 10px
+}
+
+.navbar-paper .logo-div {
+  display: flex;
+  position: relative;
+  width: 200px;
+  margin-right: 5px;
+}
+
+.navbar-paper .logo-div img {
+  width: 100%;
+}
+
+.navbar-paper .buttons-div {
+  display: flex;
+  position: relative;
+  margin-right: auto;
+}
+
+.navbar-paper .buttons-div button {
+    border-radius: 0px;
+}
+
+.navbar-paper .options-div {
+  display: flex;
 }
