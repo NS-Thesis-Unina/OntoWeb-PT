@@ -1,0 +1,579 @@
+<?xml version="1.0"?>
+<rdf:RDF xmlns="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18/"
+     xml:base="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18/"
+     xmlns:owl="http://www.w3.org/2002/07/owl#"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:xml="http://www.w3.org/XML/1998/namespace"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
+    <owl:Ontology rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Datatypes
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.w3.org/2008/content#ContentAsBase64 -->
+
+    <rdfs:Datatype rdf:about="http://www.w3.org/2008/content#ContentAsBase64"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Object Properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#mthd -->
+
+    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#mthd">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#Request"/>
+        <rdfs:range rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#Methods"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#param -->
+
+    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#param">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#URI"/>
+        <rdfs:range rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#Parameter"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#payHeader -->
+
+    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#payHeader">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#Message"/>
+        <rdfs:range rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#PayloadHeaders"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#repHeader -->
+
+    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#repHeader">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#Message"/>
+        <rdfs:range rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#RepresentationHeaders"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#reqHeader -->
+
+    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#reqHeader">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#Request"/>
+        <rdfs:range rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#RequestHeader"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#resHeader -->
+
+    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#resHeader">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#Response"/>
+        <rdfs:range rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#ResponseHeader"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#resp -->
+
+    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#resp">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#Request"/>
+        <rdfs:range rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#Response"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#sc -->
+
+    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#sc">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#Response"/>
+        <rdfs:range rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#StatusCodes"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#uriRequest -->
+
+    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#uriRequest">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#Request"/>
+        <rdfs:range rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#URI"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Data properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#authority -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#authority">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#URI"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2000/01/rdf-schema#Literal"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#body -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#body">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#Message"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2008/content#ContentAsBase64"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#connectionAuthority -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#connectionAuthority">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#Connection"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2000/01/rdf-schema#Literal"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#fieldName -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#fieldName">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#MessageHeader"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#fieldValue -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#fieldValue">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#MessageHeader"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2000/01/rdf-schema#Literal"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#fragment -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#fragment">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#URI"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#httpVersion -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#httpVersion">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#Message"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2000/01/rdf-schema#Literal"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#methodName -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#methodName">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#Methods"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#nameParameter -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#nameParameter">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#Parameter"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#path -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#path">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#URI"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#query -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#query">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#URI"/>
+        <rdfs:range rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#reasonPhrase -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#reasonPhrase">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#StatusCodes"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#scheme -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#scheme">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#URI"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#statusCodeNumber -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#statusCodeNumber">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#StatusCodes"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#int"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#uri -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#uri">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#URI"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#valueParameter -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#valueParameter">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#Parameter"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2000/01/rdf-schema#Literal"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.w3.org/2002/07/owl#topDataProperty -->
+
+    <rdf:Description rdf:about="http://www.w3.org/2002/07/owl#topDataProperty">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#URI"/>
+    </rdf:Description>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Classes
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#Connection -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#Connection">
+        <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#HTTP"/>
+        <rdfs:comment>WIP</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#DOM-based_XSS -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#DOM-based_XSS">
+        <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#XSS"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#Goals -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#Goals"/>
+    
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#HTML -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#HTML"/>
+    
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#HTTP -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#HTTP"/>
+    
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#HeaderType -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#HeaderType">
+        <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#HTTP"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#Message -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#Message">
+        <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#HTTP"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#MessageHeader -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#MessageHeader">
+        <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#HTTP"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#Methods -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#Methods">
+        <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#HTTP"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#Parameter -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#Parameter">
+        <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#HTTP"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#PayloadHeaders -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#PayloadHeaders">
+        <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#MessageHeader"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#Reflected_XSS -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#Reflected_XSS">
+        <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#XSS"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#RepresentationHeaders -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#RepresentationHeaders">
+        <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#MessageHeader"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#Request -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#Request">
+        <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#Message"/>
+        <owl:disjointWith rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#Response"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#RequestHeader -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#RequestHeader">
+        <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#MessageHeader"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#Response -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#Response">
+        <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#Message"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#ResponseHeader -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#ResponseHeader">
+        <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#MessageHeader"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#SQLi -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#SQLi">
+        <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#Vulnerabilities"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#StatusCodes -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#StatusCodes">
+        <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#HTTP"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#Stored_XSS -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#Stored_XSS">
+        <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#XSS"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#URI -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#URI">
+        <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#HTTP"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#Vulnerabilities -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#Vulnerabilities"/>
+    
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#XSS -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#XSS">
+        <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#Vulnerabilities"/>
+    </owl:Class>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Individuals
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#CONNECT -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#CONNECT">
+        <rdf:type rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#Methods"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#DELETE -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#DELETE">
+        <rdf:type rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#Methods"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#GET -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#GET">
+        <rdf:type rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#Methods"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#HEAD -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#HEAD">
+        <rdf:type rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#Methods"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#OPTIONS -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#OPTIONS">
+        <rdf:type rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#Methods"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#PATCH -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#PATCH">
+        <rdf:type rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#Methods"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#POST -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#POST">
+        <rdf:type rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#Methods"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#PUT -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#PUT">
+        <rdf:type rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#Methods"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#TRACE -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#TRACE">
+        <rdf:type rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#Methods"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // General axioms
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    <rdf:Description>
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#AllDisjointClasses"/>
+        <owl:members rdf:parseType="Collection">
+            <rdf:Description rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#PayloadHeaders"/>
+            <rdf:Description rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#RepresentationHeaders"/>
+            <rdf:Description rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#RequestHeader"/>
+            <rdf:Description rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#ResponseHeader"/>
+        </owl:members>
+    </rdf:Description>
+</rdf:RDF>
+
+
+
+<!-- Generated by the OWL API (version 4.5.29.2024-05-13T12:11:03Z) https://github.com/owlcs/owlapi -->
+
