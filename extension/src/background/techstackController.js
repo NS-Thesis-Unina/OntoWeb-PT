@@ -22,7 +22,7 @@ class TechStackBackgroundController {
                 type: "techstack_scanError",
                 message:
                   error?.message ||
-                  "Impossibile eseguire la scansione TechStack su questa pagina.",
+                  "Unable to perform the scan on this page.",
               });
             });
           break;
@@ -57,7 +57,7 @@ class TechStackBackgroundController {
 
   sendMessageToReact(msg) {
     browser.runtime.sendMessage(msg).catch((err) => {
-      console.error("[TechStack Background] Failed to send message to React:", err);
+      console.error("[TechStack/Background] Failed to send message to React:", err);
     });
   }
 }

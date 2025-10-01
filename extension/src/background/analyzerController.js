@@ -22,7 +22,7 @@ class AnalyzerBackgroundController {
                 type: "analyzer_scanError",
                 message:
                   error?.message ||
-                  "Impossibile eseguire la scansione su questa pagina.",
+                  "Unable to perform the scan on this page.",
               });
             });
           break;
@@ -82,7 +82,7 @@ class AnalyzerBackgroundController {
 
   sendMessageToReact(msg) {
     browser.runtime.sendMessage(msg).catch(err => {
-      console.error("[Background] Failed to send message to React:", err);
+      console.error("[Analyzer/Background] Failed to send message to React:", err);
     });
   }
 }

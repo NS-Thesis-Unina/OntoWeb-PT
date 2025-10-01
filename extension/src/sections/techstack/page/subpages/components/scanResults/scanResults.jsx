@@ -9,8 +9,9 @@ import { useThemeMode } from "../../../../../../theme/themeModeProvider";
 import IndeterminateCheckBoxIcon from '@mui/icons-material/IndeterminateCheckBox';
 import IndeterminateCheckBoxOutlinedIcon from '@mui/icons-material/IndeterminateCheckBoxOutlined';
 import { useState } from "react";
+import { formatWhen, getDomainAccurate } from "../../../../../../libs/formatting";
 
-function ScanResults({results, loadSource}){
+function ScanResults({results, loadSource, titleDisabled = false}){
 
   const { mode } = useThemeMode();
 
@@ -34,15 +35,17 @@ function ScanResults({results, loadSource}){
   ]
 
   return(
-    <Paper className="scanresults report">
+    <Paper className="scanresults">
       <div className="title">
-        <Typography className="sr-bold sr-mb5 title">
-          {`Scan Results ${loadSource ? 
-            loadSource === "session_by_tab" ? "(Loaded from sessionStorage by Tab)" : 
-              loadSource === "session" ? "(Loaded from sessionStorage)" :
-                loadSource === "local" ? "(Loaded from localStorage)" : ""
-          : ""}`}
-        </Typography>
+        { !titleDisabled && (
+          <Typography className="sr-bold sr-mb5 title">
+            {`Scan Results ${loadSource ? 
+              loadSource === "session_by_tab" ? "(Loaded from Tab sessionStorage)" : 
+                loadSource === "session" ? "(Loaded from sessionStorage)" :
+                  loadSource === "local" ? "(Loaded from localStorage)" : ""
+            : ""}`}
+          </Typography>
+        )}
         <div className="sr-options">
           <Tooltip title={allOpen ? "Collapse All":"Expand All"} >
             <IconButton variant="contained" size="small" onClick={toggleAll}>
@@ -51,7 +54,7 @@ function ScanResults({results, loadSource}){
           </Tooltip>
         </div>
       </div>
-      <Divider orientation="horizontal" />
+      {!titleDisabled && (<Divider orientation="horizontal" />)}
 
       <Grid container className="sr-mt10">
         <Grid size={4}>
@@ -64,13 +67,13 @@ function ScanResults({results, loadSource}){
           <Typography className="sr-bold">TabID</Typography>
         </Grid>
         <Grid size={4}>
-          <Typography>{results.meta.date}</Typography>
+          <Typography>{results?.meta?.date || formatWhen(results?.meta?.timestamp)}</Typography>
         </Grid>
         <Grid size={4}>
-          <Typography>{results.meta.domain}</Typography>
+          <Typography>{results?.meta?.domain || getDomainAccurate(results?.meta?.url)}</Typography>
         </Grid>
         <Grid size={4}>
-          <Typography>{results.meta.tabId}</Typography>
+          <Typography>{results?.meta?.tabId}</Typography>
         </Grid>
       </Grid>
 

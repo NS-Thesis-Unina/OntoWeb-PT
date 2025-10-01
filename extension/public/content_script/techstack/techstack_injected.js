@@ -1,9 +1,6 @@
-// content_script/techstack/techstack_injected.js
-console.log("[TechStack Injected] Ready");
-
 const api = typeof browser !== "undefined" ? browser : chrome;
 
-// Funzione per raccogliere i dati
+// Data collection function
 function collectTechStackData() {
   const MAX_HTML = 300_000;
   const MAX_INLINE_SCRIPTS = 12;
@@ -28,14 +25,14 @@ function collectTechStackData() {
   const html = document.documentElement.outerHTML.substring(0, MAX_HTML);
   const url = location.href;
 
-  // --- Findings opzionali ---
+  // --- Optional Findings ---
   const domFindings = [];
   const jsFindings = [];
 
   return { meta, scriptSrc, scripts, html, url, domFindings, jsFindings };
 }
 
-// Listener per messaggi dal background
+// Listener for messages from the background script
 api.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === "analyzeStack") {
     try {

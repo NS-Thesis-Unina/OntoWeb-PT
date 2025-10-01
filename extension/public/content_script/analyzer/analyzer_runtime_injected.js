@@ -10,6 +10,6 @@
     };
     api.runtime.sendMessage({ type: "analyzer_runtimeScanResult", data: payload }).catch(() => {});
   } catch (err) {
-    // ignora: alcune pagine sono protette all'iniezione
+    // ignore
   }
 })();

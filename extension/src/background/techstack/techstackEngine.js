@@ -1,7 +1,7 @@
 import browser from "webextension-polyfill";
 import { Wappalyzer } from "../../../public/packages/wappalyzer/wappalyzer.js";
 
-// Caricamento regole Wappalyzer
+// Loading Wappalyzer Rules
 async function loadJson(path) {
   const res = await fetch(browser.runtime.getURL(path));
   return res.json();
@@ -22,7 +22,7 @@ let WAF_CATS = {};
   WAF_CATS = waf.categories;
 })();
 
-// Helpers sessione richieste
+// Helpers
 const tabSessions = new Map();
 
 function ensureTabSession(tabId) {
@@ -180,9 +180,9 @@ class TechStackEngine {
         await browser.tabs.executeScript(tabId, { file: "content_script/techstack/techstack_injected.js" });
       }
 
-      // Chiedi analisi al content script
+      // Content script analysis request
       const rsp = await browser.tabs.sendMessage(tabId, { action: "analyzeStack" });
-      if (!rsp?.ok || !rsp.info) throw new Error(rsp?.error || "Nessuna risposta content script");
+      if (!rsp?.ok || !rsp.info) throw new Error(rsp?.error || "Content script didn’t respond.");
 
       const { meta, scriptSrc, scripts: inlineScripts, html, domFindings, jsFindings, url: pageUrl } = rsp.info;
 
@@ -203,7 +203,7 @@ class TechStackEngine {
         console.warn("[Engine] cookies.getAll failed:", e);
       }
 
-      // analisi tech
+      // tech
       resetWappalyzer(Wappalyzer, TECH, CATS);
       let detections = Wappalyzer.analyze({ headers, meta: metaMap, scriptSrc, scripts, html, url: pageUrl, cookies: cookieMap });
       detections = detections.concat(
@@ -288,7 +288,7 @@ class TechStackEngine {
       callback({ meta: { tabId, url: pageUrl, timestamp: Date.now() }, results });
 
     } catch (err) {
-      throw new Error(err?.message || "Errore nell’analisi TechStack");
+      throw new Error(err?.message || "TechStack analysis error.");
     }
   }
 

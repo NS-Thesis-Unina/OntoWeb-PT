@@ -1,6 +1,7 @@
 .collapsible {
   margin-bottom: 8px !important; 
   border-radius: 10px !important; 
+  width: 100% !important;
 }
 
 .collapsible-title {

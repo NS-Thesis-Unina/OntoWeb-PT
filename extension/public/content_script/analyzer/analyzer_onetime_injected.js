@@ -10,9 +10,9 @@
         data: { html }
       });
 
-      console.log("[Injected] ACK dal background:", response);
+      console.log("[Analyzer/ContentScript-OneTime] ACK from background:", response);
     } catch (err) {
-      console.error("[Injected] Errore nell'invio HTML:", err);
+      console.error("[Analyzer/ContentScript-OneTime] Error sending HTML:", err);
     }
   })();
 })();

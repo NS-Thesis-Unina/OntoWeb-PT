@@ -20,7 +20,7 @@ class AnalyzerReactController {
             sub.onRuntimeScanUpdate?.(message.url, message.totals);
             break;
           case "analyzer_runtimeScanComplete":
-            sub.onRuntimeScanComplete?.(message); // { ok, key, run }
+            sub.onRuntimeScanComplete?.(message);
             break;
           case "analyzer_scanError":
             sub.onScanError?.(message.message);
@@ -62,13 +62,13 @@ class AnalyzerReactController {
     return response.localResults;
   }
 
-  // ✅ Archive runtime – tutti i run
+  // Archive runtime – tutti i run
   async getAllRuntimeResults() {
     const response = await browser.runtime.sendMessage({ type: "analyzer_getAllRuntimeResults" });
-    return response.runs; // Array<{ key, run }>
+    return response.runs;
   }
 
-  // Sessione (volatile)
+  // Session
   async getSessionLastResult() {
     const { analyzer_lastResult } = await browser.storage.session.get("analyzer_lastResult");
     return analyzer_lastResult ?? null;

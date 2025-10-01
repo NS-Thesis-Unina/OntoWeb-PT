@@ -85,10 +85,20 @@ export default function CollapsibleDataGrid({ expanded, rows, columns: userColum
     return [...base, actionsCol];
   }, [userColumns, defaultColProps, actionsCol]);
 
-  const getId = React.useCallback(
-    (row, index) => row.id ?? (userColumns?.[0]?.field ? row[userColumns[0].field] : undefined) ?? index,
-    [userColumns]
-  );
+  const rowIdMapRef = React.useRef(new WeakMap());
+  const counterRef = React.useRef(0);
+
+  const getId = React.useCallback((row) => {
+    if (row && row.id != null) return String(row.id);
+
+    let existing = rowIdMapRef.current.get(row);
+    if (existing) return existing;
+
+    counterRef.current += 1;
+    const newId = `auto_${counterRef.current}`;
+    rowIdMapRef.current.set(row, newId);
+    return newId;
+  }, []);
 
   const orderedEntries = React.useCallback((row) => {
     if (!row) return [];

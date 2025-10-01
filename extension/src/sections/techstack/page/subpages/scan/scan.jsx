@@ -33,7 +33,7 @@ function ScanTechStack(){
       } catch (e) {
         enqueueSnackbar("Error loading previous results.", { variant: "error" });
       } finally {
-        if (mounted) setLoading(false);
+        if (mounted) setTimeout(() => { setLoading(false);}, 500);
       }
     })();
 
@@ -88,7 +88,7 @@ function ScanTechStack(){
         </Zoom>
       </Paper>
       <Collapsible defaultOpen={false} title="Info Output">
-        <ul style={{paddingInlineStart: "20px"}}>
+        <ul className="ul">
           <li><strong>Technologies</strong>: concise list of detected libraries, frameworks, and services (name and version when available).</li>
           <li><strong>SecureHeaders</strong>: results of security header checks (e.g., HSTS, CSP, X-Content-Type-Options) with indication of missing or anomalous configurations.</li>
           <li><strong>WAF</strong>: identification of Web Application Firewalls, CDNs, or edge proxies in use (e.g., Cloudflare, AWS CloudFront, FortiWeb).</li>

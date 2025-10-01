@@ -1,4 +1,5 @@
 import { createTheme } from "@mui/material/styles";
+
 export function createNeutralTheme(mode = "dark") {
   const isDark = mode === "dark";
 
@@ -58,6 +59,7 @@ export function createNeutralTheme(mode = "dark") {
       },
     },
   });
+
   theme = createTheme(theme, {
     components: {
       MuiAppBar: {
@@ -91,9 +93,20 @@ export function createNeutralTheme(mode = "dark") {
       MuiCardActionArea: {
         styleOverrides: {
           root: {
-            height: "100%"
-          }
-        }
+            '&&': {
+              display: 'flex',
+              alignItems: 'baseline',
+              height: '100%',
+            },
+          },
+        },
+      },
+      MuiCardContent: {
+        styleOverrides: {
+          root: {
+            width: "100%"
+          },
+        },
       },
       MuiButton: {
         styleOverrides: {
@@ -126,9 +139,7 @@ export function createNeutralTheme(mode = "dark") {
             '&.Mui-expanded:last-of-type': {
               marginBottom: "10px"
             },
-            '&::before': {
-              display: 'none'
-            }
+            '&::before': { display: 'none' }
           },
         },
       },
@@ -136,15 +147,10 @@ export function createNeutralTheme(mode = "dark") {
         styleOverrides: {
           root: {
             minHeight: 0,
-            '&.Mui-expanded': { 
-              minHeight: 0,
-              margin: 0,
-            },
+            '&.Mui-expanded': { minHeight: 0, margin: 0 },
           },
           content: {
-            '&.Mui-expanded': { 
-              margin: "10px 0"
-            },
+            '&.Mui-expanded': { margin: "10px 0" },
           },
         },
       },
@@ -163,9 +169,7 @@ export function createNeutralTheme(mode = "dark") {
             textTransform: "none",
             fontWeight: 600,
             minWidth: 90,
-            "&.Mui-selected": {
-              color: theme.palette.primary.main,
-            },
+            "&.Mui-selected": { color: theme.palette.primary.main },
           },
         },
       },
@@ -182,9 +186,7 @@ export function createNeutralTheme(mode = "dark") {
       },
       MuiDivider: {
         styleOverrides: {
-          root: {
-            background: theme.palette.divider,
-          },
+          root: { background: theme.palette.divider },
         },
       },
     },

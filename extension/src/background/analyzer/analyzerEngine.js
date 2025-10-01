@@ -5,7 +5,7 @@ class AnalyzerEngine {
   constructor() {
     this.resultCallback = null;
 
-    // ---- Stato RUNTIME ----
+    // ---- RUNTIME STATE ----
     this._runtimeActive = false;
     this._runtimeStartedAt = 0;
     this._runtimeDataset = {};
@@ -100,12 +100,10 @@ class AnalyzerEngine {
 
   // ---------- ONE-TIME ----------
   _isInjectableUrl(url = "") {
-    // consenti solo http/https; blocca edge://, chrome://, about:, chrome-extension://, ecc.
     return /^https?:\/\//i.test(url);
   }
 
   async runOneTimeScan(tabId, callback) {
-    // ritorna una Promise che si risolve con i risultati o si rifiuta con un errore
     const tab = await browser.tabs.get(tabId).catch(() => null);
     const url = tab?.url || "";
 
@@ -123,14 +121,12 @@ class AnalyzerEngine {
         if (err) reject(err); else resolve(data);
       };
 
-      // Wrappa il callback utente per risolvere la Promise quando arrivano i risultati
       const userCb = callback;
       this.resultCallback = (data) => {
         try { userCb?.(data); } catch {}
         finish(null, data);
       };
 
-      // Prova l'injection
       try {
         if (browser.scripting) {
           await browser.scripting.executeScript({
@@ -144,7 +140,6 @@ class AnalyzerEngine {
         return finish(new Error("Iniezione non riuscita su questa pagina."));
       }
 
-      // Timeout se lo script non risponde (es. CSP/errore runtime)
       const timer = setTimeout(() => {
         finish(new Error("Timeout: la pagina non ha risposto alla scansione."));
       }, 8000);
@@ -269,13 +264,12 @@ class AnalyzerEngine {
   processHtml(html) {
     const $ = cheerio.load(html);
 
-    // Helpers di normalizzazione/filtraggio
     const norm = (s) => String(s ?? "")
-      .replace(/\u00A0/g, " ")   // nbsp → spazio
-      .replace(/\s+/g, " ")      // spazi multipli → singolo
+      .replace(/\u00A0/g, " ")
+      .replace(/\s+/g, " ")
       .trim();
 
-    const isDashOnly = (s) => /^[-–—•]+$/.test(s);  // solo trattini/pallini
+    const isDashOnly = (s) => /^[-–—•]+$/.test(s);
     const isMeaningfulText = (s) => {
       const t = norm(s);
       return t.length > 0 && !isDashOnly(t);
@@ -286,14 +280,12 @@ class AnalyzerEngine {
     const filterMap = (arr, mapFn, keepFn = Boolean) =>
       ensureArray(arr).map(mapFn).filter(keepFn);
 
-    // Profondità DOM (invariata)
     function getDepth(node, depth = 0) {
       const children = $(node).children();
       if (children.length === 0) return depth;
       return Math.max(...children.map((_, child) => getDepth(child, depth + 1)).get());
     }
 
-    // HEAD
     const headTitle = (() => {
       const t = norm($("title").text());
       return t || null;
@@ -306,7 +298,7 @@ class AnalyzerEngine {
         const content = norm($(el).attr("content") || "");
         return { name: name || null, content: content || null };
       },
-      (m) => nonEmpty(m.name) || nonEmpty(m.content) // scarta meta del tutto vuoti
+      (m) => nonEmpty(m.name) || nonEmpty(m.content)
     );
 
     const headLinks = filterMap(
@@ -316,7 +308,7 @@ class AnalyzerEngine {
         const href = norm($(el).attr("href") || "");
         return { rel: rel || null, href: href || null };
       },
-      (l) => nonEmpty(l.rel) || nonEmpty(l.href) // serve almeno una info
+      (l) => nonEmpty(l.rel) || nonEmpty(l.href)
     );
 
     const headScripts = filterMap(
@@ -324,13 +316,13 @@ class AnalyzerEngine {
       (el) => {
         const src = norm($(el).attr("src") || "");
         const inlineRaw = $(el).html() ?? "";
-        const inline = norm(inlineRaw).slice(0, 50); // preview breve
+        const inline = norm(inlineRaw).slice(0, 50);
         return {
           src: src || null,
           inline: inline || null
         };
       },
-      (s) => nonEmpty(s.src) || nonEmpty(s.inline) // scarta <script> totalmente vuoti
+      (s) => nonEmpty(s.src) || nonEmpty(s.inline)
     );
 
     // BODY → HEADINGS
@@ -343,7 +335,7 @@ class AnalyzerEngine {
       h6: filterMap($("h6").get(), (el) => norm($(el).text() || ""), isMeaningfulText),
     };
 
-    // BODY → LINKS (serve almeno href o testo)
+    // BODY → LINKS
     const bodyLinks = filterMap(
       $("a").get(),
       (el) => ({
@@ -353,12 +345,12 @@ class AnalyzerEngine {
       (l) => nonEmpty(l.href) || isMeaningfulText(l.text)
     );
 
-    // BODY → FORMS (filtra input non informativi; scarta form completamente vuoti)
+    // BODY → FORMS
     const bodyForms = filterMap(
       $("form").get(),
       (form) => {
         const action = norm($(form).attr("action") || "");
-        const method = norm($(form).attr("method") || "GET"); // mantieni default
+        const method = norm($(form).attr("method") || "GET");
         const inputs = filterMap(
           $(form).find("input, select, textarea, button").get(),
           (el) => ({
@@ -368,11 +360,9 @@ class AnalyzerEngine {
             value: norm($(el).attr("value") || "") || null,
             placeholder: norm($(el).attr("placeholder") || "") || null
           }),
-          // tieni input se ha almeno una info "utente-utile"
           (i) => nonEmpty(i.name) || nonEmpty(i.value) || nonEmpty(i.placeholder)
         );
 
-        // tieni il form se ha action/metadati o almeno un input informativo
         const keep = nonEmpty(action) || nonEmpty(method) || inputs.length > 0;
         return keep ? { action: action || null, method: method || null, inputs } : null;
       },
@@ -385,9 +375,9 @@ class AnalyzerEngine {
       (el) => {
         const src = norm($(el).attr("src") || "");
         const alt = norm($(el).attr("alt") || "");
-        return { src: src || null, alt }; // alt può essere vuoto per immagini decorative
+        return { src: src || null, alt };
       },
-      (img) => nonEmpty(img.src) // scarta immagini senza src
+      (img) => nonEmpty(img.src)
     );
 
     const bodyVideos = filterMap(
@@ -397,7 +387,7 @@ class AnalyzerEngine {
         const controls = $(el).attr("controls") !== undefined;
         return { src: src || null, controls: Boolean(controls) };
       },
-      (v) => nonEmpty(v.src) || v.controls // tieni se almeno ha src o controls
+      (v) => nonEmpty(v.src) || v.controls
     );
 
     const bodyAudios = filterMap(
@@ -420,7 +410,7 @@ class AnalyzerEngine {
       (f) => nonEmpty(f.src) || nonEmpty(f.title)
     );
 
-    // BODY → LISTE (scarta li vuoti/solo trattini; poi scarta le liste senza item)
+    // BODY → LISTE
     const bodyLists = filterMap(
       $("ul, ol").get(),
       (el) => {
@@ -435,7 +425,7 @@ class AnalyzerEngine {
       Boolean
     );
 
-    // BODY → TABELLE (scarta righe con sole celle vuote/dash; poi scarta tabelle vuote)
+    // BODY → TABELLE
     const bodyTables = filterMap(
       $("table").get(),
       (el) => {
@@ -445,7 +435,7 @@ class AnalyzerEngine {
             const cells = filterMap(
               $(row).find("th, td").get(),
               (cell) => norm($(cell).text() || ""),
-              isMeaningfulText // tieni solo celle con contenuto reale
+              isMeaningfulText
             );
             return cells.length ? cells : null;
           },
@@ -456,7 +446,7 @@ class AnalyzerEngine {
       Boolean
     );
 
-    // STATS (invariati: contano il DOM reale, non il “post-filtrato”)
+    // STATS
     const stats = {
       totalElements: $("*").length,
       depth: getDepth("html", 0),
