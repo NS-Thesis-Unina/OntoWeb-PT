@@ -9,7 +9,7 @@ export default function DarkLightButton({ size = "small" }) {
   const { mode, toggleMode } = useThemeMode();
 
   return (
-    <Tooltip title={mode === "dark" ? "Passa a tema chiaro" : "Passa a tema scuro"}>
+    <Tooltip title={mode === "dark" ? "Switch to Light Theme" : "Switch to Dark Theme"}>
       <IconButton
         onClick={() => toggleMode()}
         size={size}

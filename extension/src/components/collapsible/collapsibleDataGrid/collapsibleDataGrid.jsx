@@ -33,7 +33,7 @@ function FieldRow({ label, value, onCopy }) {
         <Box className="fieldRowValue">
           {text}
         </Box>
-        <Tooltip title="Copia">
+        <Tooltip title="Copy">
           <IconButton size="small" onClick={() => onCopy(text)}>
             <ContentCopyIcon fontSize="inherit" />
           </IconButton>
@@ -68,11 +68,11 @@ export default function CollapsibleDataGrid({ expanded, rows, columns: userColum
     align: 'center',
     headerAlign: 'center',
     renderCell: (params) => (
-      <Tooltip title="Mostra dettagli riga">
+      <Tooltip title="Show row details">
         <IconButton
           size="small"
           onClick={(e) => { e.stopPropagation(); setPreview({ open: true, row: params.row }); }}
-          aria-label="Mostra dettagli riga"
+          aria-label="Show row details"
         >
           <VisibilityIcon fontSize="inherit" />
         </IconButton>
@@ -124,7 +124,7 @@ export default function CollapsibleDataGrid({ expanded, rows, columns: userColum
         fullWidth
         maxWidth="sm"
       >
-        <DialogTitle>Dettagli</DialogTitle>
+        <DialogTitle>Details</DialogTitle>
         <DialogContent dividers className="collapsibledatagrid">
           {preview.row && orderedEntries(preview.row).map(([key, val]) => (
             <FieldRow key={key} label={key} value={val} onCopy={copy} />
@@ -133,7 +133,7 @@ export default function CollapsibleDataGrid({ expanded, rows, columns: userColum
 
         <DialogActions>
           <Button variant="contained" onClick={() => setPreview(s => ({ ...s, open: false }))}>
-            Chiudi
+            Close
           </Button>
         </DialogActions>
       </Dialog>

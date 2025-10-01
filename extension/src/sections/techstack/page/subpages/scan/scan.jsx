@@ -1,15 +1,11 @@
-import { Alert, Backdrop, Button, CircularProgress, Divider, Grid, Grow, LinearProgress, Paper, Typography, Zoom } from "@mui/material";
+import { Backdrop, Button, CircularProgress, Paper, Typography, Zoom } from "@mui/material";
 import "./scan.css";
 import Collapsible from "../../../../../components/collapsible/collapsible";
 import techStackReactController from "../../../techstackController";
 import { useCallback, useEffect, useState } from "react";
 import { formatWhen, getDomainAccurate } from "../../../../../libs/formatting";
-import CollapsibleList from "../../../../../components/collapsible/collapsibleList/collapsibleList";
-import CollapsibleSecureHeaders from "../../../components/collapsibleSecureHeaders/collapsibleSecureHeaders";
-import CollapsibleDataGrid from "../../../../../components/collapsible/collapsibleDataGrid/collapsibleDataGrid";
-import { Inspector, chromeLight, chromeDark } from 'react-inspector';
-import { useThemeMode } from "../../../../../theme/themeModeProvider";
 import ScanResults from "../components/scanResults/scanResults";
+import { enqueueSnackbar } from "notistack";
 
 function ScanTechStack(){
 
@@ -17,7 +13,6 @@ function ScanTechStack(){
   const [loadSource, setLoadSource] = useState(null);
   const [scanning, setScanning] = useState(false);
   const [results, setResults] = useState(null);
-  const [error, setError] = useState("");
 
   useEffect(() => {
     let mounted = true;
@@ -36,7 +31,7 @@ function ScanTechStack(){
           setResults(res.data);
         }
       } catch (e) {
-        setError("Errore nel caricamento dei risultati precedenti.");
+        enqueueSnackbar("Error loading previous results.", { variant: "error" });
       } finally {
         if (mounted) setLoading(false);
       }
@@ -49,10 +44,11 @@ function ScanTechStack(){
         p = {...p, meta: {...p.meta, domain, date}};
         setLoadSource("scan");
         setResults(p);
+        enqueueSnackbar('Scan complete successfully! Results below.', { variant: "success"});
         setScanning(false);
       },
       onScanError: (msg) => {
-        setError(msg || "Errore nella scansione TechStack.");
+        enqueueSnackbar(msg || "Scanning failed! Retry.", { variant: "error" });
         setScanning(false);
       }
     });
@@ -65,7 +61,6 @@ function ScanTechStack(){
 
   const startScan = useCallback(async () => {
     setScanning(true);
-    setError(null);
     const tabId = await techStackReactController.getCurrentTabId();
     techStackReactController.sendStartOneTimeStackScan(tabId);
   }, []);
@@ -85,33 +80,25 @@ function ScanTechStack(){
       <Paper className="description">
         <Zoom in={true}>
           <Typography variant="body2">
-            <strong>Technology Stack</strong> identifica e sintetizza le tecnologie e i servizi usati da 
-            una pagina web, aggregando evidenze provenienti da header, script, cookie, storage e 
-            analisi statiche. Serve da punto di partenza per la ricognizione tecnica: fornisce 
-            sia un riepilogo rapido (che cosa c’è) sia i dettagli utili per approfondire controlli mirati 
-            e preparare report.
+            <strong>Technology Stack</strong> identifies and summarizes the technologies and services used by a web page, 
+            aggregating evidence from headers, scripts, cookies, storage, and static analyses. It serves as 
+            a starting point for technical reconnaissance: providing both a quick overview (what is there) 
+            and the details needed to conduct targeted checks and prepare reports.
           </Typography>
         </Zoom>
       </Paper>
       <Collapsible defaultOpen={false} title="Info Output">
         <ul style={{paddingInlineStart: "20px"}}>
-          <li><strong>Technologies</strong>: elenco sintetico delle librerie, framework e servizi rilevati (nome e versione quando disponibili).</li>
-          <li><strong>SecureHeaders</strong>: risultati dei controlli sugli header di sicurezza (es. HSTS, CSP, X-Content-Type-Options) con indicazione delle mancanze o anomalie.</li>
-          <li><strong>WAF</strong>: identificazione di Web Application Firewall, CDN o proxy edge presenti (es. Cloudflare, AWS CloudFront, FortiWeb).</li>
-          <li><strong>Cookies</strong>: lista dei cookie rilevati (dominio, nome, flag httpOnly) con anteprima dei valori utili per l’analisi della sessione/SSO.</li>
-          <li><strong>Storage</strong>: dump di localStorage e sessionStorage (chiavi/valori) per individuare dati esposti a JavaScript come token o configurazioni client-side.</li>
-          <li><strong>Raw</strong>: output grezzo/di dettaglio (es. Wappalyzer resolved) contenente metadati, categorie, confidence e informazioni utili per approfondimenti.</li>
+          <li><strong>Technologies</strong>: concise list of detected libraries, frameworks, and services (name and version when available).</li>
+          <li><strong>SecureHeaders</strong>: results of security header checks (e.g., HSTS, CSP, X-Content-Type-Options) with indication of missing or anomalous configurations.</li>
+          <li><strong>WAF</strong>: identification of Web Application Firewalls, CDNs, or edge proxies in use (e.g., Cloudflare, AWS CloudFront, FortiWeb).</li>
+          <li><strong>Cookies</strong>: list of detected cookies (domain, name, httpOnly flag) with a preview of values useful for session/SSO analysis.</li>
+          <li><strong>Storage</strong>: dump of localStorage and sessionStorage (keys/values) to identify data exposed to JavaScript such as tokens or client-side configurations.</li>
+          <li><strong>Raw</strong>: raw/detailed output (e.g., Wappalyzer resolved) containing metadata, categories, confidence, and information useful for further analysis.</li>
         </ul>
       </Collapsible>
-      {error && (
-        <Grow in={error}>
-          <Alert className="alert" variant="filled" severity="error">
-            {error}
-          </Alert>
-        </Grow>
-      )}
-      <Button onClick={startScan} className="scanButton" variant="contained" size="large" loading={scanning} loadingIndicator="Scansione in corso..." >
-        {!results ? "Avvia Scansione":"Nuova scansione"}
+      <Button onClick={startScan} className="scanButton" variant="contained" size="large" loading={scanning} loadingIndicator="Scan in progress..." >
+        {!results ? "start scan":"new scan"}
       </Button>
       {results && (
         <ScanResults results={results} loadSource={loadSource} />

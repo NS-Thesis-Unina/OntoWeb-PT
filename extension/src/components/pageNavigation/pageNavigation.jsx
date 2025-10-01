@@ -3,7 +3,7 @@ import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
 import Divider from "@mui/material/Divider";
 import "./pageNavigation.css";
-import { Collapse, Grow, Slide } from "@mui/material";
+import { Slide } from "@mui/material";
 
 function PageNavigation({ children, title, icon, subsection }) {
 

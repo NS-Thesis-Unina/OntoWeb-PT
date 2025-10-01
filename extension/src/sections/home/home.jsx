@@ -31,30 +31,30 @@ function Home(){
         <Paper className="description">
           <Zoom in={true}>
             <Typography variant="body2">
-              <strong>OntoWeb-PT</strong> è un'estensione pensata per supportare attività di penetration testing: 
-              acquisisce automaticamente informazioni rilevanti dalle pagine web e le presenta in modo strutturato. 
-              Si collega a un'ontologia dedicata per offrire suggerimenti contestuali e approfondimenti migliorati. 
-              <br />
-              Riduce il lavoro manuale di ricognizione e facilita la preparazione di analisi e report; <u>usare solo su target autorizzati.</u>
+              <strong>OntoWeb-PT</strong> is an extension designed to support penetration testing activities: 
+              it automatically gathers relevant information from web pages and presents it in a structured way. 
+              It connects to a dedicated ontology to provide contextual suggestions and enhanced insights.
+              It reduces manual reconnaissance work and facilitates the preparation of analyses and reports.
+              {" "}<u>Use only on authorized targets.</u>
             </Typography>
           </Zoom>
         </Paper>
         <div className="cards">
           <HomeCard title={"Technology Stack"} 
-          content={"La sezione Technology Stack identifica automaticamente le tecnologie, framework e servizi usati da una pagina web (librerie client, server, CMS, WAF, ecc.) e fornisce evidenze e dettagli utili per l’analisi."}
+          content={"The Technology Stack section automatically identifies the technologies, frameworks, and services used by a web page (client libraries, server, CMS, WAF, etc.) and provides evidence and useful details for analysis."}
           show={showCards}
           icon={<LayersIcon />}
           pathname="/techstack"
           />
           <HomeCard title={"Analyzer"} 
-          content={"L'Analyzer esegue un'ispezione dettagliata della pagina (estrae DOM, meta, heading, form, link, script, media e statistiche) e produce un report strutturato per facilitare l'identificazione di anomalie e supportare i test."}
+          content={"The Analyzer performs a detailed inspection of the page (extracting DOM, metadata, headings, forms, links, scripts, media, and statistics) and generates a structured report to facilitate anomaly detection and support testing."}
           show={showCards}
           delay={30}
           icon={<AnalyticsIcon />}
           pathname="/analyzer"
           />
           <HomeCard title={"Coming soon..."} 
-          content={"Sezione in via di sviluppo."}
+          content={"This section is currently under development."}
           show={showCards}
           delay={60}
           />

@@ -24,6 +24,7 @@
     "@mui/material": "^7.3.2",
     "@mui/x-data-grid": "^8.12.1",
     "cheerio": "^1.1.2",
+    "notistack": "^3.0.2",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-inspector": "^9.0.0",

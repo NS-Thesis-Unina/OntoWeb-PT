@@ -1,4 +1,4 @@
-import { Button, Divider, Grid, IconButton, Paper, Tooltip, Typography } from "@mui/material";
+import { Divider, Grid, IconButton, Paper, Tooltip, Typography } from "@mui/material";
 import "./scanResults.css";
 import CollapsibleList from "../../../../../../components/collapsible/collapsibleList/collapsibleList";
 import CollapsibleSecureHeaders from "../../../../components/collapsibleSecureHeaders/collapsibleSecureHeaders";
@@ -35,20 +35,22 @@ function ScanResults({results, loadSource}){
 
   return(
     <Paper className="scanresults report">
-      <Typography className="sr-bold sr-mb5 title">
-        {`Scan Results ${loadSource ? 
-          loadSource === "session_by_tab" ? "(Loaded from sessionStorage by Tab)" : 
-            loadSource === "session" ? "(Loaded from sessionStorage)" :
-              loadSource === "local" ? "(Loaded from localStorage)" : ""
-        : ""}`}
+      <div className="title">
+        <Typography className="sr-bold sr-mb5 title">
+          {`Scan Results ${loadSource ? 
+            loadSource === "session_by_tab" ? "(Loaded from sessionStorage by Tab)" : 
+              loadSource === "session" ? "(Loaded from sessionStorage)" :
+                loadSource === "local" ? "(Loaded from localStorage)" : ""
+          : ""}`}
+        </Typography>
         <div className="sr-options">
-        <Tooltip title={allOpen ? "Collapse All":"Expand All"} >
-          <IconButton variant="contained" size="small" onClick={toggleAll}>
-            {allOpen ? <IndeterminateCheckBoxOutlinedIcon /> : <IndeterminateCheckBoxIcon />}
-          </IconButton>
-        </Tooltip>
+          <Tooltip title={allOpen ? "Collapse All":"Expand All"} >
+            <IconButton variant="contained" size="small" onClick={toggleAll}>
+              {allOpen ? <IndeterminateCheckBoxOutlinedIcon /> : <IndeterminateCheckBoxIcon />}
+            </IconButton>
+          </Tooltip>
         </div>
-      </Typography>
+      </div>
       <Divider orientation="horizontal" />
 
       <Grid container className="sr-mt10">
