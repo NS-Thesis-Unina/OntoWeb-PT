@@ -19,7 +19,7 @@ export function createNeutralTheme(mode = "dark") {
     },
     primary: {
       main: isDark ? "#e6e6e6" : "#212121",
-      contrastText: isDark ? "#0b0b0b" : "#ffffff",
+      contrastText: isDark ? "#ffffff" : "#0b0b0b",
     },
     background: {
       default: isDark ? "#0b0b0b" : "#ffffff",
@@ -112,6 +112,39 @@ export function createNeutralTheme(mode = "dark") {
           outlined: {
             border: `1px solid ${theme.palette.divider}`,
             color: theme.palette.text.primary,
+          },
+        },
+      },
+      MuiAccordion: {
+        styleOverrides: {
+          root: {
+            '&.Mui-expanded': {
+              margin: 0,
+              minHeight: 0,
+              marginBottom: "10px"
+            },
+            '&.Mui-expanded:last-of-type': {
+              marginBottom: "10px"
+            },
+            '&::before': {
+              display: 'none'
+            }
+          },
+        },
+      },
+      MuiAccordionSummary: {
+        styleOverrides: {
+          root: {
+            minHeight: 0,
+            '&.Mui-expanded': { 
+              minHeight: 0,
+              margin: 0,
+            },
+          },
+          content: {
+            '&.Mui-expanded': { 
+              margin: "10px 0"
+            },
           },
         },
       },

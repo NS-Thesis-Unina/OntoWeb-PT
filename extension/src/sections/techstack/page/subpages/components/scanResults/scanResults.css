@@ -1,0 +1,36 @@
+.scanresults .title {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.scanresults .sr-mb5 {
+  margin-bottom: 5px;
+}
+
+.scanresults .sr-mt10 {
+  margin-top: 10px;
+}
+
+.scanresults .sr-options {
+  display: flex;
+  margin-left: auto;
+}
+
+.scanresults .sr-mt10mb10 {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.scanresults .sr-bold {
+  font-weight: bold;
+}
+
+.scanresults .sr-minw0 {
+  min-width: 0;
+}
+
+.scanresults .sr-wrap {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}

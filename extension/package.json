@@ -22,10 +22,13 @@
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^7.3.2",
     "@mui/material": "^7.3.2",
+    "@mui/x-data-grid": "^8.12.1",
     "cheerio": "^1.1.2",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-inspector": "^9.0.0",
     "react-router-dom": "^7.7.1",
+    "tldts": "^7.0.16",
     "webextension-polyfill": "^0.12.0"
   },
   "devDependencies": {

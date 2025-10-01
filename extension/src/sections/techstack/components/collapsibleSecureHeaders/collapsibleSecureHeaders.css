@@ -1,0 +1,21 @@
+.collapsiblesecureheaders .csh-mt10 {
+  margin-top: 10px;
+}
+
+.collapsiblesecureheaders .csh-bold {
+  font-weight: bold;
+}
+
+.collapsiblesecureheaders .csh-cell {
+  min-width: 0;
+  margin-bottom: 3px;
+}
+
+.collapsiblesecureheaders .csh-ul {
+  padding-inline-start: 20px;
+}
+
+.collapsiblesecureheaders .csh-wrap {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
