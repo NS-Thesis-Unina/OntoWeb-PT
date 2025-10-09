@@ -81,8 +81,6 @@ function RuntimeScanAnalyzer(){
     )
   }
 
-  console.log(lastRun)
-
   return(
     <div className="rtsanalyzer-div">
       <Paper className="description">
@@ -100,7 +98,7 @@ function RuntimeScanAnalyzer(){
       <Collapsible defaultOpen={false} title="Info Output">
         <p>For each visited page, the output includes the sections below and also records when the runtime scan was started and when it was stopped.</p>
         <strong>Head</strong>
-        <ul class="ul">
+        <ul className="ul">
           <li><strong>title</strong>: page title.</li>
           <li><strong>meta</strong>: metadata entries (name/property and content).</li>
           <li><strong>links</strong>: relations and targets (e.g., stylesheet, preload, canonical) as <code>rel</code>/<code>href</code> pairs.</li>
@@ -108,7 +106,7 @@ function RuntimeScanAnalyzer(){
         </ul>
 
         <strong>Body</strong>
-        <ul class="ul">
+        <ul className="ul">
           <li><strong>forms</strong>: form endpoint and method with detected fields (tag, name, type, value, placeholder).</li>
           <li><strong>iframes</strong>: embedded source and title.</li>
           <li><strong>links</strong>: URL and anchor text.</li>
@@ -119,7 +117,7 @@ function RuntimeScanAnalyzer(){
         </ul>
 
         <strong>Stats</strong>
-        <ul class="ul">
+        <ul className="ul">
           <li><strong>totalElements</strong>: total number of DOM nodes.</li>
           <li><strong>depth</strong>: maximum DOM tree depth.</li>
           <li><strong>tagCount</strong>: per-tag element counts.</li>

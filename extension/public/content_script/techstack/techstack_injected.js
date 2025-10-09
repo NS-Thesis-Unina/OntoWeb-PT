@@ -1,4 +1,4 @@
-const api = typeof browser !== "undefined" ? browser : chrome;
+const apiX = typeof browser !== "undefined" ? browser : chrome;
 
 // Data collection function
 function collectTechStackData() {
@@ -33,7 +33,7 @@ function collectTechStackData() {
 }
 
 // Listener for messages from the background script
-api.runtime.onMessage.addListener((message, sender, sendResponse) => {
+apiX.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === "analyzeStack") {
     try {
       const payload = collectTechStackData();

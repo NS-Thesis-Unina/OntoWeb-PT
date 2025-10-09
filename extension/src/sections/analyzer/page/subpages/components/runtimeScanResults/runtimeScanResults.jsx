@@ -1,14 +1,9 @@
 import { Divider, Grid, Paper, Typography } from "@mui/material";
 import "./runtimeScanResults.css";
-import { useEffect } from "react";
 import OneTimeScanResults from "../oneTimeScanResults/oneTimeScanResults";
 import Collapsible from "../../../../../../components/collapsible/collapsible";
 
 function RuntimeScanResults({results, titleDisabled = false}){
-
-  useEffect(() => {
-    console.log("LastRun", results);
-  },[results])
 
   return(
     <Paper className="rt-scanresults">

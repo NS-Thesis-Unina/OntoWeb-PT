@@ -1,5 +1,5 @@
 (function () {
-  const api = typeof browser !== "undefined" ? browser : chrome;
+  const apiX = typeof browser !== "undefined" ? browser : chrome;
 
   try {
     const payload = {
@@ -8,7 +8,7 @@
       title: document.title,
       timestamp: Date.now()
     };
-    api.runtime.sendMessage({ type: "analyzer_runtimeScanResult", data: payload }).catch(() => {});
+    apiX.runtime.sendMessage({ type: "analyzer_runtimeScanResult", data: payload }).catch(() => {});
   } catch (err) {
     // ignore
   }

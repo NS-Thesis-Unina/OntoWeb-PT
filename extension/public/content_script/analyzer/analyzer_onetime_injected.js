@@ -1,11 +1,11 @@
 (function () {
-  const api = typeof browser !== "undefined" ? browser : chrome;
+  const apiX = typeof browser !== "undefined" ? browser : chrome;
 
   (async () => {
     try {
       const html = document.documentElement.outerHTML;
 
-      const response = await api.runtime.sendMessage({
+      const response = await apiX.runtime.sendMessage({
         type: "analyzer_scanResult",
         data: { html }
       });
