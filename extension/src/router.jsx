@@ -12,6 +12,7 @@ import Home from "./sections/home/home";
 import ArchiveTechStack from "./sections/techstack/page/subpages/archive/archive";
 import ScanTechStack from "./sections/techstack/page/subpages/scan/scan";
 import browser from "webextension-polyfill";
+import analyzerReactController from "./sections/analyzer/analyzerController";
 
 function RestoreOrHome() {
   const navigate = useNavigate();
@@ -20,28 +21,44 @@ function RestoreOrHome() {
     let cancelled = false;
 
     (async () => {
+      let target = "/home";
+
       try {
-        // obtain active tab in current window
         const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
         const tabId = tab?.id ?? null;
 
-        // read session map
-        const obj = await browser.storage.session.get("ui_lastRoute_byTab").catch(() => ({}));
-        const map = obj?.ui_lastRoute_byTab ?? {};
+        const status = await analyzerReactController.getScanStatus().catch(() => null);
+        const isActive = !!(status?.runtimeActive || status?.active);
 
-        const route = tabId != null ? map[tabId] : null;
-
-        if (cancelled) return;
-        if (route) {
-          // saved route: navigate to
-          navigate(route, { replace: true });
+        if (isActive) {
+          target = "/analyzer/runtime";
+          if (tabId != null) {
+            const obj = await browser.storage.session.get("ui_lastRoute_byTab").catch(() => ({}));
+            const map = obj?.ui_lastRoute_byTab ?? {};
+            map[tabId] = target;
+            await browser.storage.session.set({ ui_lastRoute_byTab: map }).catch(() => {});
+          }
         } else {
-          // fallback to home
-          navigate("/home", { replace: true });
+          const obj = await browser.storage.session.get("ui_lastRoute_byTab").catch(() => ({}));
+          const map = obj?.ui_lastRoute_byTab ?? {};
+          const saved = tabId != null ? map[tabId] : null;
+
+          if (typeof saved === "string" && saved.trim()) {
+            target = saved;
+          } else {
+            target = "/home";
+            if (tabId != null) {
+              map[tabId] = target;
+              await browser.storage.session.set({ ui_lastRoute_byTab: map }).catch(() => {});
+            }
+          }
         }
-      } catch (e) {
-        // in case of error fallback to home
-        try { navigate("/home", { replace: true }); } catch {}
+      } catch {
+        target = "/home";
+      } finally {
+        if (!cancelled) {
+          navigate(target, { replace: true });
+        }
       }
     })();
 
@@ -55,7 +72,6 @@ function Router() {
   return (
     <Routes>
       <Route path="/" element={<App />}>
-
         <Route index element={<RestoreOrHome />} />
 
         <Route path="home" element={<Home />} />
