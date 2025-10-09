@@ -1,4 +1,4 @@
-.scanteckstack-div {
+.scantechstack-div {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -7,17 +7,17 @@
   width: 100%;
 }
 
-.scanteckstack-div .description {
+.scantechstack-div .description {
   display: flex;
   padding: 10px;
   margin-bottom: 10px;
 }
 
-.scanteckstack-div .scanButton {
+.scantechstack-div .scanButton {
   width: 400px;
   text-transform: uppercase;
 }
 
-.scanteckstack-div .ul {
+.scantechstack-div .ul {
   padding-inline-start: 20px;
 }

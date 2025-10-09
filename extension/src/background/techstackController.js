@@ -14,7 +14,6 @@ class TechStackBackgroundController {
         case "techstack_startOneTimeScan": {
           this.engine
             .runOneTimeStackScan(message.tabId, (data) => {
-              // invia anche il meta + results in un formato coerente, come fatto per analyzer
               this.sendMessageToReact({ type: "techstack_scanComplete", data });
             })
             .catch((error) => {

@@ -1,7 +1,7 @@
 import { Divider, Grid, IconButton, Paper, Tooltip, Typography } from "@mui/material";
 import "./scanResults.css";
 import CollapsibleList from "../../../../../../components/collapsible/collapsibleList/collapsibleList";
-import CollapsibleSecureHeaders from "../../../../components/collapsibleSecureHeaders/collapsibleSecureHeaders";
+import CollapsibleSecureHeaders from "../collapsibleSecureHeaders/collapsibleSecureHeaders";
 import CollapsibleDataGrid from "../../../../../../components/collapsible/collapsibleDataGrid/collapsibleDataGrid";
 import Collapsible from "../../../../../../components/collapsible/collapsible";
 import { chromeDark, chromeLight, Inspector } from "react-inspector";
@@ -19,7 +19,7 @@ function ScanResults({results, loadSource, titleDisabled = false}){
   const [resetKey, setResetKey] = useState(0);
   const toggleAll = () => {
     setAllOpen(o => !o);
-    setResetKey(k => k + 1);   // forza il remount delle sezioni
+    setResetKey(k => k + 1);
   };
 
   const cookiesColumns = [

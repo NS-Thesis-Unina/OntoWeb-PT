@@ -1,7 +1,7 @@
 import { Divider, Grid, Stack, Typography } from "@mui/material";
-import Collapsible from "../../../../components/collapsible/collapsible";
 import "./collapsibleSecureHeaders.css";
 import { Fragment } from "react";
+import Collapsible from "../../../../../../components/collapsible/collapsible";
 
 function CollapsibleSecureHeaders({ secureHeaders, defaultOpen, expanded }) {
   return (

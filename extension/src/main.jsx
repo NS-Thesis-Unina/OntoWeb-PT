@@ -7,7 +7,7 @@ import { SnackbarProvider } from 'notistack';
 const root = document.getElementById("root");
 createRoot(root).render(
   <ThemeModeProvider defaultMode="dark">
-    <SnackbarProvider maxSnack={2} anchorOrigin={{horizontal: "center", vertical: "bottom"}}>
+    <SnackbarProvider maxSnack={1} anchorOrigin={{horizontal: "center", vertical: "bottom"}}>
       <HashRouter>
         <Router />
       </HashRouter>

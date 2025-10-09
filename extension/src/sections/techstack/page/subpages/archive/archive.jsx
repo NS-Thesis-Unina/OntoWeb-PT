@@ -1,4 +1,4 @@
-import { Backdrop, Button, CircularProgress, Divider, IconButton, Paper, Tooltip, Typography, Zoom } from "@mui/material";
+import { Backdrop, CircularProgress, Divider, IconButton, Tooltip, Typography } from "@mui/material";
 import "./archive.css";
 import Collapsible from "../../../../../components/collapsible/collapsible";
 import RefreshIcon from '@mui/icons-material/Refresh';
@@ -82,7 +82,7 @@ function ArchiveTechStack(){
     } catch (e) {
       enqueueSnackbar(`Error: ${e}`)
     } finally {
-      setTimeout(() => {setLoading(false);}, 500);
+      setLoading(false);
     }
   }, []);
 
@@ -93,13 +93,6 @@ function ArchiveTechStack(){
     });
     return () => off();
   }, [load]);
-
-  useEffect(() => {
-    console.log("current", currentTabSnap);
-    console.log("other", otherTabsSnaps);
-    console.log("session", sessionSnap);
-    console.log("local", localSnaps);
-  },[currentTabSnap, otherTabsSnaps, sessionSnap, localSnaps]);
 
   if(loading){
     return(

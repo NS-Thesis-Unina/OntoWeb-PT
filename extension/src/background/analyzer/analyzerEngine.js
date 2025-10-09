@@ -43,7 +43,7 @@ class AnalyzerEngine {
         if (this.resultCallback) {
           const cb = this.resultCallback;
           this.resultCallback = null;
-          try { cb(results); } catch {}
+          try { cb({ meta, results }); } catch {}
         }
 
         sendResponse?.({ status: "ok", received: true });
@@ -64,7 +64,7 @@ class AnalyzerEngine {
           const results = this.processHtml(html);
           const meta = { tabId, url, title: results?.head?.title || title || null, timestamp };
 
-          const key = meta.url || "(url_sconosciuto)";
+          const key = meta.url || "(unknown_url)";
           if (!this._runtimeDataset[key]) this._runtimeDataset[key] = [];
           this._runtimeDataset[key].push({ meta, results });
           this._runtimeTotalScans += 1;
@@ -108,7 +108,7 @@ class AnalyzerEngine {
     const url = tab?.url || "";
 
     if (!this._isInjectableUrl(url)) {
-      throw new Error("Questa pagina non consente l'iniezione del content script (protocollo non supportato).");
+      throw new Error("This page does not allow the injection of the content script (unsupported protocol).");
     }
 
     return new Promise(async (resolve, reject) => {
@@ -137,11 +137,11 @@ class AnalyzerEngine {
           await browser.tabs.executeScript(tabId, { file: "content_script/analyzer/analyzer_onetime_injected.js" });
         }
       } catch (e) {
-        return finish(new Error("Iniezione non riuscita su questa pagina."));
+        return finish(new Error("Injection failed on this page."));
       }
 
       const timer = setTimeout(() => {
-        finish(new Error("Timeout: la pagina non ha risposto alla scansione."));
+        finish(new Error("Timeout: the page did not respond to the scan."));
       }, 8000);
     });
   }
@@ -188,7 +188,7 @@ class AnalyzerEngine {
   }
 
   async stopRuntimeScan() {
-    if (!this._runtimeActive) return { ok: false, error: "Runtime non attivo" };
+    if (!this._runtimeActive) return { ok: false, error: "Runtime not active." };
 
     const stoppedAt = Date.now();
     const run = {
@@ -316,7 +316,7 @@ class AnalyzerEngine {
       (el) => {
         const src = norm($(el).attr("src") || "");
         const inlineRaw = $(el).html() ?? "";
-        const inline = norm(inlineRaw).slice(0, 50);
+        const inline = norm(inlineRaw);
         return {
           src: src || null,
           inline: inline || null
@@ -410,7 +410,7 @@ class AnalyzerEngine {
       (f) => nonEmpty(f.src) || nonEmpty(f.title)
     );
 
-    // BODY → LISTE
+    // BODY → LISTS
     const bodyLists = filterMap(
       $("ul, ol").get(),
       (el) => {
@@ -421,27 +421,6 @@ class AnalyzerEngine {
           isMeaningfulText
         );
         return items.length ? { type, items } : null;
-      },
-      Boolean
-    );
-
-    // BODY → TABELLE
-    const bodyTables = filterMap(
-      $("table").get(),
-      (el) => {
-        const rows = filterMap(
-          $(el).find("tr").get(),
-          (row) => {
-            const cells = filterMap(
-              $(row).find("th, td").get(),
-              (cell) => norm($(cell).text() || ""),
-              isMeaningfulText
-            );
-            return cells.length ? cells : null;
-          },
-          Boolean
-        );
-        return rows.length ? { rows } : null;
       },
       Boolean
     );
@@ -474,8 +453,7 @@ class AnalyzerEngine {
         videos: bodyVideos,
         audios: bodyAudios,
         iframes: bodyIframes,
-        lists: bodyLists,
-        tables: bodyTables
+        lists: bodyLists
       },
       stats
     };

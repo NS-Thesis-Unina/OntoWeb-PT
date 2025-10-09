@@ -27,13 +27,21 @@ function ScanTechStack(){
           const domain = getDomainAccurate(res.data.meta.url);
           const date = formatWhen(res.data.meta.timestamp);
           res.data = {...res.data, meta: {...res.data.meta, domain, date}};
+          if(res.source && res.source === "session_by_tab"){
+            enqueueSnackbar("Scan loaded from Tab sessionStorage.", { variant: "info" })
+          } else if (res.source === "session") {
+            enqueueSnackbar("Scan loaded from sessionStorage.", { variant: "info" })
+          } else {
+            enqueueSnackbar("Scan loaded from localStorage.", { variant: "info" })
+          }
           setLoadSource(res.source);
           setResults(res.data);
         }
       } catch (e) {
         enqueueSnackbar("Error loading previous results.", { variant: "error" });
       } finally {
-        if (mounted) setTimeout(() => { setLoading(false);}, 500);
+        if (mounted) 
+          setLoading(false);
       }
     })();
 
@@ -67,7 +75,7 @@ function ScanTechStack(){
 
   if(loading){
     return(
-      <div className="scanteckstack-div">
+      <div className="scantechstack-div">
         <Backdrop open={loading}>
           <CircularProgress color="inherit" />
         </Backdrop>
@@ -76,7 +84,7 @@ function ScanTechStack(){
   }
 
   return(
-    <div className="scanteckstack-div">
+    <div className="scantechstack-div">
       <Paper className="description">
         <Zoom in={true}>
           <Typography variant="body2">

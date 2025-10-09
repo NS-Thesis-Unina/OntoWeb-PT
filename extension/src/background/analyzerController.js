@@ -27,7 +27,7 @@ class AnalyzerBackgroundController {
             });
           break;
         }
-
+                
         /* ---------- RUNTIME START ---------- */
         case "analyzer_startRuntimeScan": {
           this.engine.startRuntimeScan({
