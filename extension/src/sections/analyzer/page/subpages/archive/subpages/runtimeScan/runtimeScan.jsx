@@ -1,59 +1,27 @@
-import "../../archive.css";
+import { Backdrop, CircularProgress, Divider, IconButton, Paper, Tooltip, Typography, Zoom } from "@mui/material";
 import "./runtimeScan.css";
+import Collapsible from "../../../../../../../components/collapsible/collapsible";
+import { useCallback, useEffect, useState } from "react";
+import { enqueueSnackbar } from "notistack";
 import analyzerReactController from "../../../../../analyzerController";
-import { useEffect, useState, useCallback } from "react";
+import RefreshIcon from '@mui/icons-material/Refresh';
+import RuntimeScanResults from "../../../components/runtimeScanResults/runtimeScanResults";
+import { formatWhen } from "../../../../../../../libs/formatting";
 
-/* Helpers UI */
-function Accordion({ title, children, defaultOpen = false }) {
-  return (
-    <details className="acc" open={defaultOpen}>
-      <summary className="acc-summary">{title}</summary>
-      <div className="acc-panel">{children}</div>
-    </details>
-  );
-}
-function SectionGrid({ children }) { return <div className="grid">{children}</div>; }
-function KeyVal({ k, v }) { return (<div className="kv"><div className="kv-k">{k}</div><div className="kv-v">{v ?? "—"}</div></div>); }
-function Pill({ children }) { return <span className="pill">{children}</span>; }
-function EmptyNote({ text = "Nessun dato disponibile." }) { return <div className="empty-note">{text}</div>; }
-function MonoBlock({ children, maxHeight = 360 }) { return <pre className="mono" style={{ maxHeight }}>{children}</pre>; }
+function RuntimeScanArchiveAnalyzer(){
 
-function StatPills({ results }) {
-  if (!results) return null;
-  const stats = results?.stats || {};
-  const body = results?.body || {};
-  const h = body?.headings || {};
-  const pills = [];
-  if (stats.totalElements != null) pills.push(`Elements ${stats.totalElements}`);
-  if (stats.depth != null) pills.push(`Depth ${stats.depth}`);
-  ["h1","h2","h3","h4","h5","h6"].forEach((t) => pills.push(`${t} ${h?.[t]?.length || 0}`));
-  pills.push(`Links ${Array.isArray(body.links) ? body.links.length : 0}`);
-  pills.push(`Forms ${Array.isArray(body.forms) ? body.forms.length : 0}`);
-  pills.push(`Images ${Array.isArray(body.images) ? body.images.length : 0}`);
-  return <div className="pill-row">{pills.map((p,i) => <Pill key={i}>{p}</Pill>)}</div>;
-}
-function MetaGrid({ meta }) {
-  if (!meta) return null;
-  return (
-    <SectionGrid>
-      <KeyVal k="URL" v={meta.url || "—"} />
-      <KeyVal k="Timestamp" v={new Date(meta.timestamp || Date.now()).toLocaleString()} />
-      <KeyVal k="Tab ID" v={meta.tabId != null ? String(meta.tabId) : "—"} />
-      <KeyVal k="Title" v={meta.title || "—"} />
-    </SectionGrid>
-  );
-}
-
-function RuntimeScanArchiveAnalyzer() {
   const [loading, setLoading] = useState(true);
-  const [runs, setRuns] = useState([]); // Array<{ key, run }>
+  const [runs, setRuns] = useState([]);
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
       const list = await analyzerReactController.getAllRuntimeResults();
       setRuns(Array.isArray(list) ? list : []);
-    } finally {
+      enqueueSnackbar("Archive loaded from storage successfully!", { variant: "success" });
+    }catch(e){
+      enqueueSnackbar(e || "Error loading snaps from storage.", { variant: "error" });
+    }finally {
       setLoading(false);
     }
   }, []);
@@ -66,69 +34,88 @@ function RuntimeScanArchiveAnalyzer() {
     return () => off();
   }, [load]);
 
-  return (
-    <div>
-      <div className="archive-header" style={{ marginTop: 4 }}>
-        <h2>Runtime scans</h2>
-        <button className="archive-refresh" onClick={load} disabled={loading}>
-          {loading ? "Aggiorno…" : "Aggiorna"}
-        </button>
+  if(loading){
+    return(
+      <div className="rtsanalyzer-div">
+        <Backdrop open={loading}>
+          <CircularProgress color="inherit" />
+        </Backdrop>
       </div>
+    )
+  }
 
-      {runs.length === 0 ? (
-        <EmptyNote text="Nessun runtime salvato." />
-      ) : (
-        runs.map(({ key, run }, idx) => {
-          const runIndex = runs.length - idx;
-          const title = `${runIndex}. ${new Date(run.startedAt).toLocaleString()} → ${new Date(run.stoppedAt).toLocaleString()} • pages: ${run.pagesCount ?? 0} • scans: ${run.totalScans ?? 0}`;
+  return(
+    <div className="artsanalyzer-div">
+      <Paper className="description">
+        <Zoom in={true}>
+          <Typography variant="body2">
+            The <strong>Analyzer’s Runtime Scan Archive</strong> shows a chronological list of runtime
+            sessions saved to <em>local storage</em> only.
+            Each entry includes when the run started and stopped, the number of total scans, and the count of
+            unique pages captured, with quick access to the stored head/body snapshots and DOM stats.
+            Use this archive to review past navigation sessions, compare runs, or pick up an analysis without
+            starting a new scan.
+          </Typography>
+        </Zoom>
+      </Paper>
+      <Collapsible defaultOpen={false} title="Info Output">
+        <p>For each visited page, the output includes the sections below and also records when the runtime scan was started and when it was stopped.</p>
+        <strong>Head</strong>
+        <ul className="ul">
+          <li><strong>title</strong>: page title.</li>
+          <li><strong>meta</strong>: metadata entries (name/property and content).</li>
+          <li><strong>links</strong>: relations and targets (e.g., stylesheet, preload, canonical) as <code>rel</code>/<code>href</code> pairs.</li>
+          <li><strong>scripts</strong>: external script sources and a short preview of inline code (possibly truncated).</li>
+        </ul>
 
-          // ❌ NIENTE hook qui dentro — semplice calcolo
-          const urls = run?.dataset ? Object.keys(run.dataset).sort() : [];
+        <strong>Body</strong>
+        <ul className="ul">
+          <li><strong>forms</strong>: form endpoint and method with detected fields (tag, name, type, value, placeholder).</li>
+          <li><strong>iframes</strong>: embedded source and title.</li>
+          <li><strong>links</strong>: URL and anchor text.</li>
+          <li><strong>images</strong>: source path and alt text.</li>
+          <li><strong>videos / audios</strong>: media source and whether controls are present.</li>
+          <li><strong>headings (h1–h6)</strong>: hierarchical heading texts.</li>
+          <li><strong>lists (ul/ol)</strong>: list type and item texts.</li>
+        </ul>
 
-          return (
-            <Accordion key={key} title={title}>
-              <SectionGrid>
-                <KeyVal k="Storage key" v={key} />
-                <KeyVal k="Inizio" v={new Date(run.startedAt).toLocaleString()} />
-                <KeyVal k="Fine" v={new Date(run.stoppedAt).toLocaleString()} />
-                <KeyVal k="Pagine uniche" v={run.pagesCount ?? 0} />
-                <KeyVal k="Scans totali" v={run.totalScans ?? 0} />
-              </SectionGrid>
-
-              <Accordion title={`Pagine (${urls.length})`}>
-                {urls.length === 0 ? (
-                  <EmptyNote />
-                ) : (
-                  urls.map((url) => {
-                    const visits = run.dataset[url] || [];
-                    return (
-                      <Accordion key={url} title={`${url} — visite: ${visits.length}`}>
-                        {visits.map((snap, i) => {
-                          const { meta, results } = snap || {};
-                          return (
-                            <Accordion key={i} title={`Visita #${i + 1} — ${new Date(meta?.timestamp || 0).toLocaleString()}`}>
-                              <MetaGrid meta={meta} />
-                              <StatPills results={results} />
-                              <h4>JSON completo (visita)</h4>
-                              <MonoBlock maxHeight={320}>{JSON.stringify({ meta, results }, null, 2)}</MonoBlock>
-                            </Accordion>
-                          );
-                        })}
-                      </Accordion>
-                    );
-                  })
-                )}
-              </Accordion>
-
-              <Accordion title="JSON completo (run)">
-                <MonoBlock maxHeight={360}>{JSON.stringify(run, null, 2)}</MonoBlock>
-              </Accordion>
-            </Accordion>
-          );
-        })
-      )}
+        <strong>Stats</strong>
+        <ul className="ul">
+          <li><strong>totalElements</strong>: total number of DOM nodes.</li>
+          <li><strong>depth</strong>: maximum DOM tree depth.</li>
+          <li><strong>tagCount</strong>: per-tag element counts.</li>
+        </ul>
+      </Collapsible>
+      <div className="title">
+        <Typography variant="h6">
+          Archive Data
+        </Typography>
+        <div className="aots-options">
+          <Tooltip title={"Refresh"} >
+            <IconButton variant="contained" size="small" onClick={load} >
+              <RefreshIcon />
+            </IconButton>
+          </Tooltip>
+        </div>
+      </div>
+      <Divider className="divider" />
+      {runs.length > 0 ? 
+        (
+          runs.map((snap, index) => (
+            <Collapsible defaultOpen={false} title={`Date: ${formatWhen(snap.run.startedAt)} | Pages Count: ${snap.run.pagesCount}`} key={index}>
+              <RuntimeScanResults results={snap} titleDisabled />
+            </Collapsible>
+          ))
+        )
+        :
+        (
+          <Typography>
+            No runtime snaps.
+          </Typography>
+        )
+      }
     </div>
-  );
+  )
 }
 
 export default RuntimeScanArchiveAnalyzer;

@@ -6,17 +6,7 @@
   width: 100%;
   padding: 10px;
   padding-top: 0px;
-}
-
-.home-div .logo {
-  display: flex;
-  width: 400px;
-  margin: 10px;
-}
-
-.home-div .logo img {
-  width: 100%;
-  object-fit: contain;
+  margin-top: 10px;
 }
 
 .home-div .description {

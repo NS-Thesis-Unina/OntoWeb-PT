@@ -23,11 +23,6 @@ function Home(){
 
   return(
       <div className="home-div">
-        <div className="logo">
-          <Zoom in={true}>
-            <img alt="OntoWeb-PT" src={mode === "dark" ? LogoLight : LogoDark} />
-          </Zoom>
-        </div>
         <Paper className="description">
           <Zoom in={true}>
             <Typography variant="body2">

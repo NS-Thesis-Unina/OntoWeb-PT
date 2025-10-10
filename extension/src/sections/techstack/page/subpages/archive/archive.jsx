@@ -79,8 +79,9 @@ function ArchiveTechStack(){
         .filter(x => x.snap) // drop invalid
         .sort((a, b) => (b.ts || 0) - (a.ts || 0));
       setLocalSnaps(normalizedLocals);
+      enqueueSnackbar("Archive loaded from storage successfully!", { variant: "success" });
     } catch (e) {
-      enqueueSnackbar(`Error: ${e}`)
+      enqueueSnackbar(e || "Error loading snaps from storage.", { variant: "error" });
     } finally {
       setLoading(false);
     }

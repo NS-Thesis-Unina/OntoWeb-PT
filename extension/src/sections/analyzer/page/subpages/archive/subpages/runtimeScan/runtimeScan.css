@@ -1,0 +1,36 @@
+.artsanalyzer-div {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+  width: 100%;
+}
+
+.artsanalyzer-div .description {
+  display: flex;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.artsanalyzer-div .ul {
+  padding-inline-start: 20px;
+}
+
+.artsanalyzer-div .title {
+  padding: 5px;
+  display: flex;
+  width: 100%;
+  flex-direction: row;
+  align-items: center;
+}
+
+.artsanalyzer-div .aots-options {
+  display: flex;
+  margin-left: auto;
+}
+
+.artsanalyzer-div .divider {
+  width: 99%;
+  margin-bottom: 10px;
+}

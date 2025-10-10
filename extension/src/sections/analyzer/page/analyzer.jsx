@@ -12,18 +12,14 @@ function Analyzer() {
   const [subsection, setSubsection] = useState("");
 
   useEffect(() => {
-    switch(pathname){
-      case "/analyzer/runtime": {
-        setSubsection("Runtime Scan");
-        break;
-      }
-      case "/analyzer/archive": {
-        setSubsection("Archive");
-        break;
-      }
-      default: setSubsection("One-Time Scan");
+    if (pathname === "/analyzer/runtime") {
+      setSubsection("Runtime Scan");
+    } else if (pathname.startsWith("/analyzer/archive")) {
+      setSubsection("Archive");
+    } else {
+      setSubsection("One-Time Scan");
     }
-  },[pathname])
+  }, [pathname]);
 
   return (
     <div className="analyzer-div">
