@@ -1,0 +1,35 @@
+services:
+  redis:
+    image: redis:latest
+    container_name: redis
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  graphdb:
+    image: ontotext/graphdb:10.8.11
+    container_name: graphdb
+    ports:
+      - "7200:7200"
+    volumes:
+      - graphdb_data:/opt/graphdb/home
+    environment:
+      - JAVA_OPTS=-Xms1g -Xmx2g
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7200"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+
+volumes:
+  redis_data:
+  graphdb_data:

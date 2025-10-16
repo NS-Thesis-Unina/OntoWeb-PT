@@ -127,7 +127,15 @@
     ///////////////////////////////////////////////////////////////////////////////////////
      -->
 
-    
+
+
+
+    <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#id -->
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#id">
+      <rdfs:domain rdf:resource="http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#Request"/>
+      <rdfs:range  rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+
 
 
     <!-- http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#authority -->

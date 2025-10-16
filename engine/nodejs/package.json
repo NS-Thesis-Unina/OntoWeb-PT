@@ -1,0 +1,23 @@
+{
+  "name": "nodejs",
+  "version": "1.0.0",
+  "description": "NodeJS (Backend)",
+  "license": "ISC",
+  "author": "Francesco Scognamiglio | Felice Micillo",
+  "type": "commonjs",
+  "main": "src/server.js",
+  "scripts": {
+    "dev:api": "nodemon src/server.js",
+    "dev:worker": "nodemon src/worker.js"
+  },
+  "dependencies": {
+    "axios": "^1.7.7",
+    "bullmq": "^5.7.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^4.19.2",
+    "morgan": "^1.10.0",
+    "nanoid": "^5.0.7",
+    "nodemon": "^3.1.10"
+  }
+}
