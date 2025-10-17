@@ -287,11 +287,3 @@ module.exports = {
   buildSelectRequestIds,
   buildCountRequests
 };
-
-
-module.exports = {
-  bindingsToRequestsJson,
-  buildSelectRequests,
-  buildSelectRequestIds,
-  buildCountRequests
-};
