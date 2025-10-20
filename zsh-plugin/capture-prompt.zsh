@@ -48,11 +48,23 @@ capture_deactivate() {
 
 preexec() {
     if (( CAPTURE_ACTIVE == 1 )); then
+        case "$1" in
+            capture_deactivate|capture_activate)
+                return
+                ;;
+        esac
+        
         CAPTURE_CMD_INDEX=$((CAPTURE_CMD_INDEX + 1))
         
+        
         ts=$(date +"%Y-%m-%d %H:%M:%S")
+        index_padded=$(printf "%03d" "$CAPTURE_CMD_INDEX")
+        output_file="${log_dir}/index_${index_padded}.txt"
 
-        echo "{\"index\":${CAPTURE_CMD_INDEX},\"timestamp\":\"${ts}\",\"command\":$(jq -Rn --arg c "$1" '$c')}" >> "${log_dir}/commands.ndjson"
+        { eval "$1" >"$output_file" 2>&1; } || true
+
+
+        echo "{\"index\":${CAPTURE_CMD_INDEX},\"timestamp\":\"${ts}\",\"command\":$(jq -Rn --arg c "$1" '$c'),\"output\":${output_file}}" >> "${log_dir}/commands.ndjson"
 
     fi
 }
