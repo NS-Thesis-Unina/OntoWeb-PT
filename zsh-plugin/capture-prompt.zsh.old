@@ -1,0 +1,60 @@
+#!/bin/zsh
+# ----------------------------------------------------------
+#   ZSH Capture Framework (fixed deactivate)
+# ----------------------------------------------------------
+
+CAPTURE_ACTIVE=0
+CAPTURE_CMD_INDEX=0
+
+capture_activate() {
+    # $1 = base directory
+    # $2 = environment name
+    base_dir="${1:-/tmp/log-collector}"
+    CAPTURE_ENV_NAME="${2:-capture}"
+
+    session_timestamp=$(date +"%Y%m%d_%H%M%S")
+    log_dir="${base_dir}/${CAPTURE_ENV_NAME}_${session_timestamp}"
+    mkdir -p "$log_dir"
+
+    export VIRTUAL_ENV_PROMPT="$CAPTURE_ENV_NAME"
+
+    if [ -z "${_OLD_VIRTUAL_PS1-}" ]; then
+        _OLD_VIRTUAL_PS1="${PS1-}"
+    fi
+
+    PS1="(${VIRTUAL_ENV_PROMPT}) ${PS1-}"
+    export PS1
+    CAPTURE_ACTIVE=1
+
+    echo "[capture] Environment: (${CAPTURE_ENV_NAME})"
+    echo "[capture] Logging in: $log_dir"
+}
+
+
+capture_deactivate() {
+    if [ -n "${_OLD_VIRTUAL_PS1-}" ]; then
+        PS1="${_OLD_VIRTUAL_PS1}"
+        export PS1
+        unset _OLD_VIRTUAL_PS1
+        CAPTURE_ACTIVE=0
+        echo "[capture] Prompt deactivated"
+    fi
+}
+
+
+preexec() {
+    if (( CAPTURE_ACTIVE == 1 )); then
+        CAPTURE_CMD_INDEX=$((CAPTURE_CMD_INDEX + 1))
+
+        ts=$(date +"%Y-%m-%d %H:%M:%S")
+        index_padded=$(printf "%03d" "$CAPTURE_CMD_INDEX")
+
+        output_file="${log_dir}/index_${index_padded}.txt"
+
+        { eval "$1" >"$output_file" 2>&1; } || true
+
+        echo "{\"index\":${CAPTURE_CMD_INDEX},\"timestamp\":\"${ts}\",\"command\":$(jq -Rn --arg c "$1" '$c'),\"output_file\":\"${output_file}\"}" >> "${log_dir}/commands.ndjson"
+    fi
+}
+
+trap capture_deactivate EXIT

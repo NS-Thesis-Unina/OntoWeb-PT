@@ -1,0 +1,9 @@
+    sudo ip netns add $VIRTUAL_ENV_PROMPT && \
+    sudo ip link add veth-$VIRTUAL_ENV_PROMPT type veth peer name veth-ns-$VIRTUAL_ENV_PROMP && \
+    sudo ip link set veth-ns-$VIRTUAL_ENV_PROMPT netns $VIRTUAL_ENV_PROMPT && \
+    sudo ip addr add 10.0.0.1/24 dev veth-$VIRTUAL_ENV_PROMPT && \
+    sudo ip link set veth-$VIRTUAL_ENV_PROMPT up && \
+    sudo ip netns exec $VIRTUAL_ENV_PROMPT ip addr add 10.0.0.2/24 dev veth-ns-$VIRTUAL_ENV_PROMP && \
+    sudo ip netns exec $VIRTUAL_ENV_PROMPT ip link set veth-ns-$VIRTUAL_ENV_PROMP up && \
+    sudo ip netns exec $VIRTUAL_ENV_PROMPT ip link set lo up && \
+    sudo ip netns exec $VIRTUAL_ENV_PROMPT ip route add default via 10.0.0.1
