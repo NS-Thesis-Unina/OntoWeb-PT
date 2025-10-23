@@ -3,29 +3,22 @@ const router = express.Router();
 
 const { queueHttpRequests } = require('../queue');
 
-// Pull the HTTP builders from the central utils barrel.
 const {
   httpBuilders: {
     buildSelectRequests,
     bindingsToRequestsJson,
-    buildSelectRequestIds,
-    buildCountRequests
+    buildSelectRequestsPaged
   },
-  graphdb: { runSelect } // <-- moved here from ../sparql
+  graphdb: { runSelect }
 } = require('../utils');
 
-// Extract value from SPARQL JSON binding term.
-function valueOf(b) { return b?.value; }
-
 /**
- * Ingest one or many HTTP requests (enqueue write job).
- * Accepts object, array or { items: [...] }.
+ * Ingest one o più HTTP requests (enqueue write job).
  */
 router.post('/ingest-http', async (req, res) => {
   try {
     const raw = req.body ?? {};
 
-    // Normalize to a flat array of items.
     const list = Array.isArray(raw)
       ? raw
       : (Array.isArray(raw.items) ? raw.items : [raw]);
@@ -34,7 +27,6 @@ router.post('/ingest-http', async (req, res) => {
       return res.status(400).json({ error: 'Empty payload: expected an object, an array, or { items: [...] }' });
     }
 
-    // Fast validation to prevent bad jobs.
     const errors = [];
     list.forEach((item, idx) => {
       const ok =
@@ -55,7 +47,6 @@ router.post('/ingest-http', async (req, res) => {
       });
     }
 
-    // Enqueue a single job with the full batch.
     const job = await queueHttpRequests.add('http-ingest', { payload: list });
 
     res.status(202).json({
@@ -70,8 +61,8 @@ router.post('/ingest-http', async (req, res) => {
 });
 
 /**
- * Paginated list of HTTP requests.
- * Uses 2-step query: ids page + details for those ids.
+ * Paginated list of HTTP requests — SINGLE GraphDB request.
+ * Usa una SELECT con 2 subquery: total + page ids, poi join sui dettagli.
  */
 router.get('/list', async (req, res) => {
   try {
@@ -87,38 +78,28 @@ router.get('/list', async (req, res) => {
       text
     } = req.query;
 
-    // Build filters from querystring.
     const filters = { method, scheme, authority, path, headerName, headerValue, text };
     const lim = Number.parseInt(limit, 10) || 10;
     const off = Number.parseInt(offset, 10) || 0;
 
-    // Page of ids (stable order).
-    const idsSparql = buildSelectRequestIds({ filters, limit: lim, offset: off, orderBy: 'id' });
-    const idsData = await runSelect(idsSparql);
-    const pageIds = (idsData.results?.bindings || [])
-      .map(b => valueOf(b.idVal))
-      .filter(Boolean);
+    const sparql = buildSelectRequestsPaged({ filters, limit: lim, offset: off });
+    const data = await runSelect(sparql);
+    const bindings = data.results?.bindings || [];
 
-    // Count total matching items.
-    const countSparql = buildCountRequests({ filters });
-    const countData = await runSelect(countSparql);
-    const total = Number(valueOf(countData.results?.bindings?.[0]?.total) || 0);
+    const total = (() => {
+      for (const b of bindings) {
+        const v = b?.total?.value;
+        if (v !== undefined) return Number(v) || 0;
+      }
+      return 0;
+    })();
 
-    // Fetch details for current page ids only.
+    const detailBindings = bindings.filter(b => b?.id?.value);
+
     let items = [];
-    if (pageIds.length > 0) {
-      const detailsSparql = buildSelectRequests({
-        ids: pageIds,
-        filters: {},
-        limit: 100000, // high ceiling for the denormalized rowset
-        offset: 0
-      });
-      const detailsData = await runSelect(detailsSparql);
-      items = bindingsToRequestsJson(detailsData.results?.bindings || []).items || [];
-
-      // Reorder to match the id page order.
-      const order = new Map(pageIds.map((id, i) => [id, i]));
-      items.sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0));
+    if (detailBindings.length > 0) {
+      items = (bindingsToRequestsJson(detailBindings).items || []);
+      items.sort((a, b) => String(a.id).localeCompare(String(b.id)));
     }
 
     const hasNext = off + lim < total;
@@ -145,8 +126,7 @@ router.get('/list', async (req, res) => {
 });
 
 /**
- * Get a single HTTP request by id.
- * Returns normalized JSON composed from denormalized bindings.
+ * Get a single HTTP request by id — già SINGLE GraphDB request.
  */
 router.get('/:id', async (req, res) => {
   try {

@@ -23,8 +23,7 @@ module.exports = {
     buildInsertFromHttpRequest: require('./http/builders/insertSingle'),
     buildInsertFromHttpRequestsArray: require('./http/builders/insertBatch'),
     buildSelectRequests: require('./http/builders/selectRequests'),
-    buildSelectRequestIds: require('./http/builders/selectIds'),
-    buildCountRequests: require('./http/builders/countRequests'),
+    buildSelectRequestsPaged: require('./http/builders/selectPaged'),
     bindingsToRequestsJson: require('./http/bindings/toJson'),
   },
 
