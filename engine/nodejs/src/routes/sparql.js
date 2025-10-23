@@ -2,10 +2,18 @@ const express = require('express');
 const router = express.Router();
 
 const { queueSparql } = require('../queue');
-const { runSelect } = require('../sparql');
-const { isSelectOrAsk, isUpdate } = require('./utils');
 
-// SPARQL SELECT/ASK
+// Import SPARQL helpers and GraphDB client from utils.
+const {
+  isSelectOrAsk,
+  isUpdate,
+  graphdb: { runSelect }
+} = require('../utils');
+
+/**
+ * Execute a SPARQL SELECT/ASK synchronously.
+ * Validates the input to avoid UPDATEs in this endpoint.
+ */
 router.post('/query', async (req, res) => {
   try {
     const { sparql } = req.body || {};
@@ -20,7 +28,10 @@ router.post('/query', async (req, res) => {
   }
 });
 
-// SPARQL UPDATE (enqueued)
+/**
+ * Enqueue a SPARQL UPDATE for async execution.
+ * The actual execution happens in the worker.
+ */
 router.post('/update', async (req, res) => {
   try {
     const { sparqlUpdate } = req.body || {};

@@ -22,7 +22,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"id\": \"req-2025-10-16T10:20:30.123Z-100\",\r\n  \"httpVersion\": \"HTTP/2\",\r\n  \"method\": \"POST\",\r\n  \"uri\": {\r\n    \"full\": \"https://api.example.com/v1/search?q=test&lang=it#results\",\r\n    \"scheme\": \"https\",\r\n    \"authority\": \"api.example.com\",\r\n    \"path\": \"/v1/search\",\r\n    \"fragment\": \"results\",\r\n    \"queryRaw\": \"q=test&lang=it\",\r\n    \"params\": [\r\n      { \"name\": \"q\", \"value\": \"test\" },\r\n      { \"name\": \"lang\", \"value\": \"it\" }\r\n    ]\r\n  },\r\n  \"requestHeaders\": [\r\n    { \"name\": \"User-Agent\", \"value\": \"Analyzer/1.0 (+https://example.com)\" },\r\n    { \"name\": \"Accept\", \"value\": \"application/json\" },\r\n    { \"name\": \"Accept-Language\", \"value\": \"it-IT,it;q=0.9\" },\r\n    { \"name\": \"Content-Type\", \"value\": \"application/json\" },\r\n    { \"name\": \"Content-Length\", \"value\": \"27\" }\r\n  ],\r\n  \"bodyBase64\": \"eyJxdWVyeSI6InRlc3QifQ==\",\r\n  \"graph\": \"http://example.com/graphs/http-requests\"\r\n}\r\n",
+							"raw": "{\r\n  \"graph\": \"http://example.com/graphs/http-requests\",\r\n  \"id\": \"req-001\",\r\n  \"method\": \"GET\",\r\n  \"httpVersion\": \"HTTP/1.1\",\r\n  \"bodyBase64\": \"U29tZSByZXF1ZXN0IGJvZHkgYmFzZTY0\",\r\n  \"uri\": {\r\n    \"full\": \"https://api.example.com/v1/search?q=node&lang=en#top\",\r\n    \"scheme\": \"https\",\r\n    \"authority\": \"api.example.com\",\r\n    \"path\": \"/v1/search\",\r\n    \"fragment\": \"top\",\r\n    \"queryXml\": \"<query><param name=\\\"q\\\">node</param><param name=\\\"lang\\\">en</param></query>\"\r\n  },\r\n  \"requestHeaders\": [\r\n    { \"name\": \"Accept\", \"value\": \"application/json\" },\r\n    { \"name\": \"Content-Type\", \"value\": \"application/json\" },\r\n    { \"name\": \"X-Custom\", \"value\": \"abc\" }\r\n  ],\r\n  \"connection\": { \"authority\": \"api.example.com\" },\r\n  \"response\": {\r\n    \"httpVersion\": \"HTTP/1.1\",\r\n    \"status\": 200,\r\n    \"reason\": \"OK\",\r\n    \"bodyBase64\": \"eyJvayI6dHJ1ZX0=\",\r\n    \"headers\": [\r\n      { \"name\": \"ETag\", \"value\": \"\\\"abc123\\\"\" },\r\n      { \"name\": \"Cache-Control\", \"value\": \"max-age=60\" },\r\n      { \"name\": \"Content-Type\", \"value\": \"application/json\" }\r\n    ]\r\n  }\r\n}\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -57,7 +57,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"items\": [\r\n    {\r\n      \"id\": \"req-2025-10-16T10:30:10.000Z-101\",\r\n      \"httpVersion\": \"HTTP/1.1\",\r\n      \"method\": \"GET\",\r\n      \"uri\": {\r\n        \"full\": \"https://www.example.com/products?page=1&sort=asc\",\r\n        \"scheme\": \"https\",\r\n        \"authority\": \"www.example.com\",\r\n        \"path\": \"/products\",\r\n        \"queryRaw\": \"page=1&sort=asc\",\r\n        \"params\": [\r\n          { \"name\": \"page\", \"value\": \"1\" },\r\n          { \"name\": \"sort\", \"value\": \"asc\" }\r\n        ]\r\n      },\r\n      \"requestHeaders\": [\r\n        { \"name\": \"User-Agent\", \"value\": \"Mozilla/5.0 ...\" },\r\n        { \"name\": \"Accept\", \"value\": \"text/html\" }\r\n      ],\r\n      \"bodyBase64\": \"\",\r\n      \"graph\": \"http://example.com/graphs/http-requests\"\r\n    },\r\n    {\r\n      \"id\": \"req-2025-10-16T10:31:45.500Z-102\",\r\n      \"httpVersion\": \"HTTP/2\",\r\n      \"method\": \"PUT\",\r\n      \"uri\": {\r\n        \"full\": \"https://api.example.com/v1/item/42\",\r\n        \"scheme\": \"https\",\r\n        \"authority\": \"api.example.com\",\r\n        \"path\": \"/v1/item/42\",\r\n        \"params\": []\r\n      },\r\n      \"requestHeaders\": [\r\n        { \"name\": \"Content-Type\", \"value\": \"application/json\" },\r\n        { \"name\": \"Content-Length\", \"value\": \"19\" }\r\n      ],\r\n      \"bodyBase64\": \"eyJuYW1lIjoiTmV3TmFtZSJ9\",\r\n      \"graph\": \"http://example.com/graphs/http-requests\"\r\n    },\r\n    {\r\n      \"id\": \"req-2025-10-16T10:33:00.250Z-103\",\r\n      \"httpVersion\": \"HTTP/1.1\",\r\n      \"method\": \"DELETE\",\r\n      \"uri\": {\r\n        \"full\": \"https://api.example.com/v1/item/42#hard\",\r\n        \"scheme\": \"https\",\r\n        \"authority\": \"api.example.com\",\r\n        \"path\": \"/v1/item/42\",\r\n        \"fragment\": \"hard\"\r\n      },\r\n      \"requestHeaders\": [\r\n        { \"name\": \"User-Agent\", \"value\": \"Analyzer/1.2\" }\r\n      ],\r\n      \"bodyBase64\": \"\",\r\n      \"graph\": \"http://example.com/graphs/http-requests\"\r\n    }\r\n  ]\r\n}\r\n",
+							"raw": "{\r\n  \"items\": [\r\n    {\r\n      \"id\": \"req-1002\",\r\n      \"method\": \"POST\",\r\n      \"uri\": { \"full\": \"https://api.example.com/v1/items\" },\r\n      \"connection\": { \"authority\": \"api.example.com:443\" },\r\n      \"requestHeaders\": [ { \"name\": \"Content-Type\", \"value\": \"application/json\" } ],\r\n      \"bodyBase64\": \"eyJuYW1lIjoiZm9vIn0=\",\r\n      \"response\": {\r\n        \"status\": 201,\r\n        \"reason\": \"Created\",\r\n        \"headers\": [ { \"name\": \"Location\", \"value\": \"/v1/items/123\" } ]\r\n      }\r\n    },\r\n    {\r\n      \"id\": \"req-1003\",\r\n      \"method\": \"DELETE\",\r\n      \"uri\": { \"full\": \"https://api.example.com/v1/items/123\" },\r\n      \"connection\": { \"authority\": \"api.example.com:443\" }\r\n    }\r\n  ]\r\n}\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -117,7 +117,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8081/http-requests/req-2025-10-16T10:30:10.000Z-101",
+							"raw": "http://localhost:8081/http-requests/req-001",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -125,7 +125,7 @@
 							"port": "8081",
 							"path": [
 								"http-requests",
-								"req-2025-10-16T10:30:10.000Z-101"
+								"req-001"
 							]
 						}
 					},
