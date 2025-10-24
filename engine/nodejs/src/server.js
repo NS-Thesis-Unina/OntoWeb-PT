@@ -1,8 +1,9 @@
 const express = require('express');
 const cors = require('cors');
 const http = require('http');
-require('morgan');
 require('dotenv').config();
+
+const { errors: celebrateErrors } = require('celebrate');
 
 const attachSockets = require('./sockets');
 
@@ -22,7 +23,6 @@ const sparqlRoutes = require('./routes/sparql');
 const httpRequestRoutes = require('./routes/httpRequests');
 
 const { connection } = require('./queue');
-const { graphdb } = require('./utils'); 
 
 const app = express();
 
@@ -36,6 +36,9 @@ app.get('/health', (_req, res) => res.json({ ok: true }));
 // Route mounting
 app.use('/sparql', sparqlRoutes);
 app.use('/http-requests', httpRequestRoutes);
+
+// Celebrate validation error handler (restituisce 400 con dettagli puliti)
+app.use(celebrateErrors());
 
 // Attach Sockets
 const server = http.createServer(app);
@@ -51,7 +54,7 @@ server.listen(PORT, () => {
 startRedisMonitor(connection, 'redis:api');
 startGraphDBHealthProbe(runSelect, 'graphdb:api');
 
-// Process-level hardening: log unhandled errors and keep a single exit point upstream (PM2/systemd)
+// Process-level hardening
 process.on('unhandledRejection', (reason) => {
   log.error('UnhandledRejection', reason instanceof Error ? reason : String(reason));
 });

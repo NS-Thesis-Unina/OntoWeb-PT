@@ -36,6 +36,19 @@ module.exports = {
     startGraphDBHealthProbe: require('./monitors/graphdbMonitor'),
   },
 
+  // Validators
+  validators: {
+    common: {
+      ingestPayloadSchema: require('./validators/common').ingestPayloadSchema,
+      listQuerySchema: require('./validators/common').listQuerySchema,
+      idParamSchema: require('./validators/common').idParamSchema,
+      sparqlQuerySchema: require('./validators/common').sparqlQuerySchema,
+      sparqlUpdateSchema: require('./validators/common').sparqlUpdateSchema
+    },
+    ...require('./validators/options')
+  },
+  
+
   // GraphDB (Select/Update)
   graphdb: require('./graphdb/client'),
 };
