@@ -13,6 +13,8 @@ services:
       interval: 5s
       timeout: 3s
       retries: 20
+    networks:
+      - backend
 
   graphdb:
     image: ontotext/graphdb:10.8.11
@@ -29,7 +31,34 @@ services:
       interval: 10s
       timeout: 5s
       retries: 30
+    networks:
+      - backend
+
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    depends_on: []
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    networks:
+      - frontend
 
 volumes:
   redis_data:
   graphdb_data:
+
+networks:
+  frontend:
+    driver: bridge
+  backend:
+    driver: bridge
