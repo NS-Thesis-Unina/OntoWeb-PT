@@ -8,11 +8,15 @@ const {
 } = require('./queue');
 
 const {
-  graphdb: { runUpdate },
+  graphdb: { runUpdate, runSelect },
   httpBuilders: {
     buildInsertFromHttpRequest,
     buildInsertFromHttpRequestsArray,
     normalizeHttpRequestsPayload,
+  },
+  monitors: {
+    startRedisMonitor,
+    startGraphDBHealthProbe
   },
   makeLogger
 } = require('./utils');
@@ -91,3 +95,6 @@ workerSparql.on('failed', (job, err) => {
 workerSparql.on('error', (err) => {
   logSp.warn('worker error', err?.message || err);
 });
+
+startRedisMonitor(connection, 'redis:worker');
+startGraphDBHealthProbe(runSelect, 'graphdb:worker');

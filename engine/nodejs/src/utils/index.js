@@ -30,6 +30,12 @@ module.exports = {
     bindingsToRequestsJson: require('./http/bindings/toJson'),
   },
 
+  // Monitors
+  monitors: {
+    startRedisMonitor: require('./monitors/redisMonitor'),
+    startGraphDBHealthProbe: require('./monitors/graphdbMonitor'),
+  },
+
   // GraphDB (Select/Update)
   graphdb: require('./graphdb/client'),
 };

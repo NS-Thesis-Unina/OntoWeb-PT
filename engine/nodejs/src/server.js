@@ -1,17 +1,28 @@
 const express = require('express');
 const cors = require('cors');
-const morgan = require('morgan');
 const http = require('http');
-
+require('morgan');
 require('dotenv').config();
 
 const attachSockets = require('./sockets');
 
-const { makeLogger } = require('./utils');
+const { 
+  makeLogger,
+  monitors: {
+    startRedisMonitor,
+    startGraphDBHealthProbe
+  },
+  graphdb : {
+    runSelect
+  }
+ } = require('./utils');
 const log = makeLogger('api');
 
 const sparqlRoutes = require('./routes/sparql');
 const httpRequestRoutes = require('./routes/httpRequests');
+
+const { connection } = require('./queue');
+const { graphdb } = require('./utils'); 
 
 const app = express();
 
@@ -35,6 +46,10 @@ const PORT = Number(process.env.SERVER_PORT || 8081);
 server.listen(PORT, () => {
   log.info(`API listening on http://localhost:${PORT}`);
 });
+
+// Health monitors (API)
+startRedisMonitor(connection, 'redis:api');
+startGraphDBHealthProbe(runSelect, 'graphdb:api');
 
 // Process-level hardening: log unhandled errors and keep a single exit point upstream (PM2/systemd)
 process.on('unhandledRejection', (reason) => {
