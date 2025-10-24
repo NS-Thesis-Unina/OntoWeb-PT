@@ -76,14 +76,20 @@ function repoUrlBase() {
  */
 async function runSelect(sparql) {
   const url = repoUrlBase();
-  const res = await axios.post(url, `query=${encodeURIComponent(sparql)}`, {
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      'Accept': 'application/sparql-results+json'
-    },
-    timeout: 30000
-  });
-  return res.data;
+  try {
+    const res = await axios.post(url, `query=${encodeURIComponent(sparql)}`, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Accept': 'application/sparql-results+json'
+      },
+      timeout: 30000
+    });
+    return res.data;
+  } catch (err) {
+      const e = /** @type {any} */(err);
+      const msg = e?.response?.data?.message || e?.code || e?.message || 'GraphDB SELECT error';
+    throw new Error(msg);
+  }
 }
 
 /**
@@ -125,11 +131,17 @@ async function runSelect(sparql) {
  */
 async function runUpdate(sparqlUpdate) {
   const url = `${repoUrlBase()}/statements`;
-  const res = await axios.post(url, sparqlUpdate, {
-    headers: { 'Content-Type': 'application/sparql-update' },
-    timeout: 60000
-  });
-  return res.status;
+  try {
+    const res = await axios.post(url, sparqlUpdate, {
+      headers: { 'Content-Type': 'application/sparql-update' },
+      timeout: 60000
+    });
+    return res.status;
+  } catch (err) {
+      const e = /** @type {any} */(err);
+      const msg = e?.response?.data?.message || e?.code || e?.message || 'GraphDB UPDATE error';
+    throw new Error(msg);
+  }
 }
 
 module.exports = { runSelect, runUpdate };

@@ -2,68 +2,56 @@ const express = require('express');
 const router = express.Router();
 
 const { queueHttpRequests } = require('../queue');
-
 const {
   httpBuilders: {
     buildSelectRequests,
     bindingsToRequestsJson,
-    buildSelectRequestsPaged
+    buildSelectRequestsPaged,
   },
-  graphdb: { runSelect }
+  graphdb: { runSelect },
+  makeLogger
 } = require('../utils');
 
-/**
- * Ingest one o più HTTP requests (enqueue write job).
- */
+const log = makeLogger('api:http');
+
+// Ingest one or more HTTP requests (enqueue write job)
 router.post('/ingest-http', async (req, res) => {
   try {
     const raw = req.body ?? {};
-
-    const list = Array.isArray(raw)
-      ? raw
-      : (Array.isArray(raw.items) ? raw.items : [raw]);
+    const list = Array.isArray(raw) ? raw : (Array.isArray(raw.items) ? raw.items : [raw]);
 
     if (!Array.isArray(list) || list.length === 0) {
-      return res.status(400).json({ error: 'Empty payload: expected an object, an array, or { items: [...] }' });
+      log.warn('ingest-http validation: empty payload');
+      return res
+        .status(400)
+        .json({ error: 'Empty payload: expected an object, an array, or { items: [...] }' });
     }
 
     const errors = [];
     list.forEach((item, idx) => {
-      const ok =
-        item && typeof item === 'object' &&
-        item.id &&
-        item.method &&
-        item.uri &&
-        item.uri.full;
-      if (!ok) {
-        errors.push({ index: idx, message: 'Missing id/method/uri.full', item });
-      }
+      const ok = item && typeof item === 'object' && item.id && item.method && item.uri && item.uri.full;
+      if (!ok) errors.push({ index: idx, message: 'Missing id/method/uri.full' });
     });
 
     if (errors.length) {
+      log.warn('ingest-http validation failed', { count: errors.length });
       return res.status(400).json({
         error: 'Validation failed for one or more items',
-        details: errors
+        details: errors,
       });
     }
 
     const job = await queueHttpRequests.add('http-ingest', { payload: list });
+    log.info('ingest-http enqueued', { jobId: job.id, count: list.length });
 
-    res.status(202).json({
-      accepted: true,
-      jobId: job.id,
-      count: list.length
-    });
+    res.status(202).json({ accepted: true, jobId: job.id, count: list.length });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Enqueue failed', detail: err.message });
+    log.error('ingest-http enqueue failed', err?.message || err);
+    res.status(500).json({ error: 'Enqueue failed', detail: String(err?.message || err) });
   }
 });
 
-/**
- * Paginated list of HTTP requests — SINGLE GraphDB request.
- * Usa una SELECT con 2 subquery: total + page ids, poi join sui dettagli.
- */
+// Paginated list — single GraphDB request (total + page ids + details)
 router.get('/list', async (req, res) => {
   try {
     const {
@@ -75,7 +63,7 @@ router.get('/list', async (req, res) => {
       path,
       headerName,
       headerValue,
-      text
+      text,
     } = req.query;
 
     const filters = { method, scheme, authority, path, headerName, headerValue, text };
@@ -94,11 +82,11 @@ router.get('/list', async (req, res) => {
       return 0;
     })();
 
-    const detailBindings = bindings.filter(b => b?.id?.value);
+    const detailBindings = bindings.filter((b) => b?.id?.value);
 
     let items = [];
     if (detailBindings.length > 0) {
-      items = (bindingsToRequestsJson(detailBindings).items || []);
+      items = bindingsToRequestsJson(detailBindings).items || [];
       items.sort((a, b) => String(a.id).localeCompare(String(b.id)));
     }
 
@@ -107,44 +95,35 @@ router.get('/list', async (req, res) => {
     const nextOffset = hasNext ? off + lim : null;
     const prevOffset = hasPrev ? Math.max(0, off - lim) : null;
 
+    log.info('list ok', { count: items.length, total, limit: lim, offset: off });
+
     res.json({
       items,
-      page: {
-        limit: lim,
-        offset: off,
-        total,
-        hasNext,
-        hasPrev,
-        nextOffset,
-        prevOffset
-      }
+      page: { limit: lim, offset: off, total, hasNext, hasPrev, nextOffset, prevOffset },
     });
   } catch (err) {
-    console.error(err);
-    res.status(502).json({ error: 'GraphDB query failed', detail: err.message });
+    log.error('list GraphDB query failed', err?.message || err);
+    res.status(502).json({ error: 'GraphDB query failed', detail: String(err?.message || err) });
   }
 });
 
-/**
- * Get a single HTTP request by id — già SINGLE GraphDB request.
- */
+// Get a single HTTP request by id — single GraphDB request
 router.get('/:id', async (req, res) => {
   try {
     const id = req.params.id;
-    const sparql = buildSelectRequests({
-      ids: [id],
-      filters: {},
-      limit: 1000,
-      offset: 0
-    });
+    const sparql = buildSelectRequests({ ids: [id], filters: {}, limit: 1000, offset: 0 });
     const data = await runSelect(sparql);
     const json = bindingsToRequestsJson(data.results?.bindings || []);
     const item = (json.items || [])[0];
-    if (!item) return res.status(404).json({ error: 'Not found' });
+    if (!item) {
+      log.info('get by id: not found', { id });
+      return res.status(404).json({ error: 'Not found' });
+    }
+    log.info('get by id: ok', { id });
     res.json(item);
   } catch (err) {
-    console.error(err);
-    res.status(502).json({ error: 'GraphDB query failed', detail: err.message });
+    log.error('get by id GraphDB query failed', err?.message || err);
+    res.status(502).json({ error: 'GraphDB query failed', detail: String(err?.message || err) });
   }
 });
 

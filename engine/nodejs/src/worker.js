@@ -4,20 +4,23 @@ require('dotenv').config();
 const {
   connection,
   queueNameHttpRequestsWrites,
-  queueNameSparqlWrites
+  queueNameSparqlWrites,
 } = require('./queue');
 
-// Import GraphDB update client + HTTP builders from utils.
 const {
   graphdb: { runUpdate },
   httpBuilders: {
     buildInsertFromHttpRequest,
     buildInsertFromHttpRequestsArray,
-    normalizeHttpRequestsPayload
-  }
+    normalizeHttpRequestsPayload,
+  },
+  makeLogger
 } = require('./utils');
 
-// Worker consuming HTTP Request write jobs.
+const logHttp = makeLogger('worker:http');
+const logSp = makeLogger('worker:sparql');
+
+// HTTP requests writer: builds a single INSERT (single/batch) and updates GraphDB
 const workerHttpRequests = new Worker(
   queueNameHttpRequestsWrites,
   async (job) => {
@@ -26,17 +29,12 @@ const workerHttpRequests = new Worker(
         const { payload } = job.data || {};
         if (!payload) throw new Error('Missing payload');
 
-        // Normalize and branch single vs batch to reduce SPARQL size.
         const list = normalizeHttpRequestsPayload(payload);
+        const update =
+          list.length === 1
+            ? buildInsertFromHttpRequest(list[0])
+            : buildInsertFromHttpRequestsArray(list);
 
-        let update;
-        if (list.length === 1) {
-          update = buildInsertFromHttpRequest(list[0]);
-        } else {
-          update = buildInsertFromHttpRequestsArray(list);
-        }
-
-        // Execute update; GraphDB handles transaction internally.
         const status = await runUpdate(update);
         return { status, count: list.length };
       }
@@ -46,13 +44,22 @@ const workerHttpRequests = new Worker(
   },
   {
     connection,
-    // Tune concurrency and stalled checks via env.
     concurrency: Number(process.env.CONCURRENCY_WORKER_HTTP_REQUESTS) || 2,
-    stalledInterval: Number(process.env.STALLED_INTERVAL_WORKER_HTTP_REQUESTS) || 30000
+    stalledInterval: Number(process.env.STALLED_INTERVAL_WORKER_HTTP_REQUESTS) || 30000,
   }
 );
 
-// Worker consuming generic SPARQL UPDATE jobs.
+workerHttpRequests.on('completed', (job, result) => {
+  logHttp.info(`completed job=${job.name} id=${job.id}`, { result });
+});
+workerHttpRequests.on('failed', (job, err) => {
+  logHttp.warn(`failed job=${job?.name} id=${job?.id}`, err?.message || err);
+});
+workerHttpRequests.on('error', (err) => {
+  logHttp.warn('worker error', err?.message || err);
+});
+
+// Generic SPARQL UPDATE worker
 const workerSparql = new Worker(
   queueNameSparqlWrites,
   async (job) => {
@@ -60,6 +67,7 @@ const workerSparql = new Worker(
       case 'sparql-update': {
         const { sparqlUpdate } = job.data || {};
         if (!sparqlUpdate) throw new Error('Missing sparqlUpdate');
+
         const status = await runUpdate(sparqlUpdate);
         return { status };
       }
@@ -70,27 +78,16 @@ const workerSparql = new Worker(
   {
     connection,
     concurrency: Number(process.env.CONCURRENCY_WORKER_SPARQL) || 2,
-    stalledInterval: Number(process.env.STALLED_INTERVAL_WORKER_SPARQL) || 30000
+    stalledInterval: Number(process.env.STALLED_INTERVAL_WORKER_SPARQL) || 30000,
   }
 );
 
-// Basic observability (log successes/failures).
-workerHttpRequests.on('completed', (job, result) =>
-  console.log(`[HttpRequests Worker] Completed ${job.id}`, result)
-);
-workerHttpRequests.on('failed', (job, err) =>
-  console.error(`[HttpRequests Worker] Failed ${job?.id}`, err?.message)
-);
-workerHttpRequests.on('error', (err) =>
-  console.error('[HttpRequests Worker] Error', err?.message)
-);
-
-workerSparql.on('completed', (job, result) =>
-  console.log(`[Sparql Worker] Completed ${job.id}`, result)
-);
-workerSparql.on('failed', (job, err) =>
-  console.error(`[Sparql Worker] Failed ${job?.id}`, err?.message)
-);
-workerSparql.on('error', (err) =>
-  console.error('[Sparql Worker] Error', err?.message)
-);
+workerSparql.on('completed', (job, result) => {
+  logSp.info(`completed job=${job.name} id=${job.id}`, { result });
+});
+workerSparql.on('failed', (job, err) => {
+  logSp.warn(`failed job=${job?.name} id=${job?.id}`, err?.message || err);
+});
+workerSparql.on('error', (err) => {
+  logSp.warn('worker error', err?.message || err);
+});

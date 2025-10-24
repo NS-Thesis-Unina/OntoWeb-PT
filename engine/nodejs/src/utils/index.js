@@ -17,6 +17,9 @@ module.exports = {
   // HTTP ontology helpers
   ...require('./http/headers'),
 
+  // Logger
+  ...require('./logs/logger'),
+
   // Builders
   httpBuilders: {
     normalizeHttpRequestsPayload: require('./http/builders/normalizePayload'),
