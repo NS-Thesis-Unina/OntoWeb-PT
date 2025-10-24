@@ -1,7 +1,11 @@
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
+const http = require('http');
+
 require('dotenv').config();
+
+const attachSockets = require('./sockets');
 
 const { makeLogger } = require('./utils');
 const log = makeLogger('api');
@@ -22,9 +26,13 @@ app.get('/health', (_req, res) => res.json({ ok: true }));
 app.use('/sparql', sparqlRoutes);
 app.use('/http-requests', httpRequestRoutes);
 
+// Attach Sockets
+const server = http.createServer(app);
+attachSockets(server).catch((err) => log.error('attachSockets failed', err?.message || err));
+
 // Start HTTP server
 const PORT = Number(process.env.SERVER_PORT || 8081);
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   log.info(`API listening on http://localhost:${PORT}`);
 });
 
