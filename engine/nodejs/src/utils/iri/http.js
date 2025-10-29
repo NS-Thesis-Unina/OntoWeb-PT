@@ -144,5 +144,12 @@ function iriConnection(id)  {
 
 module.exports = {
   iriFragmentSafe,
-  iriRequest, iriURI, iriHeader, iriParam, iriResponse, iriResHeader, iriStatus, iriConnection
+  iriRequest, 
+  iriURI, 
+  iriHeader, 
+  iriParam, 
+  iriResponse, 
+  iriResHeader, 
+  iriStatus, 
+  iriConnection
 };

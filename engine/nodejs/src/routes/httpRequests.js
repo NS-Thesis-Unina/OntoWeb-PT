@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-const { celebrate, Segments, Joi, errors } = require('celebrate');
+const { celebrate, Segments } = require('celebrate');
 
 const { queueHttpRequests } = require('../queue');
 const {
