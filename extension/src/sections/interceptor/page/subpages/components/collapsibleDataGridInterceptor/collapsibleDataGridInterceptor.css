@@ -1,0 +1,22 @@
+.collapsibledatagrid .fieldRow {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+.collapsibledatagrid .fieldRowLabel {
+  font-weight: 600;
+  min-width: 120px;
+}
+
+.collapsibledatagrid .fieldRowValue {
+  flex: 1;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.collapsibledatagrid .collapsibleDataGrid .MuiDataGrid-cell {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

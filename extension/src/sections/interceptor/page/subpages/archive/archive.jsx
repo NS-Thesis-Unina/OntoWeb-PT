@@ -4,7 +4,7 @@ function ArchiveInterceptor(){
 
     return(
       <div>
-        <h1>Send</h1>
+        <h1>Archive</h1>
       </div>
     )
     

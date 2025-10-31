@@ -101,12 +101,142 @@ function RuntimeScanInterceptor(){
       </Paper>
 
       <Collapsible defaultOpen={false} title="Info Output">
-        <ul className="ul">
-          <li><strong>request</strong>: url, method, headers, body (testo o base64), size.</li>
-          <li><strong>response</strong>: status, statusText, headers, body (testo o base64), size.</li>
-          <li><strong>meta</strong>: pageUrl, tabId (se disponibile), ts (ms).</li>
+        <p>The runtime network capture returns a structured record for each intercepted event 
+          (fetch, XHR, beacon, SSE, WebSocket), grouped by page/domain and summarized in the 
+          grid. Each event contains the sections below.
+        </p>
+        <strong>Request</strong>
+        <ul className="ul"> 
+          <li>
+            <strong>url</strong>: absolute request URL (may be extension, 
+            http/https, ws/wss).
+          </li> 
+          <li>
+            <strong>method</strong>: HTTP verb (e.g., GET, POST) or channel marker (e.g., 
+            <code>WS_SEND</code> for outgoing WebSocket frames).</li> <li><strong>headers</strong>: 
+            request headers as a case-preserving object.
+          </li> 
+          <li>
+            <strong>body</strong>: request payload captured as text when textual, or Base64
+             for binary/large bodies (see “Encoding & truncation”).
+          </li> 
+          <li>
+            <strong>bodyEncoding</strong>: <code>text</code>, <code>base64</code>, or 
+            <code>none</code>.
+          </li> 
+          <li>
+            <strong>bodySize</strong>: original payload size in bytes (before truncation).
+          </li> 
+          <li>
+            <strong>truncated</strong>: <code>true</code> if the captured body exceeds 
+            the byte threshold.
+          </li>
         </ul>
-        <p>I body binari o superiori alla soglia vengono salvati in <code>base64</code>.</p>
+
+        <strong>Response</strong>
+        <ul className="ul"> 
+          <li>
+            <strong>status</strong>: HTTP status code when available; special values may appear for non-HTTP channels 
+            (e.g., <code>101</code> for WebSocket handshake, <code>0</code> for <code>sendBeacon</code> fire-and-forget).
+          </li> 
+          <li>
+            <strong>statusText</strong>: status reason or channel label (e.g., “EventSource”, “WebSocket Message”). 
+            If the request failed at the network level, a <code>networkError</code> string is provided.
+          </li> 
+          <li>
+            <strong>headers</strong>: response headers as an object; key lookup in the UI is case-insensitive for
+             convenience (e.g., <em>Content-Type</em>).
+          </li> 
+          <li>
+            <strong>body</strong>: response payload captured as text when textual, or Base64 for binary/large 
+            bodies (see “Encoding & truncation”).</li> <li><strong>bodyEncoding</strong>: <code>text</code>, 
+            <code>base64</code>, or <code>none</code>.</li> <li><strong>bodySize</strong>: original payload 
+            size in bytes (before truncation).
+          </li> 
+          <li>
+            <strong>truncated</strong>: <code>true</code> if the captured body exceeds the byte threshold.
+          </li> 
+          <li>
+            <strong>servedFromCache</strong>: <code>true</code> if the response was satisfied from cache 
+            (when detectable).
+          </li> 
+          <li>
+            <strong>fromServiceWorker</strong>: <code>true</code> if a Service Worker fulfilled the response 
+            (when detectable).
+          </li> 
+        </ul>
+
+        <strong>Meta</strong>
+        <ul className="ul"> 
+          <li>
+            <strong>pageUrl</strong>: the page that issued the request.
+          </li> 
+          <li>
+            <strong>tabId</strong>: browser tab identifier when available.
+          </li> 
+          <li>
+            <strong>ts</strong>: request start timestamp in milliseconds since epoch.
+          </li>
+        </ul>
+
+        <strong>Encoding & truncation</strong>
+        <ul className="ul"> 
+          <li>
+            <strong>Text detection</strong>: payloads with textual MIME types (e.g., <code>text/*</code>, 
+            <code>application/json</code>, <code>application/javascript</code>, <code>application/xml</code>, 
+            <code>application/xhtml</code>, <code>application/x-www-form-urlencoded</code>) are decoded as UTF-8 text.
+          </li> 
+          <li>
+            <strong>Binary handling</strong>: non-textual payloads are captured as <code>base64</code>.
+          </li> 
+          <li>
+            <strong>Size cap</strong>: bodies larger than the configured threshold are sliced; the <code>truncated</code>
+            flag indicates this, while <code>bodySize</code> still reflects the original size.
+          </li> 
+        </ul>
+
+        <strong>Special channels</strong>
+        <ul className="ul"> 
+          <li>
+            <strong>sendBeacon</strong>: logged as a POST-like request with immediate synthetic response 
+            (<code>status: 0</code>), including encoded body info when available.
+          </li> 
+          <li>
+            <strong>EventSource (SSE)</strong>: messages are recorded as response entries with channel labels; 
+            headers/status reflect the stream context when observable.
+          </li> 
+          <li>
+            <strong>WebSocket</strong>: outgoing frames appear as <code>WS_SEND</code> requests; incoming 
+            frames as responses with <code>status: 101</code> (message markers). Text frames include text; 
+            binary frames report size with <code>base64</code> encoding when captured.
+          </li> 
+        </ul>
+
+        <strong>Grouping & summary</strong>
+        <ul className="ul"> 
+          <li>
+            <strong>Per-domain grouping</strong>: events are grouped by the requesting page’s domain/URL. 
+            Each group is shown in a collapsible grid with one row per request/response pair.
+          </li> 
+          <li>
+            <strong>Run summary</strong>: the scan header reports start/stop times, total events, unique pages,
+             and the aggregate <em>Total bytes</em> across captured payloads.
+          </li> 
+        </ul>
+
+        <strong>Grid columns</strong>
+        <ul className="ul"> 
+          <li>
+            <strong>Method</strong>, <strong>URL</strong>, <strong>Status</strong>, <strong>Status Text</strong>, 
+            <strong>Content-Type</strong> are shown per row; an action button opens a dialog to inspect full 
+            <em>request</em>, <em>response</em>, and all row fields.
+          </li> 
+        </ul> 
+        
+        <p>Binary bodies or bodies exceeding 
+          the size threshold are stored as <code>base64</code>; the <code>bodyEncoding</code> and <code>truncated</code> 
+          flags make this explicit.
+        </p>
       </Collapsible>
 
       <Button onClick={handleToggle} className="scanButton" variant="contained" size="large">
