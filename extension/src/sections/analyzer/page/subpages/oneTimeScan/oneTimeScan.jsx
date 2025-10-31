@@ -1,19 +1,24 @@
-import { Backdrop, Button, CircularProgress, Paper, Typography, Zoom } from "@mui/material";
+import { Backdrop, Button, CircularProgress, Paper, Typography, Zoom, Alert } from "@mui/material";
 import "./oneTimeScan.css";
 import analyzerReactController from "../../../analyzerController";
 import Collapsible from "../../../../../components/collapsible/collapsible";
 import { useEffect, useState } from "react";
 import { enqueueSnackbar } from "notistack";
 import OneTimeScanResults from "../components/oneTimeScanResults/oneTimeScanResults";
+import { acquireLock, releaseLock, getLock, subscribeLockChanges, OWNERS } from "../../../../../scanLock";
+import browser from "webextension-polyfill";
 
 function OneTimeScanAnalyzer(){
+
+  const OWNER = OWNERS.ANALYZER_ONETIME;
 
   const [loading, setLoading] = useState(true);
   const [loadSource, setLoadSource] = useState(null);
   const [scanning, setScanning] = useState(false);
   const [results, setResults] = useState(null);
+  const [globalLock, setGlobalLock] = useState(null);
 
-    useEffect(() => {
+  useEffect(() => {
     const off = analyzerReactController.onMessage({
       onScanComplete: (data) => {
         if(data){
@@ -21,21 +26,24 @@ function OneTimeScanAnalyzer(){
           setScanning(false);
           setLoadSource(null);
           setLoading(false);
-          enqueueSnackbar("One-Time scan complete successfully! Results below.", { variant: "success" })
+          enqueueSnackbar("One-Time scan complete successfully! Results below.", { variant: "success" });
+          releaseLock(OWNER);
         }
       },
       onScanError: (msg) => {
         enqueueSnackbar(msg || "Scanning failed! Retry.", { variant: "error" });
         setScanning(false);
+        releaseLock(OWNER);
       },
     });
     return () => off();
   }, []);
 
-    useEffect(() => {
+  useEffect(() => {
     (async () => {
       setLoading(true);
       setResults(null);
+      setGlobalLock(await getLock());
       try {
         const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
         const tabId = tab?.id ?? null;
@@ -82,9 +90,19 @@ function OneTimeScanAnalyzer(){
         enqueueSnackbar("Error loading previous results.", { variant: "error" });
       }
     })();
+
+    const offSub = subscribeLockChanges((n) => setGlobalLock(n ?? null));
+    return () => offSub();
   }, []);
- 
+
   const handleOneTimeScan = async () => {
+    const attempt = await acquireLock(OWNER, "Analyzer One-Time");
+    if (!attempt.ok) {
+      const l = attempt.lock;
+      enqueueSnackbar(`Another scan is running (${l?.label || l?.owner}). Stop it before starting a new one.`, { variant: "warning" });
+      return;
+    }
+
     try {
       setResults(null);
       setScanning(true);
@@ -96,8 +114,11 @@ function OneTimeScanAnalyzer(){
     } catch (e) {
       enqueueSnackbar(e.msg || "Error during One-Time Scan occurred!", { variant: "error" });
       setScanning(false);
+      releaseLock(OWNER);
     }
   };
+
+  const disabledByLock = !!globalLock && globalLock.owner !== OWNER;
 
   if(loading){
     return(
@@ -111,6 +132,11 @@ function OneTimeScanAnalyzer(){
 
   return(
     <div className="otsanalyzer-div">
+      {disabledByLock && (
+        <Alert severity="info" sx={{ mb: 1, width: "100%" }}>
+          Another scan is running: <strong>{globalLock?.label || globalLock?.owner}</strong>. Please stop it before starting Analyzer One-Time.
+        </Alert>
+      )}
       <Paper className="description">
         <Zoom in={true}>
           <Typography variant="body2">
@@ -146,13 +172,18 @@ function OneTimeScanAnalyzer(){
           <li><strong>tagCount</strong>: per-tag element counts.</li>
         </ul>
       </Collapsible>
-      <Button onClick={handleOneTimeScan} className="scanButton" variant="contained" size="large" loading={scanning} loadingIndicator="Scan in progress..." >
+      <Button
+        onClick={handleOneTimeScan}
+        className="scanButton"
+        variant="contained"
+        size="large"
+        loading={scanning}
+        loadingIndicator="Scan in progress..."
+        disabled={disabledByLock || scanning}
+      >
         {!results ? "start scan":"new scan"}
       </Button>
-      {results && (
-        <OneTimeScanResults loadSource={loadSource} results={results} />
-      )}
-
+      {results && <OneTimeScanResults loadSource={loadSource} results={results} />}
     </div>
   )
 }

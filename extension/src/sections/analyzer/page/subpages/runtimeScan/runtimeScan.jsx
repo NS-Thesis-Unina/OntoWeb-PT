@@ -1,4 +1,4 @@
-import { Backdrop, Button, Chip, CircularProgress, Grid, Paper, Typography, Zoom } from "@mui/material";
+import { Backdrop, Button, Chip, CircularProgress, Grid, Paper, Typography, Zoom, Alert } from "@mui/material";
 import "./runtimeScan.css";
 import Collapsible from "../../../../../components/collapsible/collapsible";
 import { useCallback, useEffect, useState } from "react";
@@ -6,17 +6,27 @@ import { enqueueSnackbar } from "notistack";
 import analyzerReactController from "../../../analyzerController";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import RuntimeScanResults from "../components/runtimeScanResults/runtimeScanResults";
+import { acquireLock, releaseLock, getLock, subscribeLockChanges, OWNERS } from "../../../../../scanLock";
 
 function RuntimeScanAnalyzer(){
+
+  const OWNER = OWNERS.ANALYZER_RUNTIME;
 
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState({ runtimeActive: false, totalScans: 0, pagesCount: 0, startedAt: 0, active: false });
   const [stopping, setStopping] = useState(false);
   const [lastRun, setLastRun] = useState(null);
+  const [globalLock, setGlobalLock] = useState(null);
 
   const refreshStatus = useCallback(async () => {
     const s = await analyzerReactController.getScanStatus();
     setStatus(s || { runtimeActive: false, totalScans: 0, pagesCount: 0, startedAt: 0, active: false });
+
+    const cur = await getLock();
+    if ((s?.runtimeActive || s?.active) && (!cur || cur.owner !== OWNER)) {
+      await acquireLock(OWNER, "Analyzer Runtime");
+      setGlobalLock(await getLock());
+    }
   }, []);
 
   const loadLastRun = useCallback(async () => {
@@ -24,8 +34,7 @@ function RuntimeScanAnalyzer(){
     try {
       const res = await analyzerReactController.getLastRuntimeResults();
       setLastRun(res?.run ? res : { key: null, run: null });
-      if(res?.run)
-        enqueueSnackbar("Latest Runtime scan loaded from storage.", { variant: "info" })
+      if(res?.run) enqueueSnackbar("Latest Runtime scan loaded from storage.", { variant: "info" })
     } finally {
       setLoading(false);
     }
@@ -34,6 +43,7 @@ function RuntimeScanAnalyzer(){
   useEffect(() => {
     refreshStatus();
     loadLastRun();
+    (async () => setGlobalLock(await getLock()))();
 
     const off = analyzerReactController.onMessage({
       onRuntimeScanUpdate: (url, totals) => {
@@ -54,22 +64,34 @@ function RuntimeScanAnalyzer(){
         if (payload?.run){
           setLastRun({ key: payload.key, run: payload.run });
           enqueueSnackbar("Runtime scan complete successfully! Results below.", { variant: "success" })
-        }
-        else loadLastRun();
+        } else loadLastRun();
+        // release lock se è nostro
+        releaseLock(OWNER);
       }
     });
-    return () => off();
+
+    const offSub = subscribeLockChanges((n) => setGlobalLock(n ?? null));
+
+    return () => { off(); offSub(); };
   }, [refreshStatus, loadLastRun]);
 
   const handleRuntimeScan = async () => {
     if(status.runtimeActive || status.active){
       setStopping(true);
       await analyzerReactController.sendStopRuntimeScan();
-    }else if ((!status.runtimeActive && !status.active) || stopping){
+    } else {
+      const attempt = await acquireLock(OWNER, "Analyzer Runtime");
+      if (!attempt.ok) {
+        const l = attempt.lock;
+        enqueueSnackbar(`Another scan is running (${l?.label || l?.owner}). Stop it before starting a new one.`, { variant: "warning" });
+        return;
+      }
       await analyzerReactController.sendStartRuntimeScan();
       refreshStatus();
     }
   }
+
+  const disabledByLock = !!globalLock && globalLock.owner !== OWNER;
 
   if(loading){
     return(
@@ -83,15 +105,18 @@ function RuntimeScanAnalyzer(){
 
   return(
     <div className="rtsanalyzer-div">
+      {disabledByLock && !status.runtimeActive && !status.active && (
+        <Alert severity="info" sx={{ mb: 1, width: "100%" }}>
+          Another scan is running: <strong>{globalLock?.label || globalLock?.owner}</strong>. Stop it before starting Analyzer Runtime.
+        </Alert>
+      )}
+
       <Paper className="description">
         <Zoom in={true}>
           <Typography variant="body2">
             The <strong>Analyzer’s Runtime Scan</strong> operates continuously as the user browses,
             automatically capturing the same structured snapshot as a one-time scan each time a page
-            completes loading. Each visit is recorded as a timestamped entry (including full URL and tab
-            context), organized by page and aggregated into a browsable timeline. The result is a rolling
-            dataset of head, body, and DOM statistics across all visited pages. The process can be started or stopped
-            at any time; pages that cannot be instrumented are automatically skipped.
+            completes loading. ...
           </Typography>
         </Zoom>
       </Paper>
@@ -123,23 +148,22 @@ function RuntimeScanAnalyzer(){
           <li><strong>tagCount</strong>: per-tag element counts.</li>
         </ul>
       </Collapsible>
-      <Button onClick={handleRuntimeScan} className="scanButton" variant="contained" size="large">
+      <Button
+        onClick={handleRuntimeScan}
+        className="scanButton"
+        variant="contained"
+        size="large"
+        disabled={disabledByLock && !(status.runtimeActive || status.active)}
+      >
         {(stopping || (!status.runtimeActive && !status.active)) ? "Start scan" : "Stop scan"}
       </Button>
+
       <Paper className="rts-status-paper">
         <Grid container className="grid-container">
-          <Grid size={3}>
-              <strong>Status</strong>
-          </Grid>
-          <Grid size={3}>
-              <strong>Started at</strong>
-          </Grid>
-          <Grid size={3}>
-              <strong>Unique pages (live)</strong>
-          </Grid>
-          <Grid size={3}>
-              <strong>Total scans (live)</strong>
-          </Grid>
+          <Grid size={3}><strong>Status</strong></Grid>
+          <Grid size={3}><strong>Started at</strong></Grid>
+          <Grid size={3}><strong>Unique pages (live)</strong></Grid>
+          <Grid size={3}><strong>Total scans (live)</strong></Grid>
           <Grid size={3} className="grid-newline-items">
             <Chip 
               icon={<FiberManualRecordIcon />} 
@@ -159,15 +183,12 @@ function RuntimeScanAnalyzer(){
           </Grid>
         </Grid>
       </Paper>
-      {lastRun.run && !stopping && (
-        <RuntimeScanResults results={lastRun} />
-      )}
-      {stopping && (
-        <Backdrop open={stopping}>
-          <CircularProgress color="inherit" />
-        </Backdrop>
-      )}
 
+      {lastRun?.run && !stopping && <RuntimeScanResults results={lastRun} />}
+
+      {stopping && (
+        <Backdrop open={stopping}><CircularProgress color="inherit" /></Backdrop>
+      )}
     </div>
   )
 }

@@ -1,4 +1,4 @@
-import { Backdrop, Button, CircularProgress, Paper, Typography, Zoom } from "@mui/material";
+import { Backdrop, Button, CircularProgress, Paper, Typography, Zoom, Alert } from "@mui/material";
 import "./scan.css";
 import Collapsible from "../../../../../components/collapsible/collapsible";
 import techStackReactController from "../../../techstackController";
@@ -6,13 +6,17 @@ import { useCallback, useEffect, useState } from "react";
 import { formatWhen, getDomainAccurate } from "../../../../../libs/formatting";
 import ScanResults from "../components/scanResults/scanResults";
 import { enqueueSnackbar } from "notistack";
+import { acquireLock, releaseLock, getLock, subscribeLockChanges, OWNERS } from "../../../../../scanLock";
 
 function ScanTechStack(){
+
+  const OWNER = OWNERS.TECHSTACK_ONETIME;
 
   const [loading, setLoading] = useState(true);
   const [loadSource, setLoadSource] = useState(null);
   const [scanning, setScanning] = useState(false);
   const [results, setResults] = useState(null);
+  const [globalLock, setGlobalLock] = useState(null);
 
   useEffect(() => {
     let mounted = true;
@@ -20,6 +24,7 @@ function ScanTechStack(){
     (async () => {
       setLoading(true);
       try {
+        setGlobalLock(await getLock());
         const tabId = await techStackReactController.getCurrentTabId();
         const res = await techStackReactController.loadLastAvailable(tabId);
         if (!mounted) return;
@@ -31,21 +36,20 @@ function ScanTechStack(){
             enqueueSnackbar("Scan loaded from Tab sessionStorage.", { variant: "info" })
           } else if (res.source === "session") {
             enqueueSnackbar("Scan loaded from sessionStorage.", { variant: "info" })
-          } else {
+          } else if (res.source === "local") {
             enqueueSnackbar("Scan loaded from localStorage.", { variant: "info" })
           }
           setLoadSource(res.source);
           setResults(res.data);
         }
-      } catch (e) {
+      } catch {
         enqueueSnackbar("Error loading previous results.", { variant: "error" });
       } finally {
-        if (mounted) 
-          setLoading(false);
+        if (mounted) setLoading(false);
       }
     })();
 
-    const off = techStackReactController.onMessage({
+    const offMsg = techStackReactController.onMessage({
       onScanComplete: (p) => {
         const domain = getDomainAccurate(p.meta.url);
         const date = formatWhen(p.meta.timestamp);
@@ -54,24 +58,37 @@ function ScanTechStack(){
         setResults(p);
         enqueueSnackbar('Scan complete successfully! Results below.', { variant: "success"});
         setScanning(false);
+        releaseLock(OWNER);
       },
       onScanError: (msg) => {
         enqueueSnackbar(msg || "Scanning failed! Retry.", { variant: "error" });
         setScanning(false);
+        releaseLock(OWNER);
       }
     });
 
+    const offSub = subscribeLockChanges(async (n) => setGlobalLock(n ?? null));
+
     return () => {
       mounted = false;
-      off();
+      offMsg();
+      offSub();
     };
   }, []);
 
   const startScan = useCallback(async () => {
+    const attempt = await acquireLock(OWNER, "Techstack One-Time");
+    if (!attempt.ok) {
+      const l = attempt.lock;
+      enqueueSnackbar(`Another scan is running (${l?.label || l?.owner}). Stop it before starting a new one.`, { variant: "warning" });
+      return;
+    }
     setScanning(true);
     const tabId = await techStackReactController.getCurrentTabId();
     techStackReactController.sendStartOneTimeStackScan(tabId);
   }, []);
+
+  const disabledByLock = !!globalLock && globalLock.owner !== OWNER;
 
   if(loading){
     return(
@@ -85,6 +102,11 @@ function ScanTechStack(){
 
   return(
     <div className="scantechstack-div">
+      {disabledByLock && (
+        <Alert severity="info" sx={{ mb: 1, width: "100%" }}>
+          Another scan is running: <strong>{globalLock?.label || globalLock?.owner}</strong>. Please stop it before starting Techstack.
+        </Alert>
+      )}
       <Paper className="description">
         <Zoom in={true}>
           <Typography variant="body2">
@@ -105,12 +127,18 @@ function ScanTechStack(){
           <li><strong>Raw</strong>: raw/detailed output (e.g., Wappalyzer resolved) containing metadata, categories, confidence, and information useful for further analysis.</li>
         </ul>
       </Collapsible>
-      <Button onClick={startScan} className="scanButton" variant="contained" size="large" loading={scanning} loadingIndicator="Scan in progress..." >
+      <Button
+        onClick={startScan}
+        className="scanButton"
+        variant="contained"
+        size="large"
+        loading={scanning}
+        loadingIndicator="Scan in progress..."
+        disabled={disabledByLock || scanning}
+      >
         {!results ? "start scan":"new scan"}
       </Button>
-      {results && (
-        <ScanResults results={results} loadSource={loadSource} />
-      )}
+      {results && <ScanResults results={results} loadSource={loadSource} />}
     </div>
   )
 }

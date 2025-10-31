@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import browser from "webextension-polyfill";
 import analyzerReactController from "./sections/analyzer/analyzerController";
+import interceptorReactController from "./sections/interceptor/interceptorController";
 
 export default function RoutePersistence() {
   const location = useLocation();
@@ -15,14 +16,19 @@ export default function RoutePersistence() {
         const tabId = tab?.id ?? null;
         if (tabId == null) return;
 
-        const status = await analyzerReactController.getScanStatus().catch(() => null);
-        const isActive = !!(status?.runtimeActive || status?.active);
+        const statusAnalyzer = await analyzerReactController.getScanStatus().catch(() => null);
+        const analyzerActive = !!(statusAnalyzer?.runtimeActive || statusAnalyzer?.active);
+
+        const statusInterceptor = await interceptorReactController.getStatus().catch(() => null);
+        const interceptorActive = !!statusInterceptor?.active;
 
         const obj = await browser.storage.session.get("ui_lastRoute_byTab").catch(() => ({}));
         const map = obj?.ui_lastRoute_byTab ?? {};
 
-        if (isActive) {
+        if (analyzerActive) {
           map[tabId] = "/analyzer/runtime";
+        } else if (interceptorActive) {
+          map[tabId] = "/interceptor";
         } else {
           map[tabId] = (location.pathname || "/home") + (location.search || "");
         }

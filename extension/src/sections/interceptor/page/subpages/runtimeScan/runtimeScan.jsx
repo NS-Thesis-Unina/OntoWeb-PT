@@ -1,4 +1,4 @@
-import { Backdrop, Button, Chip, CircularProgress, Grid, Paper, Typography, Zoom } from "@mui/material";
+import { Backdrop, Button, Chip, CircularProgress, Grid, Paper, Typography, Zoom, Alert } from "@mui/material";
 import "./runtimeScan.css";
 import Collapsible from '../../../../../components/collapsible/collapsible';
 import { useCallback, useEffect, useState } from "react";
@@ -6,6 +6,7 @@ import { enqueueSnackbar } from "notistack";
 import interceptorReactController from "../../../interceptorController";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import RuntimeScanResults from "../components/runtimeScanResults/runtimeScanResults";
+import { acquireLock, releaseLock, getLock, subscribeLockChanges, OWNERS } from "../../../../../scanLock";
 
 function prettyBytes(n = 0) {
   if (!Number.isFinite(n)) return "0 B";
@@ -17,14 +18,23 @@ function prettyBytes(n = 0) {
 
 function RuntimeScanInterceptor(){
 
+  const OWNER = OWNERS.INTERCEPTOR_RUNTIME;
+
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState({ active: false, startedAt: 0, totalEvents: 0, pagesCount: 0, totalBytes: 0 });
   const [stopping, setStopping] = useState(false);
   const [lastRun, setLastRun] = useState(null);
+  const [globalLock, setGlobalLock] = useState(null);
 
   const refreshStatus = useCallback(async () => {
     const s = await interceptorReactController.getStatus();
     setStatus(s || { active: false, startedAt: 0, totalEvents: 0, pagesCount: 0, totalBytes: 0 });
+
+    const cur = await getLock();
+    if (s?.active && (!cur || cur.owner !== OWNER)) {
+      await acquireLock(OWNER, "Interceptor Runtime");
+      setGlobalLock(await getLock());
+    }
   }, []);
 
   const loadLastRun = useCallback(async () => {
@@ -41,6 +51,7 @@ function RuntimeScanInterceptor(){
   useEffect(() => {
     refreshStatus();
     loadLastRun();
+    (async () => setGlobalLock(await getLock()))();
 
     const off = interceptorReactController.onMessage({
       onUpdate: (totals) => {
@@ -64,21 +75,33 @@ function RuntimeScanInterceptor(){
         } else {
           loadLastRun();
         }
+        releaseLock(OWNER);
       }
     });
 
-    return () => off();
+    const offSub = subscribeLockChanges((n) => setGlobalLock(n ?? null));
+
+    return () => { off(); offSub(); };
   }, [refreshStatus, loadLastRun]);
 
   const handleToggle = async () => {
     if(status.active){
       setStopping(true);
       await interceptorReactController.stop();
+      // release nel callback onComplete
     } else {
+      const attempt = await acquireLock(OWNER, "Interceptor Runtime");
+      if (!attempt.ok) {
+        const l = attempt.lock;
+        enqueueSnackbar(`Another scan is running (${l?.label || l?.owner}). Stop it before starting a new one.`, { variant: "warning" });
+        return;
+      }
       await interceptorReactController.start();
       refreshStatus();
     }
   };
+
+  const disabledByLock = !!globalLock && globalLock.owner !== OWNER;
 
   if (loading){
     return (
@@ -90,6 +113,12 @@ function RuntimeScanInterceptor(){
 
   return (
     <div className="rtinterceptor-div">
+      {disabledByLock && !status.active && (
+        <Alert severity="info" sx={{ mb: 1, width: "100%" }}>
+          Another scan is running: <strong>{globalLock?.label || globalLock?.owner}</strong>. Stop it before starting Interceptor.
+        </Alert>
+      )}
+
       <Paper className="description">
         <Zoom in={true}>
           <Typography variant="body2">
@@ -239,7 +268,13 @@ function RuntimeScanInterceptor(){
         </p>
       </Collapsible>
 
-      <Button onClick={handleToggle} className="scanButton" variant="contained" size="large">
+      <Button
+        onClick={handleToggle}
+        className="scanButton"
+        variant="contained"
+        size="large"
+        disabled={disabledByLock && !status.active}
+      >
         {status.active ? "Stop interceptor" : "Start interceptor"}
       </Button>
 
@@ -273,9 +308,7 @@ function RuntimeScanInterceptor(){
         </div>
       </Paper>
 
-      {lastRun?.run && !stopping && (
-        <RuntimeScanResults results={lastRun} />
-      )}
+      {lastRun?.run && !stopping && <RuntimeScanResults results={lastRun} />}
 
       {stopping && (
         <Backdrop open={stopping}><CircularProgress color="inherit" /></Backdrop>

@@ -17,6 +17,7 @@ import Interceptor from "./sections/interceptor/page/interceptor";
 import RuntimeScanInterceptor from "./sections/interceptor/page/subpages/runtimeScan/runtimeScan";
 import SendToOntologyInterceptor from "./sections/interceptor/page/subpages/sendToOntology/sendToOntology";
 import ArchiveInterceptor from "./sections/interceptor/page/subpages/archive/archive";
+import interceptorReactController from "./sections/interceptor/interceptorController";
 
 function RestoreOrHome() {
   const navigate = useNavigate();
@@ -31,17 +32,16 @@ function RestoreOrHome() {
         const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
         const tabId = tab?.id ?? null;
 
-        const status = await analyzerReactController.getScanStatus().catch(() => null);
-        const isActive = !!(status?.runtimeActive || status?.active);
+        const statusAnalyzer = await analyzerReactController.getScanStatus().catch(() => null);
+        const analyzerActive = !!(statusAnalyzer?.runtimeActive || statusAnalyzer?.active);
 
-        if (isActive) {
+        const statusInterceptor = await interceptorReactController.getStatus().catch(() => null);
+        const interceptorActive = !!statusInterceptor?.active;
+
+        if (analyzerActive) {
           target = "/analyzer/runtime";
-          if (tabId != null) {
-            const obj = await browser.storage.session.get("ui_lastRoute_byTab").catch(() => ({}));
-            const map = obj?.ui_lastRoute_byTab ?? {};
-            map[tabId] = target;
-            await browser.storage.session.set({ ui_lastRoute_byTab: map }).catch(() => {});
-          }
+        } else if (interceptorActive) {
+          target = "/interceptor";
         } else {
           const obj = await browser.storage.session.get("ui_lastRoute_byTab").catch(() => ({}));
           const map = obj?.ui_lastRoute_byTab ?? {};
@@ -56,6 +56,13 @@ function RestoreOrHome() {
               await browser.storage.session.set({ ui_lastRoute_byTab: map }).catch(() => {});
             }
           }
+        }
+
+        if (tabId != null) {
+          const obj = await browser.storage.session.get("ui_lastRoute_byTab").catch(() => ({}));
+          const map = obj?.ui_lastRoute_byTab ?? {};
+          map[tabId] = target;
+          await browser.storage.session.set({ ui_lastRoute_byTab: map }).catch(() => {});
         }
       } catch {
         target = "/home";
