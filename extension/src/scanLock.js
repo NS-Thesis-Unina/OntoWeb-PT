@@ -1,21 +1,7 @@
-// src/ui/scanLock.js
 import browser from "webextension-polyfill";
 
-/**
- * Lock UI condiviso per impedire la concorrenza delle scansioni.
- * Conservato in storage.session, così è visibile a tutte le viste dell'estensione.
- *
- * Struttura:
- * {
- *   owner: "techstack_onetime" | "analyzer_onetime" | "analyzer_runtime" | "interceptor_runtime",
- *   label: string,           // testo user-facing
- *   startedAt: number,       // ms epoch
- *   ttlMs?: number           // opzionale; se scaduto viene auto-rimosso
- * }
- */
-
 const KEY = "ui_scan_lock";
-const DEFAULT_TTL_MS = 1000 * 60 * 120; // 2 ore di sicurezza
+const DEFAULT_TTL_MS = 1000 * 60 * 120;
 
 const OWNERS = {
   TECHSTACK_ONETIME: "techstack_onetime",
@@ -50,7 +36,7 @@ function _isExpired(lock) {
   if (!lock) return true;
   const ttl = Number(lock.ttlMs ?? DEFAULT_TTL_MS);
   const started = Number(lock.startedAt ?? 0);
-  if (!started || !ttl) return false; // se non c'è ttl, non scade
+  if (!started || !ttl) return false;
   return (now() - started) > ttl;
 }
 
@@ -64,19 +50,11 @@ export async function getLock() {
   return lock;
 }
 
-/**
- * Prova ad acquisire il lock.
- * @param {string} owner
- * @param {string} label   testo breve da mostrare all’utente (es. “Analyzer Runtime”)
- * @param {number} ttlMs   opzionale (default 2h)
- * @returns {{ok: boolean, lock?: object, reason?: string}}
- */
 export async function acquireLock(owner, label, ttlMs = DEFAULT_TTL_MS) {
   const current = await getLock();
   if (current && current.owner !== owner) {
     return { ok: false, lock: current, reason: "locked" };
   }
-  // Se il lock è già nostro, proseguiamo; altrimenti creiamolo
   if (!current) {
     const next = { owner, label, startedAt: now(), ttlMs };
     await _writeRaw(next);
@@ -85,10 +63,6 @@ export async function acquireLock(owner, label, ttlMs = DEFAULT_TTL_MS) {
   return { ok: true, lock: current };
 }
 
-/**
- * Rilascia il lock se appartiene all'owner.
- * Possiamo aggiungere un `force=true` per forzare (lo evito per sicurezza).
- */
 export async function releaseLock(owner) {
   const current = await getLock();
   if (!current) return { ok: true };
@@ -97,9 +71,6 @@ export async function releaseLock(owner) {
   return { ok: true };
 }
 
-/**
- * Sottoscrizione ai cambiamenti del lock (per sincronizzare pulsanti/disclaimer tra viste).
- */
 export function subscribeLockChanges(callback) {
   const handler = (changes, areaName) => {
     if (areaName !== "session") return;

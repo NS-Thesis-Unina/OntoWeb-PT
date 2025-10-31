@@ -18,6 +18,8 @@ import RuntimeScanInterceptor from "./sections/interceptor/page/subpages/runtime
 import SendToOntologyInterceptor from "./sections/interceptor/page/subpages/sendToOntology/sendToOntology";
 import ArchiveInterceptor from "./sections/interceptor/page/subpages/archive/archive";
 import interceptorReactController from "./sections/interceptor/interceptorController";
+import AnalyzeAnalyzer from "./sections/analyzer/page/subpages/analyze/analyze";
+import AnalyzeTechstack from "./sections/techstack/page/subpages/analyze/analyze";
 
 function RestoreOrHome() {
   const navigate = useNavigate();
@@ -89,6 +91,7 @@ function Router() {
         <Route path="analyzer" element={<Analyzer />}>
           <Route index element={<OneTimeScanAnalyzer />} />
           <Route path="runtime" element={<RuntimeScanAnalyzer />} />
+          <Route path="analyze" element={<AnalyzeAnalyzer />} />
           <Route path="archive" element={<ArchiveAnalyzer />}>
             <Route index element={<OneTimeScanArchiveAnalyzer />} />
             <Route path="onetime" element={<OneTimeScanArchiveAnalyzer />} />
@@ -98,6 +101,7 @@ function Router() {
 
         <Route path="techstack" element={<TechStack />} >
           <Route index element={<ScanTechStack />} />
+          <Route path="analyze" element={<AnalyzeTechstack />} />
           <Route path="archive" element={<ArchiveTechStack />} />
         </Route>
 

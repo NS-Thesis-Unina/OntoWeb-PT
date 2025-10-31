@@ -17,6 +17,10 @@ function TechStack() {
         setSubsection("Archive");
         break;
       }
+      case "/techstack/analyze": {
+        setSubsection("Analyze");
+        break;
+      }
       default: setSubsection("Scan");
     }
   },[pathname])
@@ -25,6 +29,7 @@ function TechStack() {
     <div className="techstack-div">
       <PageNavigation title={"Technology Stack"} icon={<LayersIcon />} subsection={subsection}>
         <Button disabled={selectedSubSection(pathname, "techstack", "")} onClick={() => navigate("/techstack")}>Scan</Button>
+        <Button disabled={selectedSubSection(pathname, "techstack", "analyze")} onClick={() => navigate("/techstack/analyze")}>Analyze</Button>
         <Button disabled={selectedSubSection(pathname, "techstack", "archive")} onClick={() => navigate("/techstack/archive")}>Archive</Button>
       </PageNavigation>
       <Outlet />

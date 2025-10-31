@@ -16,6 +16,8 @@ function Analyzer() {
       setSubsection("Runtime Scan");
     } else if (pathname.startsWith("/analyzer/archive")) {
       setSubsection("Archive");
+    } else if(pathname.startsWith("/analyzer/analyze")){
+      setSubsection("Analyze");
     } else {
       setSubsection("One-Time Scan");
     }
@@ -26,6 +28,7 @@ function Analyzer() {
       <PageNavigation title={"Analyzer"} icon={<AnalyticsIcon />} subsection={subsection}>
         <Button disabled={selectedSubSection(pathname, "analyzer", "")} onClick={() => navigate("/analyzer")}>One-Time Scan</Button>
         <Button disabled={selectedSubSection(pathname, "analyzer", "runtime")} onClick={() => navigate("/analyzer/runtime")}>Runtime Scan</Button>
+        <Button disabled={selectedSubSection(pathname, "analyzer", "analyze")} onClick={() => navigate("/analyzer/analyze")}>Analyze</Button>
         <Button disabled={selectedSubSection(pathname, "analyzer", "archive")} onClick={() => navigate("/analyzer/archive")}>Archive</Button>
       </PageNavigation>
       <Outlet />
