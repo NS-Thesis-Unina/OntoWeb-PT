@@ -6,6 +6,9 @@
 
 .collapsible-title {
   font-weight: bold !important;
+  white-space: normal;    
+  overflow-wrap: anywhere;
+  word-break: break-word; 
 }
 
 .collapsible-details {

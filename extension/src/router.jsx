@@ -13,6 +13,10 @@ import ArchiveTechStack from "./sections/techstack/page/subpages/archive/archive
 import ScanTechStack from "./sections/techstack/page/subpages/scan/scan";
 import browser from "webextension-polyfill";
 import analyzerReactController from "./sections/analyzer/analyzerController";
+import Interceptor from "./sections/interceptor/page/interceptor";
+import RuntimeScanInterceptor from "./sections/interceptor/page/subpages/runtimeScan/runtimeScan";
+import SendToOntologyInterceptor from "./sections/interceptor/page/subpages/sendToOntology/sendToOntology";
+import ArchiveInterceptor from "./sections/interceptor/page/subpages/archive/archive";
 
 function RestoreOrHome() {
   const navigate = useNavigate();
@@ -88,6 +92,12 @@ function Router() {
         <Route path="techstack" element={<TechStack />} >
           <Route index element={<ScanTechStack />} />
           <Route path="archive" element={<ArchiveTechStack />} />
+        </Route>
+
+        <Route path="interceptor" element={<Interceptor /> } >
+          <Route index element={ <RuntimeScanInterceptor />} />
+          <Route path="send" element={<SendToOntologyInterceptor />} />
+          <Route path="archive" element={<ArchiveInterceptor />} />
         </Route>
       </Route>
     </Routes>

@@ -1,18 +1,15 @@
 import "./home.css";
 import Typography from "@mui/material/Typography";
 import { useEffect, useState } from "react";
-import LogoDark from "/images/logo/LogoDark.png";
-import LogoLight from "/images/logo/LogoLight.png";
-import { useThemeMode } from "../../theme/themeModeProvider";
 import { Paper, Zoom } from "@mui/material";
 import HomeCard from "./components/homeCard/homeCard";
 import LayersIcon from "@mui/icons-material/Layers";
 import AnalyticsIcon from '@mui/icons-material/Analytics';
+import PodcastsIcon from '@mui/icons-material/Podcasts';
 
 
 function Home(){
 
-  const {mode} = useThemeMode();
   const [showCards, setShowCards] = useState(false);
 
   useEffect(() => {
@@ -48,10 +45,12 @@ function Home(){
           icon={<AnalyticsIcon />}
           pathname="/analyzer"
           />
-          <HomeCard title={"Coming soon..."} 
-          content={"This section is currently under development."}
+          <HomeCard title={"Interceptor"} 
+          content={"The Interceptor captures and logs all network activity within the page context (including fetch, XMLHttpRequest, and other network APIs), recording request and response data such as headers, bodies, status codes, and timing."}
           show={showCards}
           delay={60}
+          icon={<PodcastsIcon />}
+          pathname="/interceptor"
           />
         </div>
       </div>

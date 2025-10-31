@@ -26,6 +26,8 @@ function Navbar(){
         <Button disabled={selectedSection(pathname, "techstack")} onClick={() => navigate("/techstack")}>Technology Stack</Button>
         <Divider orientation="vertical" />
         <Button disabled={selectedSection(pathname, "analyzer")} onClick={() => navigate("/analyzer")}>Analyzer</Button>
+        <Divider orientation="vertical" />
+        <Button disabled={selectedSection(pathname, "interceptor")} onClick={() => navigate("/interceptor")}>Interceptor</Button>
       </div>
       <div className="options-div">
         <DarkLightButton />

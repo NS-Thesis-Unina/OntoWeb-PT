@@ -33,6 +33,6 @@
     "webextension-polyfill": "^0.12.0"
   },
   "devDependencies": {
-    "extension": "^2.0.4"
+    "extension": "2.0.4"
   }
 }

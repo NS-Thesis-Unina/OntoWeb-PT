@@ -1,6 +1,7 @@
 import browser from "webextension-polyfill";
 import AnalyzerBackgroundController from "./src/background/analyzerController.js";
 import TechStackBackgroundController from "./src/background/techstackController.js";
+import InterceptorBackgroundController from "./src/background/interceptorController.js";
 
 browser.tabs.onRemoved.addListener(async (tabId) => {
   try {
@@ -19,3 +20,4 @@ browser.tabs.onRemoved.addListener(async (tabId) => {
 
 new AnalyzerBackgroundController();
 new TechStackBackgroundController();
+new InterceptorBackgroundController();
