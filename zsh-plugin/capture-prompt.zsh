@@ -34,16 +34,19 @@ capture_activate() {
     done
 
     # Namespace creation
+    # TODO: si dovrebbe risolvere il conflitto di indirizzi per gestire capture differenti
     sudo ip netns add "$virtual_env_prompt"
     sudo ip link add veth-"$virtual_env_prompt" type veth peer name veth-ns-"$virtual_env_prompt"
     sudo ip link set veth-ns-"$virtual_env_prompt" netns "$virtual_env_prompt"
-    sudo ip addr add 10.0.0.1/24 dev veth-"$virtual_env_prompt"
     sudo ip link set veth-"$virtual_env_prompt" up
+    sudo ip addr add 10.0.0.1/24 dev veth-"$virtual_env_prompt"
     sudo ip netns exec "$virtual_env_prompt" ip addr add 10.0.0.2/24 dev veth-ns-"$virtual_env_prompt"
     sudo ip netns exec "$virtual_env_prompt" ip link set veth-ns-"$virtual_env_prompt" up
     sudo ip netns exec "$virtual_env_prompt" ip link set lo up
     sudo ip netns exec "$virtual_env_prompt" ip route add default via 10.0.0.1
+    # sudo iptables -t nat -L -n -v
     sudo iptables -t nat -A POSTROUTING -s 10.0.0.0/24 -j MASQUERADE
+    # sudo iptables -L FORWARD -v -n
     sudo iptables -A FORWARD -i veth-"$virtual_env_prompt" -j ACCEPT
     sudo iptables -A FORWARD -o veth-"$virtual_env_prompt" -j ACCEPT
     sudo mkdir -p /etc/netns/"$virtual_env_prompt"
@@ -60,7 +63,12 @@ capture_activate() {
 
     # start capture env
     script -q -f "$log_dir/session.log" -c "sudo ip netns exec \"$virtual_env_prompt\" sudo -u \"$USER\" env ZDOTDIR=\"$log_dir/ZDOTDIR\" zsh -i"
-
+    
+    # TEST: sudo ip netns list
+    sudo ip netns delete "$virtual_env_prompt"
+    sudo nsenter -t 1 -n iptables -t nat -D POSTROUTING -s 10.0.0.0/24 -j MASQUERADE 
+    sudo nsenter -t 1 -n iptables -D FORWARD -i veth-"$virtual_env_prompt" -j ACCEPT 
+    sudo nsenter -t 1 -n iptables -D FORWARD -o veth-"$virtual_env_prompt" -j ACCEPT 
 }
 
 
@@ -83,25 +91,16 @@ capture_config() {
 
 }
 
-# sudo ip netns exec \"$virtual_env_prompt\" env ZDOTDIR=\"$log_dir/ZDOTDIR\" zsh -i
-
-
 capture_deactivate() {
     if [ -n "${_OLD_VIRTUAL_PS1-}" ]; then
         PS1="${_OLD_VIRTUAL_PS1}"
         export PS1
         unset _OLD_VIRTUAL_PS1
-        CAPTURE_ACTIVE=0
         echo "[capture] Prompt deactivated"
+        CAPTURE_ACTIVE=0
     fi
 
-    sudo iptables -t nat -D POSTROUTING -s 10.0.0.0/24 -j MASQUERADE 
-    sudo iptables -D FORWARD -i veth-"$VIRTUAL_ENV_PROMPT" -j ACCEPT 
-    sudo iptables -D FORWARD -o veth-"$VIRTUAL_ENV_PROMPT" -j ACCEPT 
-    sudo ip link delete veth-"$VIRTUAL_ENV_PROMPT"
-    sudo ip netns delete "$VIRTUAL_ENV_PROMPT" 
-
-    exit    
+    exit
 
 }
 
@@ -123,20 +122,42 @@ preexec() {
                 ;;
         esac
 
-        (( CAPTURE_CMD_INDEX++ ))
-
         ts=$(date +"%Y-%m-%d %H:%M:%S")
         pcap_file="${LOG_DIRECTORY}/traffic_${CAPTURE_CMD_INDEX}.pcap"
-        output_file="${LOG_DIRECTORY}/index_${index_padded}.log"
 
+        echo "[capture] → Starting tcpdump for command: $1"
+        echo "[capture] → Saving to: $pcap_file"
 
-        # Run the command normally (we're already inside namespace)
-        # eval "$1" | tee "$output_file"
+        # sudo tcpdump -U -i any -w "$pcap_file" &
+        # TCPDUMP_PID=$!
+
+        eval "$1" </dev/tty >/dev/tty 2>&1
         CMD_STATUS=$?
 
-        echo "{\"index\":${CAPTURE_CMD_INDEX},\"timestamp\":\"${ts}\",\"command\":$(jq -Rn --arg c "$1" '$c'),\"pcap_file\":${pcap_file}}" >> "$LOG_DIRECTORY/commands.ndjson"
-    
+        # kill "$TCPDUMP_PID" >/dev/null 2>&1
+        # wait "$TCPDUMP_PID" 2>/dev/null
+        # echo "[capture] → tcpdump stopped (PID $TCPDUMP_PID)"
+
+        echo "{\"index\":${CAPTURE_CMD_INDEX},\"timestamp\":\"${ts}\",\"command\":$(jq -Rn --arg c "$1" '$c'),\"pcap_file\":\"${pcap_file}\",\"status\":${CMD_STATUS}}" >> "$LOG_DIRECTORY/commands.ndjson"
+
+        (( CAPTURE_CMD_INDEX++ ))
+
+        kill -INT $$
+
     fi
 }
 
-trap capture_deactivate EXIT
+
+precmd() {
+    if (( CAPTURE_ACTIVE == 1 )) && (( CAPTURE_CMD_INDEX != 1 )); then
+        local session_file="${LOG_DIRECTORY}/session.log"
+        local output_file="${LOG_DIRECTORY}/capture_${CAPTURE_CMD_INDEX}.log"
+
+        echo "[debug] Extracting command index ${CAPTURE_CMD_INDEX}" >> "${LOG_DIRECTORY}/debug.log"
+
+        # TODO: awk command to extract output
+    fi
+}
+
+
+# trap capture_deactivate EXIT
