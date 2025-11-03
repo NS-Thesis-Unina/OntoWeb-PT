@@ -1,3 +1,5 @@
+// @ts-check
+
 const express = require('express');
 const cors = require('cors');
 const http = require('http');
@@ -7,37 +9,43 @@ const { errors: celebrateErrors } = require('celebrate');
 
 const attachSockets = require('./sockets');
 
-const { 
+const {
   makeLogger,
   monitors: {
     startRedisMonitor,
-    startGraphDBHealthProbe
+    startGraphDBHealthProbe,
+    setState,
+    getHealth
   },
-  graphdb : {
+  graphdb: {
     runSelect
   }
- } = require('./utils');
-const log = makeLogger('api');
+} = require('./utils');
 
 const sparqlRoutes = require('./routes/sparql');
 const httpRequestRoutes = require('./routes/httpRequests');
 
 const { connection } = require('./queue');
 
+const log = makeLogger('api');
 const app = express();
 
 // Core middlewares
 app.use(cors());
 app.use(express.json({ limit: '2mb' }));
 
-// Simple liveness endpoint
-app.get('/health', (_req, res) => res.json({ ok: true }));
+// Health endpoint (readiness): 200 only if server, GraphDB and Redis are UP; otherwise 503.
+app.get('/health', (_req, res) => {
+  const h = getHealth();
+  res.set('Cache-Control', 'no-store');
+  res.status(h.ok ? 200 : 503).json(h);
+});
 
 // Route mounting
 app.use('/sparql', sparqlRoutes);
 app.use('/http-requests', httpRequestRoutes);
 
-// Celebrate validation error handler (restituisce 400 con dettagli puliti)
+// Celebrate validation error handler (returns 400 with clean details)
 app.use(celebrateErrors());
 
 // Attach Sockets
@@ -48,11 +56,26 @@ attachSockets(server).catch((err) => log.error('attachSockets failed', err?.mess
 const PORT = Number(process.env.SERVER_PORT || 8081);
 server.listen(PORT, () => {
   log.info(`API listening on http://localhost:${PORT}`);
+  // Explicitly mark server as up in the health registry
+  setState('server', 'up');
 });
 
-// Health monitors (API)
-startRedisMonitor(connection, 'redis:api');
-startGraphDBHealthProbe(runSelect, 'graphdb:api');
+// Health monitors (API) - report component states to the health registry
+startRedisMonitor(connection, 'redis:api', (st) => {
+  // Map redis states to the registry domain
+  // 'connecting' is considered not-ready for readiness purposes,
+  // but we keep the exact state for visibility.
+  if (st === 'up') setState('redis', 'up');
+  else if (st === 'down') setState('redis', 'down');
+  else setState('redis', 'connecting');
+});
+
+startGraphDBHealthProbe(
+  runSelect,
+  'graphdb:api',
+  Number(process.env.GRAPHDB_HEALTH_INTERVAL_MS || 5000),
+  (st) => setState('graphdb', st)
+);
 
 // Process-level hardening
 process.on('unhandledRejection', (reason) => {
@@ -60,4 +83,9 @@ process.on('unhandledRejection', (reason) => {
 });
 process.on('uncaughtException', (err) => {
   log.error('UncaughtException', err);
+});
+process.on('SIGTERM', () => {
+  log.info('Shutting down...');
+  setState('server', 'shutting_down');
+  process.exit(0);
 });

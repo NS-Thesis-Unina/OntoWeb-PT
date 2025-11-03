@@ -183,7 +183,7 @@ function RunResultsByKey({ keyId }) {
 
   if (loading) {
     return (
-      <div style={{ padding: 8 }}>
+      <div style={{ padding: 8, display: "flex", alignItems: "center" }}>
         <CircularProgress size={24} /> <span style={{ marginLeft: 8 }}>Loading run…</span>
       </div>
     );

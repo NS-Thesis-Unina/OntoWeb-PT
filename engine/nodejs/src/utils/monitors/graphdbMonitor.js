@@ -4,36 +4,50 @@ const { makeLogger } = require('../logs/logger');
 
 /**
  * Periodically pings GraphDB via runSelect("ASK {}") and logs state transitions.
+ * It optionally reports state changes to a callback (for health aggregation).
  *
- * @param {(sparql: string) => Promise<any>} runSelect
- * @param {string} ns - logger namespace (e.g. "graphdb:api" | "graphdb:worker")
- * @param {number} intervalMs - probe interval (default 5000)
- * @returns {() => void} stop function
+ * @param {(sparql: string) => Promise<any>} runSelect - function to run SPARQL SELECT/ASK
+ * @param {string} [ns='graphdb:probe'] - logger namespace
+ * @param {number} [intervalMs=Number(process.env.GRAPHDB_HEALTH_INTERVAL_MS || 5000)] - probe interval in ms
+ * @param {(state: 'up'|'down'|'unknown') => void} [report] - optional state reporter
+ * @returns {{ stop: () => void, getState: () => 'up'|'down'|'unknown' }}
  */
-function startGraphDBHealthProbe(runSelect, ns = 'graphdb:probe', intervalMs = Number(process.env.GRAPHDB_HEALTH_INTERVAL_MS || 5000)) {
+function startGraphDBHealthProbe(
+  runSelect,
+  ns = 'graphdb:probe',
+  intervalMs = Number(process.env.GRAPHDB_HEALTH_INTERVAL_MS || 5000),
+  report
+) {
   const log = makeLogger(ns);
-  let state = 'unknown'; // 'up' | 'down' | 'unknown'
+  /** @type {'up'|'down'|'unknown'} */
+  let state = 'unknown';
 
   async function probe() {
     try {
       await runSelect('ASK {}');
       if (state !== 'up') {
-        log.info('GraphDB is UP (reachable again)');
         state = 'up';
+        log.info('GraphDB is UP (reachable again)');
+        if (typeof report === 'function') report(state);
       }
     } catch (err) {
       const msg = String(err?.message || err);
       if (state !== 'down') {
-        log.warn('GraphDB is DOWN (unreachable)', msg);
         state = 'down';
+        log.warn('GraphDB is DOWN (unreachable)', msg);
+        if (typeof report === 'function') report(state);
       }
     }
   }
 
-  // kick + interval
-  probe();
+  // initial kick + interval
+  void probe();
   const timer = setInterval(probe, intervalMs);
-  return () => clearInterval(timer);
+
+  return {
+    stop: () => clearInterval(timer),
+    getState: () => state,
+  };
 }
 
 module.exports = startGraphDBHealthProbe;

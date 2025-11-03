@@ -34,6 +34,8 @@ module.exports = {
   monitors: {
     startRedisMonitor: require('./monitors/redisMonitor'),
     startGraphDBHealthProbe: require('./monitors/graphdbMonitor'),
+    setState: require('./monitors/health').setState,
+    getHealth: require('./monitors/health').getHealth,
   },
 
   // Validators
