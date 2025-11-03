@@ -4,25 +4,10 @@ import IndeterminateCheckBoxOutlinedIcon from '@mui/icons-material/Indeterminate
 import "./runtimeScanResults.css";
 import CollapsibleDataGridInterceptor from "../collapsibleDataGridInterceptor/collapsibleDataGridInterceptor";
 import React from "react";
-
-function prettyBytes(n = 0) {
-  if (!Number.isFinite(n)) return "0 B";
-  const units = ["B", "KB", "MB", "GB"];
-  let u = 0;
-  while (n >= 1024 && u < units.length - 1) { n /= 1024; u++; }
-  return `${n.toFixed((u === 0) ? 0 : 1)} ${units[u]}`;
-}
-
-function getHeader(headers = {}, name = "") {
-  if (!headers) return undefined;
-  const target = String(name).toLowerCase();
-  for (const [k, v] of Object.entries(headers)) {
-    if (String(k).toLowerCase() === target) return v;
-  }
-  return undefined;
-}
+import { getHeader, prettyBytes } from "../../../../../../libs/formatting";
 
 function buildRows(scans = []) {
+  if (!Array.isArray(scans)) return [];
   return scans.map((evt, idx) => {
     const { meta = {}, request = {}, response = {} } = evt || {};
     const resCT = getHeader(response.headers, "content-type");
@@ -35,8 +20,8 @@ function buildRows(scans = []) {
       reqBodySize: Number(request?.bodySize || 0),
       reqEncoding: request?.bodyEncoding || "none",
       reqTruncated: !!request?.truncated,
-      status: response?.status ?? (response?.networkError ? "ERR" : 0),
-      statusText: response?.statusText ?? (response?.networkError ? String(response?.networkError) : ""),
+      status: (response?.status ?? (response?.networkError ? "ERR" : 0)),
+      statusText: (response?.statusText ?? (response?.networkError ? String(response?.networkError) : "")),
       resContentType: resCT || "",
       resBodySize: Number(response?.bodySize || 0),
       resEncoding: response?.bodyEncoding || "none",
@@ -88,10 +73,24 @@ const columns = [
 ];
 
 function RuntimeScanResults({ results, titleDisabled = false }) {
-  const domains = React.useMemo(() => Object.keys(results.run.dataset || {}), [results]);
+  // Uses defensive defaults for absent run or dataset.
+  const run = React.useMemo(() => results?.run || {}, [results]);
+  const dataset = React.useMemo(
+    () => (run?.dataset && typeof run.dataset === "object") ? run.dataset : {},
+    [run]
+  );
+
+  const domains = React.useMemo(() => Object.keys(dataset), [dataset]);
   const [sections, setSections] = React.useState({});
-  const allOpen = React.useMemo(() => domains.length > 0 && domains.every(d => sections[d] === true), [domains, sections]);
-  const allClosed = React.useMemo(() => domains.every(d => sections[d] === false || sections[d] === undefined), [domains, sections]);
+
+  const allOpen = React.useMemo(
+    () => domains.length > 0 && domains.every(d => sections[d] === true),
+    [domains, sections]
+  );
+  const allClosed = React.useMemo(
+    () => domains.every(d => sections[d] === false || sections[d] === undefined),
+    [domains, sections]
+  );
 
   React.useEffect(() => {
     setSections(prev => {
@@ -108,6 +107,12 @@ function RuntimeScanResults({ results, titleDisabled = false }) {
     const nextVal = !(allOpen && !allClosed);
     setSections(Object.fromEntries(domains.map(d => [d, nextVal])));
   };
+
+  const startedAt = run?.startedAt ? new Date(run.startedAt).toLocaleString() : "—";
+  const stoppedAt = run?.stoppedAt ? new Date(run.stoppedAt).toLocaleString() : "—";
+  const totalEvents = Number(run?.totalEvents || 0);
+  const pagesCount = Number(run?.pagesCount || domains.length || 0);
+  const totalBytes = Number(run?.totalBytes || 0);
 
   return (
     <Paper className="irt-scanresults">
@@ -133,29 +138,37 @@ function RuntimeScanResults({ results, titleDisabled = false }) {
           <Grid size={3}><strong>Stopped at</strong></Grid>
           <Grid size={3}><strong>Total events</strong></Grid>
           <Grid size={3}><strong>Unique Pages</strong></Grid>
+
           <Grid size={3} className="grid-newline-items">
-            {new Date(results.run.startedAt).toLocaleString()}
+            {startedAt}
           </Grid>
           <Grid size={3} className="grid-newline-items">
-            {new Date(results.run.stoppedAt).toLocaleString()}
+            {stoppedAt}
           </Grid>
           <Grid size={3} className="grid-newline-items">
-            {results.run.totalEvents}
+            {totalEvents}
           </Grid>
           <Grid size={3} className="grid-newline-items">
-            {results.run.pagesCount}
+            {pagesCount}
           </Grid>
+
           <Grid size={12} sx={{ marginTop: "5px" }}>
             <strong>Total bytes</strong>
           </Grid>
           <Grid size={3} className="grid-newline-items">
-            {prettyBytes(results.run.totalBytes)}
+            {prettyBytes(totalBytes)}
           </Grid>
         </Grid>
       </Paper>
 
-      {Object.entries(results.run.dataset).map(([domainUrl, scans]) => {
-        const rows = buildRows(scans || []);
+      {domains.length === 0 && (
+        <Typography variant="body2" sx={{ mt: 1, opacity: 0.8 }}>
+          No entries in this run.
+        </Typography>
+      )}
+
+      {Object.entries(dataset).map(([domainUrl, scans]) => {
+        const rows = buildRows(scans);
         const expanded = sections[domainUrl] === true;
         return (
           <CollapsibleDataGridInterceptor

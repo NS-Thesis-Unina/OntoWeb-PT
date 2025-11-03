@@ -1,7 +1,3 @@
-// interceptorEngine.js
-// Updated engine: chooses appropriate deep capture (Chromium or Firefox) and runs fallback injection.
-// Exports default InterceptorEngine and MAX_BODY_BYTES
-
 import browser from "webextension-polyfill";
 import { DeepCaptureChrome, isChromeLike } from "./deepCaptureChrome.js";
 import { DeepCaptureFirefox, isFirefoxLike } from "./deepCaptureFirefox.js";
@@ -34,27 +30,24 @@ class InterceptorEngine {
     this._totalBytes = 0;
     this._callbacks = { onUpdate: onUpdate || null, onComplete: onComplete || null };
 
-    // Start browser-specific deep capture (best-effort)
+    // Best-effort deep capture per browser family.
     if (isChromeLike) {
       try {
         this._deepChrome = new DeepCaptureChrome((entry, tabId, pageUrl) => {
-          // Map the entry into engine ingest
           const normalized = {
             meta: entry.meta || { ts: Date.now(), tabId, pageUrl },
             request: entry.request || null,
             response: entry.response || null
           };
-          // call ingestion with override pageUrl
           this._ingestDirect(normalized, pageUrl || normalized.meta.pageUrl || null);
         });
-        // Attach to existing tabs quickly
         const tabs = await browser.tabs.query({});
         for (const t of tabs) {
           if (t?.id && t?.url && /^https?:/i.test(t.url)) {
             try { await this._deepChrome.attachToTab(t.id); } catch {}
           }
         }
-      } catch (e) {
+      } catch {
         this._deepChrome = null;
       }
     }
@@ -69,29 +62,27 @@ class InterceptorEngine {
           };
           this._ingestDirect(normalized, pageUrl || normalized.meta.pageUrl || null);
         });
-      } catch (e) {
+      } catch {
         this._deepFirefox = null;
       }
     }
 
-    // Try to attach early on navigation commit (so we catch requests that happen early)
+    // Early attach on navigation commits.
     try {
       if (!this._navListenerAdded && chrome?.webNavigation?.onCommitted) {
         chrome.webNavigation.onCommitted.addListener(({ tabId, url, frameId }) => {
           if (!this._active) return;
           if (frameId === 0 && /^https?:/i.test(url)) {
             if (this._deepChrome) { try { this._deepChrome.attachToTab(tabId); } catch {} }
-            // Firefox deep capture listens globally; nothing to attach per tab
           }
         });
         this._navListenerAdded = true;
       }
     } catch {}
 
-    // Inject page-world fallback into existing tabs and register tabs.onUpdated to inject on load/complete
+    // Fallback injection + tab updates.
     this._onTabsUpdatedRef = async (tabId, changeInfo, tab) => {
       if (!this._active) return;
-      // inject as early as possible: 'loading' or 'complete'
       if ((changeInfo.status === "loading" || changeInfo.status === "complete") && tab?.url && /^https?:/i.test(tab.url)) {
         await this._inject(tabId);
         if (this._deepChrome) { try { await this._deepChrome.attachToTab(tabId); } catch {} }
@@ -132,14 +123,15 @@ class InterceptorEngine {
     try { this._onTabsUpdatedRef && browser.tabs.onUpdated.removeListener(this._onTabsUpdatedRef); } catch {}
     this._onTabsUpdatedRef = null;
 
-    // detach deep captures
+    // Detach deep captures.
     try { if (this._deepChrome) await this._deepChrome.detachFromAll(); } catch {}
     try { if (this._deepFirefox) await this._deepFirefox.destroy?.(); } catch {}
     this._deepChrome = null;
     this._deepFirefox = null;
 
-    this._callbacks.onComplete?.({ ok: true, key, run });
-    return { ok: true, key, run };
+    // Emits light completion payload; UI reads full run from storage by key.
+    this._callbacks.onComplete?.({ ok: true, key, run: this._stripDataset(run) });
+    return { ok: true, key, run: this._stripDataset(run) };
   }
 
   getStatus() {
@@ -162,14 +154,15 @@ class InterceptorEngine {
         key = keys[0];
       }
     }
-    return key ? { key, run: all[key] } : { key: null, run: null };
+    const run = key ? all[key] : null;
+    return key ? { key, run } : { key: null, run: null };
   }
 
-  async getAllResults() {
+  async getAllResultsMeta() {
     const all = await browser.storage.local.get(null);
     const items = Object.entries(all)
       .filter(([key]) => key.startsWith(DATASET_KEY_PREFIX))
-      .map(([key, run]) => ({ key, run }));
+      .map(([key, run]) => ({ key, meta: this._stripDataset(run) }));
     items.sort((a, b) => Number(b.key.split("_")[1]) - Number(a.key.split("_")[1]));
     return items;
   }
@@ -182,7 +175,7 @@ class InterceptorEngine {
       const meta = { ts: payload.ts || Date.now(), tabId, pageUrl };
       const entry = { meta, request: payload.request || null, response: payload.response || null };
       this._ingestDirect(entry, pageUrl);
-    } catch (e) { /* ignore */ }
+    } catch {}
   }
 
   _ingestDirect(entry, overridePageUrl) {
@@ -197,7 +190,7 @@ class InterceptorEngine {
       this._totalBytes += (reqSize + resSize);
 
       this._emitUpdate();
-    } catch (e) {}
+    } catch {}
   }
 
   async _inject(tabId) {
@@ -210,9 +203,7 @@ class InterceptorEngine {
       } else {
         await browser.tabs.executeScript(tabId, { file: "content_script/interceptor/interceptor_injected.js" });
       }
-    } catch (e) {
-      // ignore single tab injection failures
-    }
+    } catch {}
   }
 
   _emitUpdate() {
@@ -223,7 +214,18 @@ class InterceptorEngine {
       totalBytes: this._totalBytes
     });
   }
+
+  _stripDataset(run) {
+    // Provides metadata only to keep messages small.
+    return {
+      startedAt: run.startedAt,
+      stoppedAt: run.stoppedAt,
+      totalEvents: run.totalEvents,
+      pagesCount: run.pagesCount,
+      totalBytes: run.totalBytes
+    };
+  }
 }
 
 export default InterceptorEngine;
-export { MAX_BODY_BYTES };
+export { MAX_BODY_BYTES, DATASET_KEY_PREFIX, LAST_KEY };

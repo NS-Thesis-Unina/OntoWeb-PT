@@ -10,6 +10,7 @@ class InterceptorReactController {
     if (this._listenerInitialized) return;
     this._listenerInitialized = true;
 
+    // Broadcast background updates to UI subscribers.
     browser.runtime.onMessage.addListener((message) => {
       for (const sub of this.subscribers) {
         switch (message.type) {
@@ -34,17 +35,23 @@ class InterceptorReactController {
   start() {
     return browser.runtime.sendMessage({ type: "interceptor_start" });
   }
+
   stop() {
     return browser.runtime.sendMessage({ type: "interceptor_stop" });
   }
+
   getStatus() {
     return browser.runtime.sendMessage({ type: "interceptor_getStatus" });
   }
-  getLastResults() {
-    return browser.runtime.sendMessage({ type: "interceptor_getLastResults" });
+
+  // Returns the storage key of the latest run.
+  getLastKey() {
+    return browser.runtime.sendMessage({ type: "interceptor_getLastKey" });
   }
-  getAllResults() {
-    return browser.runtime.sendMessage({ type: "interceptor_getAllResults" });
+
+  // Returns meta-only list of runs.
+  listRuns() {
+    return browser.runtime.sendMessage({ type: "interceptor_listRuns" });
   }
 }
 
