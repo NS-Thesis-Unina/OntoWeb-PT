@@ -19,6 +19,7 @@ capture_activate() {
     # Prepare log dir
     session_timestamp=$(date +"%Y%m%d_%H%M%S")
     log_dir="${base_dir}/${virtual_env_prompt}_${session_timestamp}"
+    pcap_file="${log_dir}/traffic.pcap"
     mkdir -p "$log_dir"
     mkdir "$log_dir/ZDOTDIR"
 
@@ -61,14 +62,21 @@ capture_activate() {
     echo "[capture] Logging in: $log_dir"
     echo "[capture] Environment: (${virtual_env_prompt})"
 
+    sudo tcpdump -U -i veth-"$virtual_env_prompt" -w "$pcap_file" &
+    TCPDUMP_PID=$!
+    echo $TCPDUMP_PID
+
     # start capture env
     script -q -f "$log_dir/session.log" -c "sudo ip netns exec \"$virtual_env_prompt\" sudo -u \"$USER\" env ZDOTDIR=\"$log_dir/ZDOTDIR\" zsh -i"
-    
+
+    sudo kill "$TCPDUMP_PID"
+
     # TEST: sudo ip netns list
     sudo ip netns delete "$virtual_env_prompt"
     sudo nsenter -t 1 -n iptables -t nat -D POSTROUTING -s 10.0.0.0/24 -j MASQUERADE 
     sudo nsenter -t 1 -n iptables -D FORWARD -i veth-"$virtual_env_prompt" -j ACCEPT 
     sudo nsenter -t 1 -n iptables -D FORWARD -o veth-"$virtual_env_prompt" -j ACCEPT 
+
 }
 
 
@@ -100,7 +108,7 @@ capture_deactivate() {
         CAPTURE_ACTIVE=0
     fi
 
-    exit
+    exit 0
 
 }
 
@@ -130,10 +138,10 @@ preexec() {
 
         # sudo tcpdump -U -i any -w "$pcap_file" &
         # TCPDUMP_PID=$!
-
+        
         eval "$1" </dev/tty >/dev/tty 2>&1
         CMD_STATUS=$?
-
+        
         # kill "$TCPDUMP_PID" >/dev/null 2>&1
         # wait "$TCPDUMP_PID" 2>/dev/null
         # echo "[capture] → tcpdump stopped (PID $TCPDUMP_PID)"
@@ -149,15 +157,16 @@ preexec() {
 
 
 precmd() {
-    if (( CAPTURE_ACTIVE == 1 )) && (( CAPTURE_CMD_INDEX != 1 )); then
+    
+    if [ "$CAPTURE_ACTIVE" -eq 1 ] && [ "$CAPTURE_CMD_INDEX" -ne 1 ]; then
         local session_file="${LOG_DIRECTORY}/session.log"
         local output_file="${LOG_DIRECTORY}/capture_${CAPTURE_CMD_INDEX}.log"
-
-        echo "[debug] Extracting command index ${CAPTURE_CMD_INDEX}" >> "${LOG_DIRECTORY}/debug.log"
+        
+        # echo enter
+        # echo "[debug] Extracting command index ${CAPTURE_CMD_INDEX}" >> "${LOG_DIRECTORY}/debug.log"
 
         # TODO: awk command to extract output
     fi
 }
 
-
-# trap capture_deactivate EXIT
+trap capture_deactivate EXIT
