@@ -41,7 +41,7 @@ function ArchiveInterceptor(){
       );
 
       setRuns(cleaned);
-      enqueueSnackbar("Archive loaded successfully.", { variant: "success" });
+      enqueueSnackbar("Archive loaded from storage successfully!", { variant: "success" });
     } catch(e) {
       enqueueSnackbar(e?.message || "Error loading runs from storage.", { variant: "error" });
     } finally {

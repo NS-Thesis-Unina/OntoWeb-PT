@@ -2,38 +2,93 @@ import "./navbar.css";
 import { useLocation, useNavigate } from "react-router-dom";
 import LogoDark from "/images/logo/LogoDark.png";
 import LogoLight from "/images/logo/LogoLight.png";
-import Button from '@mui/material/Button';
+import Button from "@mui/material/Button";
 import Divider from "@mui/material/Divider";
 import Paper from "@mui/material/Paper";
 import DarkLightButton from "../darkLightButton/darkLightButton";
 import { useThemeMode } from "../../theme/themeModeProvider";
 import { selectedSection } from "../../libs/navigation";
+import { useEffect, useState } from "react";
+import toolReactController from "../../toolController";
+import { Chip, CircularProgress } from "@mui/material";
+import Brightness1Icon from "@mui/icons-material/Brightness1";
 
-function Navbar(){
-
+function Navbar() {
   const { mode } = useThemeMode();
-	const navigate = useNavigate();
-  const {pathname} = useLocation();
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
 
-	return(
-		<Paper className="navbar-paper">
+  const [toolStatus, setToolStatus] = useState("checking");
+
+  const computeStatus = (payload) =>
+    payload?.ok && Object.values(payload.components ?? {}).every((c) => c === "up")
+      ? "tool_on"
+      : "tool_off";
+
+  useEffect(() => {
+    toolReactController.startPolling(5000);
+
+    const off = toolReactController.onMessage({
+      onToolUpdate: (payload) => setToolStatus(computeStatus(payload)),
+    });
+
+    toolReactController
+      .getHealth()
+      .then((data) => setToolStatus(computeStatus(data)))
+      .catch(() => setToolStatus("tool_off"));
+
+    return () => {
+      off?.();
+      toolReactController.stopPolling();
+    };
+  }, []);
+
+  return (
+    <Paper className="navbar-paper">
       <div className="logo-div">
-        <img src={mode === "dark" ? LogoLight : LogoDark} alt="OntoWeb-PT" className="logo" />
+        <img
+          src={mode === "dark" ? LogoLight : LogoDark}
+          alt="OntoWeb-PT"
+          className="logo"
+        />
       </div>
+
       <div className="buttons-div">
-        <Button disabled={selectedSection(pathname, "home")} onClick={() => navigate("/home")}>Home</Button>
+        <Button disabled={selectedSection(pathname, "home")} onClick={() => navigate("/home")}>
+          Home
+        </Button>
         <Divider orientation="vertical" />
-        <Button disabled={selectedSection(pathname, "techstack")} onClick={() => navigate("/techstack")}>Technology Stack</Button>
+        <Button disabled={selectedSection(pathname, "techstack")} onClick={() => navigate("/techstack")}>
+          Technology Stack
+        </Button>
         <Divider orientation="vertical" />
-        <Button disabled={selectedSection(pathname, "analyzer")} onClick={() => navigate("/analyzer")}>Analyzer</Button>
+        <Button disabled={selectedSection(pathname, "analyzer")} onClick={() => navigate("/analyzer")}>
+          Analyzer
+        </Button>
         <Divider orientation="vertical" />
-        <Button disabled={selectedSection(pathname, "interceptor")} onClick={() => navigate("/interceptor")}>Interceptor</Button>
+        <Button disabled={selectedSection(pathname, "interceptor")} onClick={() => navigate("/interceptor")}>
+          Interceptor
+        </Button>
       </div>
+
       <div className="options-div">
+        <Chip
+          label={toolStatus === "checking" ? "Tool Checking" : toolStatus === "tool_on" ? "Tool On" : "Tool Off"}
+          icon={
+            toolStatus === "checking" ? (
+              <CircularProgress size={16} className="checking-icon" />
+            ) : (
+              <Brightness1Icon />
+            )
+          }
+          color={toolStatus === "checking" ? "warning" : toolStatus === "tool_on" ? "success" : "error"}
+          variant="outlined"
+          className="toolstatus-chip"
+        />
         <DarkLightButton />
       </div>
-		</Paper>
-	)
+    </Paper>
+  );
 }
 
 export default Navbar;

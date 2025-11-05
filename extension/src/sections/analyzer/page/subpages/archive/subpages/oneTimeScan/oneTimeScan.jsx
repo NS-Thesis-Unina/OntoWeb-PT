@@ -7,6 +7,7 @@ import { enqueueSnackbar } from "notistack";
 import OneTimeScanResults from "../../../components/oneTimeScanResults/oneTimeScanResults";
 import { formatWhen, getDomainAccurate } from "../../../../../../../libs/formatting";
 import RefreshIcon from '@mui/icons-material/Refresh';
+import browser from "webextension-polyfill";
 
 function OneTimeScanArchiveAnalyzer() {
 
