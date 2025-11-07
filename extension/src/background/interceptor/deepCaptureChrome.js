@@ -1,6 +1,5 @@
 // deepCaptureChrome.js
 // Deep capture via Chrome DevTools Protocol (Chromium-based browsers).
-// Requires "debugger" permission in manifest (you already have it).
 // Exports: DeepCaptureChrome, isChromeLike
 
 const isChromeLike = typeof chrome !== "undefined" && !!chrome.debugger;
@@ -8,8 +7,8 @@ const isChromeLike = typeof chrome !== "undefined" && !!chrome.debugger;
 class DeepCaptureChrome {
   constructor(onEntry) {
     this.onEntry = onEntry;              // function(entry, tabId, frameUrl)
-    this.attachedTabs = new Set();       // tabIds we called attach on
-    this.sessions = new Map();           // sessionId -> { tabId, requests: Map() }
+    this.attachedTabs = new Set();
+    this.sessions = new Map();
     this.boundOnEvent = this._onEvent.bind(this);
     this._listening = false;
   }
@@ -23,14 +22,10 @@ class DeepCaptureChrome {
         if (chrome.runtime.lastError) return resolve(false);
         this.attachedTabs.add(tabId);
 
-        // Enable Network domain for the main target; we'll also set auto-attach
         chrome.debugger.sendCommand({ tabId }, "Network.enable", {}, () => {
           chrome.debugger.sendCommand({ tabId }, "Target.setAutoAttach", {
-            autoAttach: true,
-            waitForDebuggerOnStart: false,
-            flatten: true
+            autoAttach: true, waitForDebuggerOnStart: false, flatten: true
           }, () => {
-            // Start listening once (global across tabs)
             if (!this._listening) {
               chrome.debugger.onEvent.addListener(this.boundOnEvent);
               this._listening = true;
@@ -60,44 +55,34 @@ class DeepCaptureChrome {
   _ensureSession(sessionId, tabId) {
     if (!this.sessions.has(sessionId)) {
       this.sessions.set(sessionId, { tabId, requests: new Map(), frameUrlMap: new Map() });
-      // enable network in the session (best effort)
-      try {
-        chrome.debugger.sendCommand({ tabId }, "Network.enable", { sessionId }, () => {});
-      } catch {}
+      try { chrome.debugger.sendCommand({ tabId }, "Network.enable", { sessionId }, () => {}); } catch {}
     }
     return this.sessions.get(sessionId);
   }
 
+  _isHttp(u) { return typeof u === "string" && /^https?:/i.test(u); }
+
   _onEvent(source, method, params) {
-    // source.tabId exists for all events we receive
     const tabId = source?.tabId;
-    // some events include sessionId (for auto-attached subtargets)
     const sessionId = params?.sessionId || undefined;
 
-    // When a new target (iframe/worker) is attached (Target.attachedToTarget),
-    // the event contains sessionId and targetInfo.
     if (method === "Target.attachedToTarget") {
       const sId = params?.sessionId;
       const targetInfo = params?.targetInfo;
       if (!sId || !tabId) return;
       const sess = this._ensureSession(sId, tabId);
-      // store frame url if available
       if (targetInfo?.url) sess.frameUrlMap.set(sId, targetInfo.url);
-      // enable network for this session
-      try {
-        chrome.debugger.sendCommand({ tabId }, "Network.enable", { sessionId: sId }, () => {});
-      } catch {}
+      try { chrome.debugger.sendCommand({ tabId }, "Network.enable", { sessionId: sId }, () => {}); } catch {}
       return;
     }
 
-    // If sessionId present try session-store, otherwise create a "main:tabId" session
     const actualSessionId = sessionId || ("main:" + tabId);
     const sess = this._ensureSession(actualSessionId, tabId);
     const store = sess.requests;
 
-    // requestWillBeSent
     if (method === "Network.requestWillBeSent") {
       const { requestId, request, documentURL, frameId } = params;
+      if (!this._isHttp(request?.url)) return; // filter non-http(s)
       store.set(requestId, {
         url: request?.url || "",
         method: request?.method || "GET",
@@ -110,10 +95,10 @@ class DeepCaptureChrome {
       return;
     }
 
-    // responseReceived
     if (method === "Network.responseReceived") {
       const { requestId, response } = params;
-      const rec = store.get(requestId) || { url: response?.url || "", method: "GET", ts: Date.now() };
+      const rec = store.get(requestId);
+      if (!rec) return;
       rec.status = response?.status;
       rec.statusText = response?.statusText || "";
       rec.responseHeaders = response?.headers || {};
@@ -124,23 +109,23 @@ class DeepCaptureChrome {
       return;
     }
 
-    // requestServedFromCache
     if (method === "Network.requestServedFromCache") {
       const { requestId } = params;
-      const rec = store.get(requestId) || { ts: Date.now() };
+      const rec = store.get(requestId);
+      if (!rec) return;
       rec.servedFromCache = true;
       store.set(requestId, rec);
       return;
     }
 
-    // loadingFailed
     if (method === "Network.loadingFailed") {
       const { requestId, errorText } = params;
-      const rec = store.get(requestId) || { ts: Date.now() };
+      const rec = store.get(requestId);
+      if (!rec) return;
       const entry = {
         meta: { ts: rec.ts || Date.now(), tabId, pageUrl: rec.documentURL || null, frameId: rec.frameId || null },
         request: {
-          url: rec.url || "",
+          url: rec.url,
           method: rec.method || "GET",
           headers: rec.requestHeaders || {},
           body: rec.requestBody || null,
@@ -155,13 +140,11 @@ class DeepCaptureChrome {
       return;
     }
 
-    // loadingFinished -> attempt to getResponseBody
     if (method === "Network.loadingFinished") {
       const { requestId } = params;
       const rec = store.get(requestId);
       if (!rec) return;
 
-      // Build callback to call onEntry once we have body (or not)
       const cb = (res) => {
         const body = res?.body ?? null;
         const base64Encoded = !!res?.base64Encoded;
@@ -172,7 +155,7 @@ class DeepCaptureChrome {
           meta: { ts: rec.ts || Date.now(), tabId, pageUrl: rec.documentURL || null, frameId: rec.frameId || null },
           request: {
             url: rec.url,
-            method: rec.method,
+            method: rec.method || "GET",
             headers: rec.requestHeaders || {},
             body: rec.requestBody || null,
             bodyEncoding: rec.requestBody ? "text" : "none",
@@ -192,24 +175,17 @@ class DeepCaptureChrome {
           }
         };
 
-        try { this.onEntry(entry, tabId, rec.documentURL || null); } catch (e) {}
+        try { this.onEntry(entry, tabId, rec.documentURL || null); } catch {}
         store.delete(requestId);
       };
 
-      // Try to get body; if it fails, still call cb with null
       try {
-        // pass sessionId if this is a sub-session (some chrome versions require it)
         const extra = {};
         if (sessionId) extra.sessionId = sessionId;
         chrome.debugger.sendCommand({ tabId }, "Network.getResponseBody", { requestId, ...extra }, (res) => {
-          if (chrome.runtime.lastError) {
-            // body not available, call cb without body
-            cb(null);
-          } else {
-            cb(res);
-          }
+          if (chrome.runtime.lastError) cb(null); else cb(res);
         });
-      } catch (e) {
+      } catch {
         cb(null);
       }
       return;

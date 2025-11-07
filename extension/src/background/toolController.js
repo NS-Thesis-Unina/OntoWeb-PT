@@ -16,12 +16,8 @@ class ToolBackgroundController {
         case "tool_getHealth": {
           this.engine.checkHealth()
             .then((data) => sendResponse(data))
-            .catch(() => sendResponse(this.engine.getCachedStatus()));
-          return true; // async response
-        }
-        case "tool_getCachedHealth": {
-          sendResponse(this.engine.getCachedStatus());
-          return true;
+            .catch(() => sendResponse(this.engine.getCachedStatus?.() ?? this.engine.status));
+          return true; // async
         }
         case "tool_startPolling": {
           const ms = Number(message.intervalMs) || 15000;
@@ -32,6 +28,12 @@ class ToolBackgroundController {
         case "tool_stopPolling": {
           this.engine.stopPolling();
           sendResponse({ ok: true });
+          return true;
+        }
+        case "tool_ingestHttp": {
+          this.engine.ingestHttp(message.payload)
+            .then((data) => sendResponse(data))
+            .catch((err) => sendResponse({ accepted: false, error: String(err?.message || err) }));
           return true;
         }
         default:

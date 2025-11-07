@@ -1,4 +1,4 @@
-import { Backdrop, Button, Chip, CircularProgress, Grid, Paper, Typography, Zoom, Alert } from "@mui/material";
+import { Backdrop, Button, Chip, CircularProgress, Grid, Paper, Typography, Zoom, Alert, FormGroup, FormControlLabel, Checkbox, Divider, Stack } from "@mui/material";
 import "./runtimeScan.css";
 import Collapsible from '../../../../../components/collapsible/collapsible';
 import { useCallback, useEffect, useState } from "react";
@@ -103,7 +103,10 @@ function RuntimeScanInterceptor(){
         enqueueSnackbar(`Another scan is running (${l?.label || l?.owner}). Stop it before starting a new one.`, { variant: "warning" });
         return;
       }
-      await interceptorReactController.start();
+      await interceptorReactController.start({
+        types: { http: true, beacon: true, sse: true, websocket: true },
+        maxBodyBytes: 1572864 // 1.5 MB
+      });
       refreshStatus();
     }
   };
@@ -129,58 +132,54 @@ function RuntimeScanInterceptor(){
       <Paper className="description">
         <Zoom in={true}>
           <Typography variant="body2">
-            <strong>Interceptor</strong> captures requests and responses as you browse, directly from the page context 
-            (fetch/XMLHttpRequest). For each event it records the method, URL, headers, <em>request body</em>, status, 
-            <em> response body</em> (with a size limit), and a timestamp. You can start or stop it at any time.
+            <strong>Interceptor</strong> captures HTTP requests and responses as you browse, directly from the page
+            context (fetch/XMLHttpRequest). For each event it records the method, URL, headers, <em>request body</em>,
+            status, <em>response body</em> (with a size limit), and a timestamp.
           </Typography>
         </Zoom>
       </Paper>
 
       <Collapsible defaultOpen={false} title="Info Output">
-        <p>The runtime network capture returns a structured record for each intercepted event 
-          (fetch, XHR, beacon, SSE, WebSocket), grouped by page/domain and summarized in the 
-          grid. Each event contains the sections below.
+        <p>
+          The runtime network capture produces a structured record for each intercepted HTTP event
+          (fetch and XHR), grouped by page/domain and summarized in the grid. Each event includes
+          the sections below.
         </p>
         <strong>Request</strong>
-        <ul className="ul"> 
-          <li><strong>url</strong>: absolute request URL (may be extension, http/https, ws/wss).</li> 
-          <li><strong>method</strong>: HTTP verb or channel marker (e.g., <code>WS_SEND</code>).</li>
-          <li><strong>headers</strong>: request headers as a case-preserving object.</li> 
-          <li><strong>body</strong>: text for textual payloads, Base64 for binary/large bodies.</li> 
-          <li><strong>bodyEncoding</strong>: <code>text</code>, <code>base64</code>, or <code>none</code>.</li> 
-          <li><strong>bodySize</strong>: original payload size in bytes.</li> 
+        <ul className="ul">
+          <li><strong>url</strong>: absolute request URL (http/https).</li>
+          <li><strong>method</strong>: HTTP verb (e.g., <code>GET</code>, <code>POST</code>).</li>
+          <li><strong>headers</strong>: request headers as a case-preserving object.</li>
+          <li><strong>body</strong>: text for textual payloads, Base64 for binary/large bodies.</li>
+          <li><strong>bodyEncoding</strong>: <code>text</code>, <code>base64</code>, or <code>none</code>.</li>
+          <li><strong>bodySize</strong>: original payload size in bytes.</li>
           <li><strong>truncated</strong>: <code>true</code> when the body exceeds the configured threshold.</li>
         </ul>
 
         <strong>Response</strong>
-        <ul className="ul"> 
-          <li><strong>status</strong> and <strong>statusText</strong> with channel labels where applicable.</li>
-          <li><strong>headers</strong>: response headers stored as an object.</li> 
+        <ul className="ul">
+          <li><strong>status</strong> and <strong>statusText</strong> returned by the server.</li>
+          <li><strong>headers</strong>: response headers stored as an object.</li>
           <li><strong>body</strong>: text for textual payloads, Base64 for binary/large bodies.</li>
-          <li><strong>bodyEncoding</strong> and <strong>bodySize</strong>, plus <strong>truncated</strong> flag.</li> 
-          <li><strong>servedFromCache</strong> and <strong>fromServiceWorker</strong> when detectable.</li> 
+          <li><strong>bodyEncoding</strong> and <strong>bodySize</strong>, plus <strong>truncated</strong> flag.</li>
+          <li><strong>servedFromCache</strong> and <strong>fromServiceWorker</strong> when detectable.</li>
         </ul>
 
         <strong>Meta</strong>
-        <ul className="ul"> 
+        <ul className="ul">
           <li><strong>pageUrl</strong>, <strong>tabId</strong> (when available), <strong>ts</strong> (ms).</li>
         </ul>
 
-        <strong>Special channels</strong>
-        <ul className="ul"> 
-          <li><strong>sendBeacon</strong>, <strong>EventSource</strong>, <strong>WebSocket</strong> markers are included.</li> 
-        </ul>
-
-        <strong>Grouping & summary</strong>
-        <ul className="ul"> 
+        <strong>Grouping &amp; summary</strong>
+        <ul className="ul">
           <li>Events are grouped by the requesting page’s domain/URL.</li>
           <li>The header reports start/stop, total events, unique pages, and total bytes.</li>
         </ul>
 
         <strong>Grid columns</strong>
-        <ul className="ul"> 
-          <li><strong>Method</strong>, <strong>URL</strong>, <strong>Status</strong>, <strong>Status Text</strong>, <strong>Content-Type</strong>, with a details dialog for full inspection.</li> 
-        </ul> 
+        <ul className="ul">
+          <li><strong>Method</strong>, <strong>URL</strong>, <strong>Status</strong>, <strong>Status Text</strong>, <strong>Content-Type</strong>, with a details dialog for full inspection.</li>
+        </ul>
       </Collapsible>
 
       <Button

@@ -2,9 +2,10 @@ import browser from "webextension-polyfill";
 import { DeepCaptureChrome, isChromeLike } from "./deepCaptureChrome.js";
 import { DeepCaptureFirefox, isFirefoxLike } from "./deepCaptureFirefox.js";
 
-const MAX_BODY_BYTES = 1024 * 1024; // 1 MB per body
+const MAX_BODY_BYTES_DEFAULT = 1024 * 1024;
 const DATASET_KEY_PREFIX = "interceptorRun_";
 const LAST_KEY = "interceptorRun_lastKey";
+const FLAGS_KEY = "interceptor_flags";
 
 class InterceptorEngine {
   constructor() {
@@ -19,9 +20,15 @@ class InterceptorEngine {
     this._deepChrome = null;
     this._deepFirefox = null;
     this._navListenerAdded = false;
+
+    // Safe defaults: only HTTP enabled
+    this._flags = {
+      types: { http: true, beacon: false, sse: false, websocket: false },
+      maxBodyBytes: MAX_BODY_BYTES_DEFAULT
+    };
   }
 
-  async start({ onUpdate, onComplete } = {}) {
+  async start({ config, onUpdate, onComplete } = {}) {
     if (this._active) return;
     this._active = true;
     this._startedAt = Date.now();
@@ -30,16 +37,25 @@ class InterceptorEngine {
     this._totalBytes = 0;
     this._callbacks = { onUpdate: onUpdate || null, onComplete: onComplete || null };
 
-    // Best-effort deep capture per browser family.
-    if (isChromeLike) {
+    const cfg = config || {};
+    const types = {
+      http: true,
+      beacon: false,
+      sse: false,
+      websocket: false,
+      ...(cfg.types || {})
+    };
+    const maxBodyBytes = Number(cfg.maxBodyBytes) > 0 ? Number(cfg.maxBodyBytes) : MAX_BODY_BYTES_DEFAULT;
+    this._flags = { types, maxBodyBytes };
+
+    // Persist flags for the content script
+    try { await browser.storage.local.set({ [FLAGS_KEY]: this._flags }); } catch {}
+
+    // Deep-capture only if HTTP is enabled
+    if (types.http && isChromeLike) {
       try {
         this._deepChrome = new DeepCaptureChrome((entry, tabId, pageUrl) => {
-          const normalized = {
-            meta: entry.meta || { ts: Date.now(), tabId, pageUrl },
-            request: entry.request || null,
-            response: entry.response || null
-          };
-          this._ingestDirect(normalized, pageUrl || normalized.meta.pageUrl || null);
+          this._ingestDirect(entry, pageUrl || entry?.meta?.pageUrl || null);
         });
         const tabs = await browser.tabs.query({});
         for (const t of tabs) {
@@ -47,29 +63,20 @@ class InterceptorEngine {
             try { await this._deepChrome.attachToTab(t.id); } catch {}
           }
         }
-      } catch {
-        this._deepChrome = null;
-      }
+      } catch { this._deepChrome = null; }
     }
 
-    if (isFirefoxLike) {
+    if (types.http && isFirefoxLike) {
       try {
         this._deepFirefox = new DeepCaptureFirefox((entry, tabId, pageUrl) => {
-          const normalized = {
-            meta: entry.meta || { ts: Date.now(), tabId, pageUrl },
-            request: entry.request || null,
-            response: entry.response || null
-          };
-          this._ingestDirect(normalized, pageUrl || normalized.meta.pageUrl || null);
+          this._ingestDirect(entry, pageUrl || entry?.meta?.pageUrl || null);
         });
-      } catch {
-        this._deepFirefox = null;
-      }
+      } catch { this._deepFirefox = null; }
     }
 
-    // Early attach on navigation commits.
+    // Auto-attach on navigations for HTTP
     try {
-      if (!this._navListenerAdded && chrome?.webNavigation?.onCommitted) {
+      if (types.http && !this._navListenerAdded && chrome?.webNavigation?.onCommitted) {
         chrome.webNavigation.onCommitted.addListener(({ tabId, url, frameId }) => {
           if (!this._active) return;
           if (frameId === 0 && /^https?:/i.test(url)) {
@@ -80,12 +87,12 @@ class InterceptorEngine {
       }
     } catch {}
 
-    // Fallback injection + tab updates.
+    // Fallback injection + tab updates
     this._onTabsUpdatedRef = async (tabId, changeInfo, tab) => {
       if (!this._active) return;
       if ((changeInfo.status === "loading" || changeInfo.status === "complete") && tab?.url && /^https?:/i.test(tab.url)) {
         await this._inject(tabId);
-        if (this._deepChrome) { try { await this._deepChrome.attachToTab(tabId); } catch {} }
+        if (types.http && this._deepChrome) { try { await this._deepChrome.attachToTab(tabId); } catch {} }
       }
     };
     try { browser.tabs.onUpdated.addListener(this._onTabsUpdatedRef); } catch {}
@@ -95,7 +102,7 @@ class InterceptorEngine {
       for (const t of existingTabs) {
         if (t?.id && t?.url && /^https?:/i.test(t.url)) {
           await this._inject(t.id);
-          if (this._deepChrome) { try { await this._deepChrome.attachToTab(t.id); } catch {} }
+          if (types.http && this._deepChrome) { try { await this._deepChrome.attachToTab(t.id); } catch {} }
         }
       }
     } catch {}
@@ -123,13 +130,11 @@ class InterceptorEngine {
     try { this._onTabsUpdatedRef && browser.tabs.onUpdated.removeListener(this._onTabsUpdatedRef); } catch {}
     this._onTabsUpdatedRef = null;
 
-    // Detach deep captures.
     try { if (this._deepChrome) await this._deepChrome.detachFromAll(); } catch {}
     try { if (this._deepFirefox) await this._deepFirefox.destroy?.(); } catch {}
     this._deepChrome = null;
     this._deepFirefox = null;
 
-    // Emits light completion payload; UI reads full run from storage by key.
     this._callbacks.onComplete?.({ ok: true, key, run: this._stripDataset(run) });
     return { ok: true, key, run: this._stripDataset(run) };
   }
@@ -172,7 +177,7 @@ class InterceptorEngine {
     try {
       const pageUrl = payload.pageUrl || sender?.tab?.url || "(unknown_page)";
       const tabId = sender?.tab?.id ?? null;
-      const meta = { ts: payload.ts || Date.now(), tabId, pageUrl };
+      const meta = { ts: payload?.ts || Date.now(), tabId, pageUrl };
       const entry = { meta, request: payload.request || null, response: payload.response || null };
       this._ingestDirect(entry, pageUrl);
     } catch {}
@@ -216,7 +221,6 @@ class InterceptorEngine {
   }
 
   _stripDataset(run) {
-    // Provides metadata only to keep messages small.
     return {
       startedAt: run.startedAt,
       stoppedAt: run.stoppedAt,
@@ -228,4 +232,4 @@ class InterceptorEngine {
 }
 
 export default InterceptorEngine;
-export { MAX_BODY_BYTES, DATASET_KEY_PREFIX, LAST_KEY };
+export { MAX_BODY_BYTES_DEFAULT as MAX_BODY_BYTES, DATASET_KEY_PREFIX, LAST_KEY, FLAGS_KEY };

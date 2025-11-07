@@ -29,7 +29,9 @@ function Navbar() {
     toolReactController.startPolling(5000);
 
     const off = toolReactController.onMessage({
-      onToolUpdate: (payload) => setToolStatus(computeStatus(payload)),
+      onToolUpdate: (payload) => {
+        setToolStatus(computeStatus(payload));
+      }
     });
 
     toolReactController

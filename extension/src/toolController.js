@@ -3,15 +3,8 @@ import browser from "webextension-polyfill";
 const toolReactController = {
   async getHealth() {
     try {
+      console.log("React Tool Send message")
       return await browser.runtime.sendMessage({ type: "tool_getHealth" });
-    } catch {
-      return { ok: false, components: { server: "down", redis: "down", graphdb: "down" } };
-    }
-  },
-
-  async getCachedHealth() {
-    try {
-      return await browser.runtime.sendMessage({ type: "tool_getCachedHealth" });
     } catch {
       return { ok: false, components: { server: "down", redis: "down", graphdb: "down" } };
     }
@@ -30,6 +23,15 @@ const toolReactController = {
       return await browser.runtime.sendMessage({ type: "tool_stopPolling" });
     } catch {
       return { ok: false };
+    }
+  },
+
+  async ingestHttp(payload) {
+    try {
+      const res = await browser.runtime.sendMessage({ type: "tool_ingestHttp", payload });
+      return res;
+    } catch (err) {
+      return { accepted: false, error: String(err?.message || err) };
     }
   },
 
