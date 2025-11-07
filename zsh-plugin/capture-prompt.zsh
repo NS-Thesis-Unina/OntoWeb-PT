@@ -130,23 +130,16 @@ preexec() {
                 ;;
         esac
 
-        ts=$(date +"%Y-%m-%d %H:%M:%S")
-        pcap_file="${LOG_DIRECTORY}/traffic_${CAPTURE_CMD_INDEX}.pcap"
-
-        echo "[capture] → Starting tcpdump for command: $1"
-        echo "[capture] → Saving to: $pcap_file"
-
-        # sudo tcpdump -U -i any -w "$pcap_file" &
-        # TCPDUMP_PID=$!
+        export SSLKEYLOGFILE="$LOG_DIRECTORY/sslkeys.log"
         
+        ts_start=$(date +"%Y-%m-%d %H:%M:%S")
+
         eval "$1" </dev/tty >/dev/tty 2>&1
-        CMD_STATUS=$?
         
-        # kill "$TCPDUMP_PID" >/dev/null 2>&1
-        # wait "$TCPDUMP_PID" 2>/dev/null
-        # echo "[capture] → tcpdump stopped (PID $TCPDUMP_PID)"
-
-        echo "{\"index\":${CAPTURE_CMD_INDEX},\"timestamp\":\"${ts}\",\"command\":$(jq -Rn --arg c "$1" '$c'),\"pcap_file\":\"${pcap_file}\",\"status\":${CMD_STATUS}}" >> "$LOG_DIRECTORY/commands.ndjson"
+        CMD_STATUS=$?
+        ts_end=$(date +"%Y-%m-%d %H:%M:%S")
+        
+        echo "{\"index\":${CAPTURE_CMD_INDEX},\"timestamp start\":\"${ts_start}\",\"timestamp end\":\"${ts_end}\",\"command\":$(jq -Rn --arg c "$1" '$c'),\"pcap_file\":\"${pcap_file}\",\"status\":${CMD_STATUS}}" >> "$LOG_DIRECTORY/commands.ndjson"
 
         (( CAPTURE_CMD_INDEX++ ))
 
