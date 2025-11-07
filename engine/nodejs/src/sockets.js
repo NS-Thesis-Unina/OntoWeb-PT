@@ -1,24 +1,27 @@
-// sockets.js
 const { Server } = require('socket.io');
 const { QueueEvents } = require('bullmq');
-const { connection, queueNameHttpRequestsWrites, queueNameSparqlWrites } = require('./queue');
+const {
+  connection,
+  queueNameHttpRequestsWrites,
+  queueNameSparqlWrites,
+  queueNameTechstackWrites,
+} = require('./queue');
 const { makeLogger } = require('./utils');
 
 module.exports = async function attachSockets(httpServer) {
   const log = makeLogger('ws');
 
   const io = new Server(httpServer, {
-    cors: { origin: process.env.SOCKETS_CORS_ORIGIN || '*' }
+    cors: { origin: process.env.SOCKETS_CORS_ORIGIN || '*' },
   });
 
-  // QueueEvents: listen for BullMQ events (one per queue, shared among all clients)
   const qHttp = new QueueEvents(queueNameHttpRequestsWrites, { connection });
-  const qSp   = new QueueEvents(queueNameSparqlWrites,        { connection });
+  const qSp = new QueueEvents(queueNameSparqlWrites, { connection });
+  const qTech = new QueueEvents(queueNameTechstackWrites, { connection }); 
 
-  await Promise.all([qHttp.waitUntilReady(), qSp.waitUntilReady()]);
+  await Promise.all([qHttp.waitUntilReady(), qSp.waitUntilReady(), qTech.waitUntilReady()]);
   log.info('QueueEvents ready');
 
-  // Handle client connections
   io.on('connection', (socket) => {
     log.info('client connected', { sid: socket.id });
 
@@ -37,7 +40,7 @@ module.exports = async function attachSockets(httpServer) {
     socket.on('disconnect', () => log.info('client disconnected', { sid: socket.id }));
   });
 
-  // Fan-out: broadcast BullMQ events to the corresponding jobId room
+  // Fan-out helper
   const forward = (queue) => (evt, payload) => {
     const { jobId } = payload || {};
     if (!jobId) return;
@@ -45,20 +48,19 @@ module.exports = async function attachSockets(httpServer) {
   };
 
   const fHttp = forward('http');
-  const fSp   = forward('sparql');
+  const fSp = forward('sparql');
+  const fTech = forward('techstack');
 
-  // Forward BullMQ events for HTTP jobs
-  qHttp.on('progress',  (p) => fHttp('progress',  p));
+  // Event forwarding
   qHttp.on('completed', (p) => fHttp('completed', p));
-  qHttp.on('failed',    (p) => fHttp('failed',    p));
+  qSp.on('completed', (p) => fSp('completed', p));
+  qTech.on('completed', (p) => fTech('completed', p));
 
-  // Forward BullMQ events for SPARQL jobs
-  qSp.on('progress',    (p) => fSp('progress',    p));
-  qSp.on('completed',   (p) => fSp('completed',   p));
-  qSp.on('failed',      (p) => fSp('failed',      p));
+  qHttp.on('failed', (p) => fHttp('failed', p));
+  qSp.on('failed', (p) => fSp('failed', p));
+  qTech.on('failed', (p) => fTech('failed', p)); 
 
-  // Log any QueueEvents-related errors
-  [qHttp, qSp].forEach((qe) =>
+  [qHttp, qSp, qTech].forEach((qe) =>
     qe.on('error', (err) => log.warn('QueueEvents error', err?.message || err))
   );
 

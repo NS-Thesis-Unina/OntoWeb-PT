@@ -53,4 +53,7 @@ module.exports = {
 
   // GraphDB (Select/Update)
   graphdb: require('./graphdb/client'),
+  
+  // Techstack resolver 
+  techstack: require('./techstack/resolveTechstack'),
 };

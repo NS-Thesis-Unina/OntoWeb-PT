@@ -3,8 +3,7 @@ const { makeLogger } = require('./utils');
 const logQ = makeLogger('bull');
 const logR = makeLogger('redis');
 
-// Shared Redis connection for producers/workers.
-// Exponential backoff and optional quiet mode to avoid noisy ECONNREFUSED spam.
+// Shared Redis connection
 const connection = {
   host: process.env.REDIS_HOST || '127.0.0.1',
   port: Number(process.env.REDIS_PORT || 6379),
@@ -18,11 +17,15 @@ const connection = {
   },
 };
 
+// === Queue names ===
 const queueNameHttpRequestsWrites =
   process.env.QUEUE_NAME_HTTP_REQUESTS_WRITES || 'http-requests-writes';
 const queueNameSparqlWrites =
   process.env.QUEUE_NAME_SPARQL_WRITES || 'sparql-writes';
+const queueNameTechstackWrites =
+  process.env.QUEUE_NAME_TECHSTACK_WRITES || 'techstack-analyze';
 
+// === HTTP Requests queue ===
 const queueHttpRequests = new Queue(queueNameHttpRequestsWrites, {
   connection,
   defaultJobOptions: {
@@ -36,6 +39,7 @@ const queueHttpRequests = new Queue(queueNameHttpRequestsWrites, {
   },
 });
 
+// === SPARQL queue ===
 const queueSparql = new Queue(queueNameSparqlWrites, {
   connection,
   defaultJobOptions: {
@@ -49,27 +53,41 @@ const queueSparql = new Queue(queueNameSparqlWrites, {
   },
 });
 
-// Suppress common connection noise when QUIET_REDIS_ERRORS=1
-queueHttpRequests.on('error', (err) => {
-  if (
-    process.env.QUIET_REDIS_ERRORS === '1' &&
-    /ECONNREFUSED|getaddrinfo|ETIMEDOUT/i.test(String(err?.message))
-  ) return;
-  logQ.warn(`[${queueNameHttpRequestsWrites}] error`, err?.message || err);
+// === TECHSTACK queue ===
+const queueTechstack = new Queue(queueNameTechstackWrites, {
+  connection,
+  defaultJobOptions: {
+    attempts: Number(process.env.JOB_TECHSTACK_ATTEMPTS) || 3,
+    backoff: {
+      type: process.env.JOB_TECHSTACK_BACKOFF_TYPE || 'exponential',
+      delay: Number(process.env.JOB_TECHSTACK_BACKOFF_DELAY) || 2000,
+    },
+    removeOnComplete: Number(process.env.JOB_TECHSTACK_REMOVE_ON_COMPLETE) || 300,
+    removeOnFail: Number(process.env.JOB_TECHSTACK_REMOVE_ON_FAIL) || 800,
+  },
 });
 
-queueSparql.on('error', (err) => {
-  if (
-    process.env.QUIET_REDIS_ERRORS === '1' &&
-    /ECONNREFUSED|getaddrinfo|ETIMEDOUT/i.test(String(err?.message))
-  ) return;
-  logQ.warn(`[${queueNameSparqlWrites}] error`, err?.message || err);
-});
+// Suppress noisy connection errors
+for (const [q, name] of [
+  [queueHttpRequests, queueNameHttpRequestsWrites],
+  [queueSparql, queueNameSparqlWrites],
+  [queueTechstack, queueNameTechstackWrites],
+]) {
+  q.on('error', (err) => {
+    if (
+      process.env.QUIET_REDIS_ERRORS === '1' &&
+      /ECONNREFUSED|getaddrinfo|ETIMEDOUT/i.test(String(err?.message))
+    ) return;
+    logQ.warn(`[${name}] error`, err?.message || err);
+  });
+}
 
 module.exports = {
   queueHttpRequests,
   queueSparql,
+  queueTechstack, 
   connection,
   queueNameHttpRequestsWrites,
   queueNameSparqlWrites,
+  queueNameTechstackWrites,
 };

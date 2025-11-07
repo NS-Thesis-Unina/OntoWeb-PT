@@ -5,6 +5,7 @@ const {
   connection,
   queueNameHttpRequestsWrites,
   queueNameSparqlWrites,
+  queueNameTechstackWrites, 
 } = require('./queue');
 
 const {
@@ -14,17 +15,19 @@ const {
     buildInsertFromHttpRequestsArray,
     normalizeHttpRequestsPayload,
   },
+  techstack: { resolveTechstack }, 
   monitors: {
     startRedisMonitor,
-    startGraphDBHealthProbe
+    startGraphDBHealthProbe,
   },
-  makeLogger
+  makeLogger,
 } = require('./utils');
 
 const logHttp = makeLogger('worker:http');
 const logSp = makeLogger('worker:sparql');
+const logTech = makeLogger('worker:techstack');
 
-// HTTP requests writer: builds a single INSERT (single/batch) and updates GraphDB
+// === HTTP Requests worker ===
 const workerHttpRequests = new Worker(
   queueNameHttpRequestsWrites,
   async (job) => {
@@ -63,7 +66,7 @@ workerHttpRequests.on('error', (err) => {
   logHttp.warn('worker error', err?.message || err);
 });
 
-// Generic SPARQL UPDATE worker
+// === SPARQL UPDATE worker ===
 const workerSparql = new Worker(
   queueNameSparqlWrites,
   async (job) => {
@@ -96,5 +99,42 @@ workerSparql.on('error', (err) => {
   logSp.warn('worker error', err?.message || err);
 });
 
+// === Techstack analysis worker ===
+const workerTechstack = new Worker(
+  queueNameTechstackWrites,
+  async (job) => {
+    switch (job.name) {
+      case 'techstack-analyze': {
+        const { technologies, waf, secureHeaders, cookies } = job.data || {};
+        if (!technologies || !Array.isArray(technologies)) {
+          throw new Error('Invalid technologies payload');
+        }
+
+
+        const result = await resolveTechstack({ technologies, waf, secureHeaders, cookies });
+        return { result };
+      }
+      default:
+        throw new Error(`Unknown job: ${job.name}`);
+    }
+  },
+  {
+    connection,
+    concurrency: Number(process.env.CONCURRENCY_WORKER_TECHSTACK) || 2,
+    stalledInterval: Number(process.env.STALLED_INTERVAL_WORKER_TECHSTACK) || 30000,
+  }
+);
+
+workerTechstack.on('completed', (job, result) => {
+  logTech.info(`completed job=${job.name} id=${job.id}`, { result });
+});
+workerTechstack.on('failed', (job, err) => {
+  logTech.warn(`failed job=${job?.name} id=${job?.id}`, err?.message || err);
+});
+workerTechstack.on('error', (err) => {
+  logTech.warn('worker error', err?.message || err);
+});
+
+// Monitors
 startRedisMonitor(connection, 'redis:worker');
 startGraphDBHealthProbe(runSelect, 'graphdb:worker');
