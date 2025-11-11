@@ -24,6 +24,9 @@ const queueNameSparqlWrites =
   process.env.QUEUE_NAME_SPARQL_WRITES || 'sparql-writes';
 const queueNameTechstackWrites =
   process.env.QUEUE_NAME_TECHSTACK_WRITES || 'techstack-analyze';
+const queueNameAnalyzerWrites = 
+  process.env.QUEUE_NAME_ANALYZER_WRITES || 'analyzer-writes';
+
 
 // === HTTP Requests queue ===
 const queueHttpRequests = new Queue(queueNameHttpRequestsWrites, {
@@ -67,11 +70,23 @@ const queueTechstack = new Queue(queueNameTechstackWrites, {
   },
 });
 
+// === ANALYZER queue ===
+const queueAnalyzer = new Queue(queueNameAnalyzerWrites, {
+  connection,
+  defaultJobOptions: {
+    attempts: 3,
+    backoff: { type: 'exponential', delay: 2000 },
+    removeOnComplete: 300,
+    removeOnFail: 800,
+  },
+});
+
 // Suppress noisy connection errors
 for (const [q, name] of [
   [queueHttpRequests, queueNameHttpRequestsWrites],
   [queueSparql, queueNameSparqlWrites],
   [queueTechstack, queueNameTechstackWrites],
+  [queueAnalyzer, queueNameAnalyzerWrites],
 ]) {
   q.on('error', (err) => {
     if (
@@ -86,8 +101,10 @@ module.exports = {
   queueHttpRequests,
   queueSparql,
   queueTechstack, 
+  queueAnalyzer,
   connection,
   queueNameHttpRequestsWrites,
   queueNameSparqlWrites,
   queueNameTechstackWrites,
+  queueNameAnalyzerWrites,
 };

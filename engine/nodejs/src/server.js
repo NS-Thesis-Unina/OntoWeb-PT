@@ -25,6 +25,7 @@ const {
 const sparqlRoutes = require('./routes/sparql');
 const httpRequestRoutes = require('./routes/httpRequests');
 const techStackRoutes = require('./routes/techStack');
+const analyzerRoutes = require('./routes/analyzer');
 
 const { connection } = require('./queue');
 
@@ -46,6 +47,8 @@ app.get('/health', (_req, res) => {
 app.use('/sparql', sparqlRoutes);
 app.use('/http-requests', httpRequestRoutes);
 app.use('/techstack', techStackRoutes); 
+app.use('/analyzer', analyzerRoutes);
+
 
 // Celebrate validation error handler (returns 400 with clean details)
 app.use(celebrateErrors());

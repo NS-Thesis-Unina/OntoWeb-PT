@@ -20,6 +20,8 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
+    "acorn": "^8.15.0",
+    "acorn-walk": "^8.3.4",
     "axios": "^1.7.7",
     "bullmq": "^5.7.0",
     "celebrate": "^15.0.3",

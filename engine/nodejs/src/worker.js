@@ -6,6 +6,7 @@ const {
   queueNameHttpRequestsWrites,
   queueNameSparqlWrites,
   queueNameTechstackWrites, 
+  queueNameAnalyzerWrites,
 } = require('./queue');
 
 const {
@@ -16,6 +17,7 @@ const {
     normalizeHttpRequestsPayload,
   },
   techstack: { resolveTechstack }, 
+  analyzer: { resolveAnalyzer },
   monitors: {
     startRedisMonitor,
     startGraphDBHealthProbe,
@@ -26,6 +28,8 @@ const {
 const logHttp = makeLogger('worker:http');
 const logSp = makeLogger('worker:sparql');
 const logTech = makeLogger('worker:techstack');
+const logAnalyzer = makeLogger('worker:analyzer');
+
 
 // === HTTP Requests worker ===
 const workerHttpRequests = new Worker(
@@ -133,6 +137,44 @@ workerTechstack.on('failed', (job, err) => {
 });
 workerTechstack.on('error', (err) => {
   logTech.warn('worker error', err?.message || err);
+});
+
+// === Analyzer (SAST) worker ===
+const workerAnalyzer = new Worker(
+  queueNameAnalyzerWrites,
+  async (job) => {
+    if (job.name === 'sast-analyze') {
+      const { url, html, scripts, forms, iframes, includeSnippets } = job.data || {};
+
+      // ✅ Passiamo il flag includeSnippets (default: false)
+      const result = await resolveAnalyzer({
+        url,
+        html,
+        scripts,
+        forms,
+        iframes,
+        includeSnippets: includeSnippets ?? false,
+      });
+
+      return { result };
+    }
+    throw new Error(`Unknown job: ${job.name}`);
+  },
+  {
+    connection,
+    concurrency: Number(process.env.CONCURRENCY_WORKER_ANALYZER) || 2,
+    stalledInterval: Number(process.env.STALLED_INTERVAL_WORKER_ANALYZER) || 30000,
+  }
+);
+
+workerAnalyzer.on('completed', (job, result) => {
+  logAnalyzer.info(`completed job=${job.name} id=${job.id}`, { result });
+});
+workerAnalyzer.on('failed', (job, err) => {
+  logAnalyzer.warn(`failed job=${job?.name} id=${job?.id}`, err?.message || err);
+});
+workerAnalyzer.on('error', (err) => {
+  logAnalyzer.warn('worker error', err?.message || err);
 });
 
 // Monitors
