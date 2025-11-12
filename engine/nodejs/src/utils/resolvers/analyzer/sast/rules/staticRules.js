@@ -205,10 +205,6 @@ const openRedirectRule = {
   },
 };
 
-/* ===============================================================
-   🔒 REGOLE AGGIUNTIVE PER VULNERABILITÀ WEB COMUNI
-================================================================= */
-
 const localStorageRule = {
   id: 'no-localstorage-sensitive',
   description: 'Detect access to localStorage/sessionStorage which may expose sensitive data.',
@@ -333,7 +329,6 @@ const innerScriptRule = {
    🧩 HTML-LEVEL RULES
 ================================================================= */
 
-// 1️⃣ Event handlers inline come onClick, onError, ecc.
 const htmlInlineEventRule = {
   id: 'html-inline-event',
   description: 'Detect inline event handlers (onclick, onerror, onload, etc.).',
@@ -363,7 +358,6 @@ const htmlInlineEventRule = {
   },
 };
 
-// 2️⃣ Inline style con expression() (vecchio XSS IE)
 const htmlInlineStyleRule = {
   id: 'html-inline-style-expression',
   description: 'Detect inline CSS expressions (potential XSS in old browsers).',
@@ -387,7 +381,6 @@ const htmlInlineStyleRule = {
   },
 };
 
-// 3️⃣ Iframe con srcdoc o inline base64
 const htmlIframeRule = {
   id: 'html-iframe-srcdoc',
   description: 'Detect iframes using srcdoc or base64 HTML (potential content injection).',

@@ -1,5 +1,5 @@
 const { sastEngine } = require('../analyzer/sast/sastEngine');
-const { makeLogger } = require('../logs/logger');
+const { makeLogger } = require('../../logs/logger');
 const log = makeLogger('resolver:analyzer');
 
 async function resolveAnalyzer({ scripts = [], html = '', mainDomain = null, includeSnippets = false }) {

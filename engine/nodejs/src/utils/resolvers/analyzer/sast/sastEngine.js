@@ -18,7 +18,6 @@ class sastEngine {
   }
 
   /**
-   * Analizza codice e HTML restituendo le vulnerabilità trovate
    * @param {Array<{code: string, src?: string}>} scripts
    * @param {string} html
    * @param {string} file

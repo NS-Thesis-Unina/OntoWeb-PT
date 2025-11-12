@@ -1,5 +1,5 @@
 const axios = require('axios').default;
-const { makeLogger } = require('../logs/logger');
+const { makeLogger } = require('../../logs/logger');
 const log = makeLogger('resolver:techstack');
 
 const NVD_BASE = 'https://services.nvd.nist.gov/rest/json/cves/2.0';

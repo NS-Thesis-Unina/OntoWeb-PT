@@ -43,14 +43,16 @@ module.exports = {
     httpRequests: require('./validators/httpRequests'),
     sparql: require('./validators/sparql'),
     techstack: require('./validators/techstack'),
+    analyzer: require('./validators/analyzer'),
     ...require('./validators/options'),
   },
 
   // GraphDB (Select/Update)
   graphdb: require('./graphdb/client'),
 
-  // Techstack resolver 
-  techstack: require('./techstack/resolveTechstack'),
-  // Analyzer resolver
-  analyzer: require('./analyzer/resolveAnalyzer'),
+  // Resolvers (new namespace)
+  resolvers: {
+    techstack: require('./resolvers/techstack/resolveTechstack'),
+    analyzer: require('./resolvers/analyzer/resolveAnalyzer'),
+  },
 };

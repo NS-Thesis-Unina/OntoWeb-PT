@@ -2,71 +2,22 @@
 const express = require('express');
 const router = express.Router();
 
-const { celebrate, Segments, Joi } = require('celebrate');
+const { celebrate, Segments } = require('celebrate');
 const { queueAnalyzer } = require('../queue');
-const { makeLogger } = require('../utils');
+const {
+  makeLogger,
+  validators: {
+    analyzer: { analyzerBodySchema, jobIdParamSchema },
+    celebrateOptions,
+  },
+} = require('../utils');
 
 const log = makeLogger('api:analyzer');
-
-const analyzerSchema = Joi.object({
-  url: Joi.string()
-    .pattern(/^https?:\/\/.+/i)
-    .required()
-    .messages({
-      'string.empty': '"url" is required',
-      'string.pattern.base': '"url" must start with http:// or https://',
-    }),
-
-  html: Joi.string().allow('', null).default(null),
-
-  scripts: Joi.array()
-    .items(
-      Joi.object({
-        src: Joi.string().allow('', null),
-        code: Joi.string().allow('', null),
-      }).unknown(true) // consenti eventuali chiavi extra
-    )
-    .default([]),
-
-  forms: Joi.array()
-    .items(
-      Joi.object({
-        action: Joi.string().allow('', null),
-        method: Joi.string().allow('', null), // se vuoi: .uppercase().valid('GET','POST',...)
-        inputs: Joi.array()
-          .items(
-            Joi.alternatives().try(
-              Joi.string(),
-              Joi.object({
-                name: Joi.string().allow('', null),
-                tag: Joi.string().allow('', null),
-                type: Joi.string().allow('', null),
-                value: Joi.string().allow('', null),
-                placeholder: Joi.string().allow('', null),
-              }).unknown(true) // tollera altri campi
-            )
-          )
-          .default([]),
-      }).unknown(true)
-    )
-    .default([]),
-
-  iframes: Joi.array()
-    .items(
-      Joi.object({
-        src: Joi.string().allow('', null),
-        title: Joi.string().allow('', null), // aggiunto per il tuo input
-      }).unknown(true)
-    )
-    .default([]),
-
-  includeSnippets: Joi.boolean().default(false),
-}).required();
 
 // === POST /analyzer/analyze ===
 router.post(
   '/analyze',
-  celebrate({ [Segments.BODY]: analyzerSchema }),
+  celebrate({ [Segments.BODY]: analyzerBodySchema }, celebrateOptions),
   async (req, res) => {
     try {
       const { url, html, scripts, forms, iframes, includeSnippets } = req.body || {};
@@ -108,11 +59,7 @@ router.post(
 // === GET /analyzer/results/:jobId ===
 router.get(
   '/results/:jobId',
-  celebrate({
-    [Segments.PARAMS]: Joi.object({
-      jobId: Joi.string().required(),
-    }),
-  }),
+  celebrate({ [Segments.PARAMS]: jobIdParamSchema }, celebrateOptions),
   async (req, res) => {
     try {
       const { jobId } = req.params;

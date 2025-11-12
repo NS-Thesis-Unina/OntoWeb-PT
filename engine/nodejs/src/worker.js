@@ -5,7 +5,7 @@ const {
   connection,
   queueNameHttpRequestsWrites,
   queueNameSparqlWrites,
-  queueNameTechstackWrites, 
+  queueNameTechstackWrites,
   queueNameAnalyzerWrites,
 } = require('./queue');
 
@@ -16,8 +16,10 @@ const {
     buildInsertFromHttpRequestsArray,
     normalizeHttpRequestsPayload,
   },
-  techstack: { resolveTechstack }, 
-  analyzer: { resolveAnalyzer },
+  resolvers: {
+    techstack: { resolveTechstack },
+    analyzer: { resolveAnalyzer },
+  },
   monitors: {
     startRedisMonitor,
     startGraphDBHealthProbe,
@@ -114,7 +116,6 @@ const workerTechstack = new Worker(
           throw new Error('Invalid technologies payload');
         }
 
-
         const result = await resolveTechstack({ technologies, waf, secureHeaders, cookies });
         return { result };
       }
@@ -130,13 +131,13 @@ const workerTechstack = new Worker(
 );
 
 workerTechstack.on('completed', (job, result) => {
-  logTech.info(`completed job=${job.name} id=${job.id}`, { 
+  logTech.info(`completed job=${job.name} id=${job.id}`, {
     results: {
       technologies: result.result.technologies.length,
       waf: result.result.waf.length,
       secureHeaders: result.result.secureHeaders.length,
-      cookies: result.result.cookies.length
-    } 
+      cookies: result.result.cookies.length,
+    },
   });
 });
 workerTechstack.on('failed', (job, err) => {
@@ -174,7 +175,11 @@ const workerAnalyzer = new Worker(
 );
 
 workerAnalyzer.on('completed', (job, result) => {
-  logAnalyzer.info(`completed job=${job.name} id=${job.id}`, { result });
+  logAnalyzer.info(`completed job=${job.name} id=${job.id}`, { 
+    ok: result.result.ok, 
+    totalFindings: result.result.totalFindings, 
+    stats: result.result.stats
+  });
 });
 workerAnalyzer.on('failed', (job, err) => {
   logAnalyzer.warn(`failed job=${job?.name} id=${job?.id}`, err?.message || err);
