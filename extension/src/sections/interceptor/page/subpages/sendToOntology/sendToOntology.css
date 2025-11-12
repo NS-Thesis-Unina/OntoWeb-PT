@@ -80,3 +80,26 @@
 .sendinterceptor-div .completion-box {
   padding: 24px;
 }
+
+.jobsummaries-description {
+  margin-bottom: 10px !important;
+}
+
+.jobsummaries-item {
+  padding: 5px;
+  margin-bottom: 5px !important;
+}
+
+.jobsummaries-item .item-div {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  align-items: center;
+  gap: 10px;
+}
+
+.jobsummaries-loading-div {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}

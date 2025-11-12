@@ -13,7 +13,7 @@ const {
   graphdb: { runSelect },
   makeLogger,
   validators: {
-    common: {
+    httpRequests: {
       ingestPayloadSchema,
       listQuerySchema,
       idParamSchema

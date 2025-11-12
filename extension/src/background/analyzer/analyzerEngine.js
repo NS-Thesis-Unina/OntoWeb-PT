@@ -149,12 +149,11 @@ class AnalyzerEngine {
   async getLocalScanResults() {
     try {
     const all = await browser.storage.local.get(null);
-    console.log(all);
     return Object.entries(all)
       .filter(([key]) => key.startsWith("analyzerResults_"))
       .map(([key, value]) => ({ key, results: value }));
     } catch(e){
-      console.log("analyzer engine local sscan", e);
+      //ignore
     }
   }
 

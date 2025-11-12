@@ -1,59 +1,21 @@
 const express = require('express');
 const router = express.Router();
 
-const { celebrate, Segments, Joi } = require('celebrate');
+const { celebrate, Segments } = require('celebrate');
 const { queueTechstack } = require('../queue');
-const { makeLogger } = require('../utils');
+const {
+  makeLogger,
+  validators: {
+    techstack: { techstackBodySchema, jobIdParamSchema },
+    celebrateOptions,
+  },
+} = require('../utils');
 
 const log = makeLogger('api:techstack');
 
-
-const techstackSchema = Joi.object({
-  technologies: Joi.array()
-    .items(
-      Joi.object({
-        name: Joi.string().required(),
-        version: Joi.string().allow('', null),
-      })
-    )
-    .required(),
-
-  waf: Joi.array()
-    .items(Joi.object({ name: Joi.string().required() }))
-    .default([]),
-
-  secureHeaders: Joi.array()
-    .items(
-      Joi.object({
-        header: Joi.string().required(),
-        description: Joi.string().allow('', null),
-        urls: Joi.array().items(Joi.string().uri()).default([]),
-      })
-    )
-    .default([]),
-
-
-  cookies: Joi.array()
-    .items(
-      Joi.object({
-        name: Joi.string().required(),
-        domain: Joi.string().allow('', null),
-        secure: Joi.boolean().default(false),
-        httpOnly: Joi.boolean().default(false),
-        sameSite: Joi.string().allow('', null),
-        expirationDate: Joi.number().allow(null),
-      })
-    )
-    .default([]),
-
-
-  mainDomain: Joi.string().allow('', null).default(null),
-}).required();
-
-
 router.post(
   '/analyze',
-  celebrate({ [Segments.BODY]: techstackSchema }),
+  celebrate({ [Segments.BODY]: techstackBodySchema }, celebrateOptions),
   async (req, res) => {
     try {
       const { technologies, waf, secureHeaders, cookies, mainDomain } = req.body || {};
@@ -89,14 +51,9 @@ router.post(
   }
 );
 
-
 router.get(
   '/results/:jobId',
-  celebrate({
-    [Segments.PARAMS]: Joi.object({
-      jobId: Joi.string().required(),
-    }),
-  }),
+  celebrate({ [Segments.PARAMS]: jobIdParamSchema }, celebrateOptions),
   async (req, res) => {
     try {
       const { jobId } = req.params;

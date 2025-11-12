@@ -94,9 +94,13 @@ function ScanResults({results, loadSource, titleDisabled = false}){
         title={"Technologies"} 
         titleCount={results.results.technologies.length}
         list={(results?.results?.technologies ?? [])
-          .map(t => (t && typeof t.name === 'string' ? t.name.trim() : ''))
-          .filter(Boolean)
-        }
+          .map((t) => {
+            const name = (t?.name ?? '').trim();
+            const version = String(t?.version ?? '').trim();
+            if (!name) return '';
+            return version ? `${name} - ${version}` : name;
+          })
+          .filter(Boolean)}
       />
 
       <CollapsibleSecureHeaders

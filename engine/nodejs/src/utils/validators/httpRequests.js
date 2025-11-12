@@ -1,15 +1,15 @@
 // @ts-check
+
+/**
+ * HTTP Requests validators (Celebrate/Joi)
+ * ----------------------------------------
+ * Schemas used by /routes/httpRequests.js.
+ * Logic is preserved from the previous common validators file.
+ */
+
 const { Joi } = require('celebrate');
 
-/** -------------------------------------------------------------
- * RELAXED VALIDATOR ("non rompe il cazzo")
- * -------------------------------------------------------------
- * - Keeps same method names and structure as the strict validator
- * - Removes regex / enum restrictions that caused validation errors
- * - Keeps type and length limits to avoid GraphDB overflows
- * ------------------------------------------------------------- */
-
-/** RFC 7230 "token" for HTTP header names — now optional */
+/** RFC 7230 "token" for HTTP header names — now optional (kept for reference) */
 const HEADER_TOKEN_RE = /^[!#$%&'*+.^_`|~0-9A-Za-z-]+$/;
 
 /** ID schema: relaxed, any printable string up to 256 chars */
@@ -108,6 +108,7 @@ const requestSchema = Joi.object({
 /**
  * Validate & sanitize payloads for POST /ingest-http.
  * Functional: allows any of { object | array | { items: [...] } }
+ * @type {import('joi').Schema}
  */
 const ingestPayloadSchema = Joi.alternatives().try(
   requestSchema,
@@ -118,6 +119,7 @@ const ingestPayloadSchema = Joi.alternatives().try(
 /**
  * Validate & sanitize query string for GET /http-requests/list.
  * Functional: all optional, very permissive.
+ * @type {import('joi').Schema}
  */
 const listQuerySchema = Joi.object({
   limit: Joi.number().integer().min(0).max(1000).default(10),
@@ -131,34 +133,15 @@ const listQuerySchema = Joi.object({
   text: Joi.string().trim().max(4000).optional()
 }).unknown(false);
 
-/** Path parameter :id — keep basic sanity */
+/** Path parameter :id — keep basic sanity
+ * @type {import('joi').Schema}
+ */
 const idParamSchema = Joi.object({
   id: idSchema.required()
 }).unknown(false);
 
-const sparqlMax = 100_000;         // 100 KB for SELECT/ASK
-const sparqlUpdateMax = 2_000_000; // 2 MB for UPDATE
-
-/**
- * Factory: Joi schema for POST /sparql/query.
- */
-const sparqlQuerySchema = (isSelectOrAsk) =>
-  Joi.object({
-    sparql: Joi.string().trim().max(sparqlMax).required()
-  }).unknown(false);
-
-/**
- * Factory: Joi schema for POST /sparql/update.
- */
-const sparqlUpdateSchema = (isUpdate) =>
-  Joi.object({
-    sparqlUpdate: Joi.string().trim().max(sparqlUpdateMax).required()
-  }).unknown(false);
-
 module.exports = {
   ingestPayloadSchema,
   listQuerySchema,
-  idParamSchema,
-  sparqlQuerySchema,
-  sparqlUpdateSchema
+  idParamSchema
 };

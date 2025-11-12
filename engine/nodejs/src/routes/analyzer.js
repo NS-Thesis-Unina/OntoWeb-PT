@@ -24,7 +24,7 @@ const analyzerSchema = Joi.object({
       Joi.object({
         src: Joi.string().allow('', null),
         code: Joi.string().allow('', null),
-      })
+      }).unknown(true) // consenti eventuali chiavi extra
     )
     .default([]),
 
@@ -32,14 +32,32 @@ const analyzerSchema = Joi.object({
     .items(
       Joi.object({
         action: Joi.string().allow('', null),
-        method: Joi.string().allow('', null),
-        inputs: Joi.array().items(Joi.string()).default([]),
-      })
+        method: Joi.string().allow('', null), // se vuoi: .uppercase().valid('GET','POST',...)
+        inputs: Joi.array()
+          .items(
+            Joi.alternatives().try(
+              Joi.string(),
+              Joi.object({
+                name: Joi.string().allow('', null),
+                tag: Joi.string().allow('', null),
+                type: Joi.string().allow('', null),
+                value: Joi.string().allow('', null),
+                placeholder: Joi.string().allow('', null),
+              }).unknown(true) // tollera altri campi
+            )
+          )
+          .default([]),
+      }).unknown(true)
     )
     .default([]),
 
   iframes: Joi.array()
-    .items(Joi.object({ src: Joi.string().allow('', null) }))
+    .items(
+      Joi.object({
+        src: Joi.string().allow('', null),
+        title: Joi.string().allow('', null), // aggiunto per il tuo input
+      }).unknown(true)
+    )
     .default([]),
 
   includeSnippets: Joi.boolean().default(false),

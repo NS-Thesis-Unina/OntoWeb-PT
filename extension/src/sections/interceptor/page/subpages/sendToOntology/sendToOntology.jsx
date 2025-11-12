@@ -1,6 +1,6 @@
-import { Alert, Backdrop, Box, Button, Checkbox, CircularProgress, FormControlLabel, FormGroup, Grid, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Paper, Stack, Step, StepContent, StepLabel, Stepper, Typography, Zoom } from "@mui/material";
+import { Alert, Box, Button, Checkbox, CircularProgress, FormControlLabel, FormGroup, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Paper, Stack, Step, StepContent, StepLabel, Stepper, Typography, Zoom, Divider, Dialog, DialogTitle, DialogContent, DialogActions } from "@mui/material";
 import "./sendToOntology.css";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import browser from "webextension-polyfill";
 import interceptorReactController from "../../../interceptorController";
 import { formatWhen, prettyBytes } from "../../../../../libs/formatting";
@@ -8,6 +8,8 @@ import DataGridSelectableInterceptor from "../components/dataGridSelectableInter
 import { makeBatchPayloads } from "./makeBatchPayloads";
 import toolReactController from "../../../../../toolController";
 import { getLock, subscribeLockChanges } from "../../../../../scanLock";
+import { enqueueSnackbar } from "notistack";
+import Brightness1Icon from "@mui/icons-material/Brightness1";
 
 const steps = [
   {
@@ -64,6 +66,10 @@ function SendToOntologyInterceptor(){
   const [step4ActivateResolver, setStep4ActivateResolver] = useState(false);
   const [step4LoadingSendRequests, setStep4LoadingSendRequests] = useState(false);
 
+  const [step4JobEvents, setStep4JobEvents] = useState([]);
+  const subscribedJobIdsRef = useRef(new Set());
+  const [openJobsDialog, setOpenJobsDialog] = useState(false);
+
   //Scan Lock
   useEffect(() => {
     let off = null;
@@ -97,6 +103,9 @@ function SendToOntologyInterceptor(){
 
     const off = toolReactController.onMessage({
       onToolUpdate: (payload) => setToolStatus(computeStatus(payload)),
+      onJobEvent: (evt) => {
+        setStep4JobEvents((prev) => [...prev, evt]);
+      },
     });
 
     toolReactController
@@ -129,7 +138,13 @@ function SendToOntologyInterceptor(){
         //ignore
       }
     }
-    setActiveStep((prevActiveStep) => prevActiveStep + 1);
+    setActiveStep((prevActiveStep) => {
+      if (prevActiveStep !== 4) {
+        return prevActiveStep + 1;
+      } else{
+        return prevActiveStep;
+      }
+    });
   };
 
   const handleBack = () => {
@@ -150,6 +165,13 @@ function SendToOntologyInterceptor(){
       case 4: {
         setStep3RequestsSelected([]);
         setStep4ConfirmRequestsSelected([]);
+        setStep4JobEvents([]);
+        try {
+          for (const id of subscribedJobIdsRef.current) {
+            toolReactController.unsubscribeJob(String(id)).catch(() => {});
+          }
+          subscribedJobIdsRef.current.clear();
+        } catch { /* ignore */ }
         break;
       }
       default: {
@@ -168,6 +190,14 @@ function SendToOntologyInterceptor(){
     setStep4ConfirmRequestsSelected([]);
     setStep4ActivateResolver(false);
     setContinueDisabled(false);
+    setStep4JobEvents([]);
+    try {
+      for (const id of subscribedJobIdsRef.current) {
+        toolReactController.unsubscribeJob(String(id)).catch(() => {});
+      }
+      subscribedJobIdsRef.current.clear();
+    } catch { /* ignore */ }
+    setOpenJobsDialog(false);
     setActiveStep(0);
   };
 
@@ -216,7 +246,7 @@ function SendToOntologyInterceptor(){
     }else{
       setContinueDisabled(true);
     }
-  },[activeStep, step1ScanSelected, step2WebSiteSelected, step3RequestsSelected, step4ConfirmRequestsSelected, toolStatus]); // (volendo puoi aggiungere scanLock qui)
+  },[activeStep, step1ScanSelected, step2WebSiteSelected, step3RequestsSelected, step4ConfirmRequestsSelected, toolStatus, scanLock]);
 
   //Step 1 - Scan List
   const handleToggle = (value) => () => {
@@ -288,33 +318,68 @@ function SendToOntologyInterceptor(){
     setStep4ActivateResolver(!step4ActivateResolver);
   }
 
-  const sendRequests = () => {
-    console.log("ciao")
-    setStep4LoadingSendRequests(true);
-    const payloads = makeBatchPayloads(
-      step4ConfirmRequestsSelected, 
-      {graph: "http://example.com/graphs/http-requests"}, 
-      { maxBytes: 2 * 1024 * 1024, safetyMargin: 600 * 1024 }
-    );
-    payloads.map(async (item) => {
-      try{
-        const res = await toolReactController.ingestHttp(item);
-        console.log(res);
-      }catch(e){
-        console.log(e);
+  const subscribeJob = useCallback(async (jobId) => {
+    const id = String(jobId);
+    if (subscribedJobIdsRef.current.has(id)) return;
+    subscribedJobIdsRef.current.add(id);
+    try {
+      const r = await toolReactController.subscribeJob(id);
+      if (!r?.ok) {
+        console.warn("subscribeJob failed", r);
       }
-    })
-    setStep4LoadingSendRequests(false);
-  }
+    } catch (e) {
+      console.warn("subscribeJob error", e);
+    }
+  }, []);
 
-  console.log("Scan lists", step1ScanList);
-  console.log("Website List", step2WebSiteList);
-  console.log("Website", step2WebSiteSelected);
-  console.log("Requests", step3RequestsSelected);
-  console.log("Confirm", step4ConfirmRequestsSelected);
-  console.log("Activate Resolver", step4ActivateResolver);
-  console.log("Tool Status", toolStatus);
-  console.log(activeStep);
+  const sendRequests = async () => {
+    setStep4LoadingSendRequests(true);
+    try {
+      const payloads = makeBatchPayloads(
+        step4ConfirmRequestsSelected, 
+        { graph: "http://example.com/graphs/http-requests" }, 
+        { maxBytes: 2 * 1024 * 1024, safetyMargin: 600 * 1024 }
+      );
+      const results = await Promise.all(
+        payloads.map(async (item) => {
+          try {
+            const res = await toolReactController.ingestHttp(item);
+            if (res?.accepted && res?.jobId) {
+              subscribeJob(res.jobId);
+            }
+            return res;
+          } catch (e) {
+            enqueueSnackbar("Error while sending the request (check the console for details).", { variant: "error" });
+            console.log("Error while sending the request:", e);
+            return { accepted: false, error: String(e?.message || e) };
+          }
+        })
+      );
+
+      const ok = results.filter(r => r?.accepted).length;
+      const total = results.length;
+      enqueueSnackbar(`Requests accepted by the backend: ${ok}/${total}. Waiting for results from the worker...`, { variant: ok > 0 ? "success" : "warning" });
+    } finally {
+      setStep4LoadingSendRequests(false);
+      setOpenJobsDialog(true);
+    }
+  };
+
+  const jobSummaries = useMemo(() => {
+    const map = new Map();
+    for (const e of step4JobEvents) {
+      const id = String(e.jobId ?? e.data?.jobId ?? "");
+      if (!id) continue;
+      const prev = map.get(id) || { jobId: id, queue: e.queue, lastEvent: null, completed: false, failed: false, raw: [] };
+      prev.lastEvent = e.event || e.type || "event";
+      prev.queue = e.queue || prev.queue || "http";
+      prev.raw.push(e);
+      if (e.event === "completed") prev.completed = true;
+      if (e.event === "failed") prev.failed = true;
+      map.set(id, prev);
+    }
+    return Array.from(map.values()).sort((a, b) => String(a.jobId).localeCompare(String(b.jobId)));
+  }, [step4JobEvents]);
 
   return (
     <div className="sendinterceptor-div">
@@ -470,6 +535,43 @@ function SendToOntologyInterceptor(){
                     <FormGroup>
                       <FormControlLabel control={<Checkbox onChange={onChangeActivateResolver} value={step4ActivateResolver} />} label="Enable resolver to detect potential vulnerabilities." />
                     </FormGroup>
+                    <Dialog open={openJobsDialog} fullWidth>
+                      <DialogTitle>
+                        Job Summaries
+                      </DialogTitle>
+                      <DialogContent>
+                        <Typography variant="body2" className="jobsummaries-description">
+                          This dialog displays a list of background jobs processed via BullMQ and Redis.  
+                          Each job shows its ID and whether it has been successfully completed or not.
+                        </Typography>
+                        {jobSummaries.length > 0 ? (
+                          jobSummaries.map((job, index) => (
+                            <Paper key={index} className="jobsummaries-item">
+                              <div className="item-div">
+                                <Brightness1Icon color={job.completed ? "success" : "error"} />
+                                <Typography variant="body2">
+                                  <strong>JobId:</strong> {job.jobId}
+                                </Typography>
+                                <strong>|</strong>
+                                <Typography variant="body2">
+                                  <strong>Completed:</strong> {job.completed ? "true" : "false"}
+                                </Typography>
+                              </div>
+                            </Paper>
+                          )))
+                          :
+                          (
+                            <div className="jobsummaries-loading-div">
+                              <CircularProgress />
+                            </div>
+                          )}
+                      </DialogContent>
+                      <DialogActions>
+                        <Button variant="contained" onClick={handleReset}>
+                          OK
+                        </Button>
+                      </DialogActions>
+                    </Dialog>
                   </>
                 )}
                 <Box className="actions">
@@ -494,14 +596,6 @@ function SendToOntologyInterceptor(){
             </Step>
           ))}
         </Stepper>
-        {activeStep === steps.length && (
-          <Paper square elevation={0} className="completion-box">
-            <Typography>All steps completed - you&apos;re finished</Typography>
-            <Button onClick={handleReset} className="btn">
-              Reset
-            </Button>
-          </Paper>
-        )}
       </Box>
     </div>
   );

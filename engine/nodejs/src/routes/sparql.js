@@ -10,7 +10,7 @@ const {
   graphdb: { runSelect },
   makeLogger,
   validators: {
-    common: {
+    sparql: {
       sparqlQuerySchema,
       sparqlUpdateSchema
     },

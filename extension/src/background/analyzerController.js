@@ -58,7 +58,7 @@ class AnalyzerBackgroundController {
 
         /* ---------- ARCHIVIO ONE-TIME ---------- */
         case "analyzer_getLocalScanResults": {
-          this.engine.getLocalScanResults().then(localResults => sendResponse({ localResults })).catch(e => console.log("anal", e));
+          this.engine.getLocalScanResults().then(localResults => sendResponse({ localResults }));
           return true;
         }
 

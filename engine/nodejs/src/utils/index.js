@@ -38,18 +38,13 @@ module.exports = {
     getHealth: require('./monitors/health').getHealth,
   },
 
-  // Validators
+  // Validators (split per API)
   validators: {
-    common: {
-      ingestPayloadSchema: require('./validators/common').ingestPayloadSchema,
-      listQuerySchema: require('./validators/common').listQuerySchema,
-      idParamSchema: require('./validators/common').idParamSchema,
-      sparqlQuerySchema: require('./validators/common').sparqlQuerySchema,
-      sparqlUpdateSchema: require('./validators/common').sparqlUpdateSchema
-    },
-    ...require('./validators/options')
+    httpRequests: require('./validators/httpRequests'),
+    sparql: require('./validators/sparql'),
+    techstack: require('./validators/techstack'),
+    ...require('./validators/options'),
   },
-  
 
   // GraphDB (Select/Update)
   graphdb: require('./graphdb/client'),

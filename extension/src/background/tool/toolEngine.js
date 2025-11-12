@@ -1,3 +1,5 @@
+import { io } from "socket.io-client";
+
 class ToolEngine {
   constructor() {
     this.serverUrl = "http://localhost";
@@ -6,15 +8,33 @@ class ToolEngine {
       components: { server: "down", redis: "down", graphdb: "down" },
     };
     this.subscribers = new Set();
+    this.jobSubscribers = new Set();
+    this.socket = null;
+    this._socketInitStarted = false;
+    this._joinedJobs = new Set();
+    this._connectTimer = null;
+
     this._pollTimer = null;
   }
 
+  // ----------------- Health subscribers -----------------
   subscribe(callback) {
     this.subscribers.add(callback);
     return () => this.subscribers.delete(callback);
   }
   _notifyAll(status) {
     for (const cb of this.subscribers) cb(status);
+  }
+
+  // ----------------- Job event subscribers -----------------
+  subscribeJobs(callback) {
+    this.jobSubscribers.add(callback);
+    return () => this.jobSubscribers.delete(callback);
+  }
+  _notifyJob(evt) {
+    for (const cb of this.jobSubscribers) {
+      try { cb(evt); } catch { /* ignore */ }
+    }
   }
 
   getCachedStatus() {
@@ -79,6 +99,123 @@ class ToolEngine {
     } finally {
       clearTimeout(t);
     }
+  }
+
+  /** Post a techstack snapshot to /techstack/analyze and return server payload.
+   *  Expected server behavior: accept payload, enqueue job, return { accepted:true, jobId, ... }.
+   */
+  async analyzeTechstack(payload) {
+    if (payload == null) throw new Error("Missing payload");
+
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 30000);
+
+    try {
+      const res = await fetch(`${this.serverUrl}/techstack/analyze`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        signal: ctrl.signal,
+      });
+
+      if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        throw new Error(`techstack/analyze failed (${res.status}) ${text}`);
+      }
+
+      const data = await res.json();
+      return data;
+    } finally {
+      clearTimeout(t);
+    }
+  }
+
+  /**
+   * Ensure a socket connection exists (lazy connect).
+   * Safe to call multiple times.
+   */
+  async ensureSocketConnected() {
+    if (this.socket && this.socket.connected) return;
+    if (!this._socketInitStarted) {
+      this._socketInitStarted = true;
+      this._connectSocket();
+    }
+
+    // Wait until connected or timeout (best-effort)
+    await new Promise((resolve) => {
+      const done = () => resolve();
+      if (this.socket?.connected) return done();
+      const onConnect = () => { this.socket?.off("connect", onConnect); done(); };
+      try { this.socket?.on("connect", onConnect); } catch { /* ignore */ }
+      setTimeout(done, 1500); // do not block forever
+    });
+  }
+
+  /**
+   * Internal connect routine: sets up event listeners and reconnection handling.
+   */
+  _connectSocket() {
+    this.socket = io(this.serverUrl, {
+      transports: ["websocket"],
+      withCredentials: false,
+      timeout: 5000,
+    });
+
+    this.socket.on("connect", () => {
+      try { console.info("[tool] socket connected", this.socket.id); } catch {}
+      for (const jobId of this._joinedJobs) {
+        try { this.socket.emit("subscribe-job", jobId); } catch {}
+      }
+    });
+
+    this.socket.on("disconnect", (reason) => {
+      try { console.info("[tool] socket disconnected:", reason); } catch {}
+    });
+
+    this.socket.on("connect_error", (err) => {
+      try { console.warn("[tool] socket connect_error:", err?.message || err); } catch {}
+    });
+
+    // Forward any job event to UI subscribers.
+    // NOTE: server emits { event: 'completed'|'failed', queue: 'http'|'sparql'|'techstack', jobId, ... }
+    this.socket.on("completed", (payload) => {
+      const evt = { event: "completed", ...payload };
+      this._notifyJob(evt);
+    });
+    this.socket.on("failed", (payload) => {
+      const evt = { event: "failed", ...payload };
+      this._notifyJob(evt);
+    });
+  }
+
+  /**
+   * Join a job room to receive 'completed'/'failed' events.
+   * @param {string} jobId
+   */
+  async subscribeJob(jobId) {
+    const id = String(jobId || "");
+    if (!id) throw new Error("Missing jobId");
+    await this.ensureSocketConnected();
+    this._joinedJobs.add(id);
+    try {
+      this.socket?.emit("subscribe-job", id);
+    } catch (e) {
+      // If emit fails for any reason, keep the id so we can try again on next connect
+      throw e;
+    }
+  }
+
+  /**
+   * Leave a previously joined job room.
+   * @param {string} jobId
+   */
+  async unsubscribeJob(jobId) {
+    const id = String(jobId || "");
+    if (!id) throw new Error("Missing jobId");
+    this._joinedJobs.delete(id);
+    try {
+      this.socket?.emit("unsubscribe-job", id);
+    } catch { /* ignore */ }
   }
 }
 

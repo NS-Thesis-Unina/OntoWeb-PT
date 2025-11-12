@@ -3,7 +3,6 @@ import browser from "webextension-polyfill";
 const toolReactController = {
   async getHealth() {
     try {
-      console.log("React Tool Send message")
       return await browser.runtime.sendMessage({ type: "tool_getHealth" });
     } catch {
       return { ok: false, components: { server: "down", redis: "down", graphdb: "down" } };
@@ -35,10 +34,45 @@ const toolReactController = {
     }
   },
 
+  /** Submit a techstack snapshot for analysis (server will enqueue a BullMQ job). */
+  async analyzeTechstack(payload) {
+    try {
+      const res = await browser.runtime.sendMessage({ type: "tool_analyzeTechstack", payload });
+      return res;
+    } catch (err) {
+      return { accepted: false, error: String(err?.message || err) };
+    }
+  },
+
+  /** Ask background to subscribe this UI to a job's websocket room. */
+  async subscribeJob(jobId) {
+    try {
+      return await browser.runtime.sendMessage({ type: "tool_subscribeJob", jobId: String(jobId) });
+    } catch (err) {
+      return { ok: false, error: String(err?.message || err) };
+    }
+  },
+
+  /** Unsubscribe from a job room (optional cleanup). */
+  async unsubscribeJob(jobId) {
+    try {
+      return await browser.runtime.sendMessage({ type: "tool_unsubscribeJob", jobId: String(jobId) });
+    } catch (err) {
+      return { ok: false, error: String(err?.message || err) };
+    }
+  },
+
+  /**
+   * UI event wiring.
+   * - onToolUpdate(payload): health status updates
+   * - onJobEvent(evt): worker job events coming from websocket
+   */
   onMessage(handlers = {}) {
     const listener = (message) => {
       if (message.type === "tool_update") {
         handlers.onToolUpdate?.(message.payload);
+      } else if (message.type === "tool_job_event") {
+        handlers.onJobEvent?.(message.payload);
       }
     };
     browser.runtime.onMessage.addListener(listener);

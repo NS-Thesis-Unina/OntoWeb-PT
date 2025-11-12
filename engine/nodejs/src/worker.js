@@ -130,7 +130,14 @@ const workerTechstack = new Worker(
 );
 
 workerTechstack.on('completed', (job, result) => {
-  logTech.info(`completed job=${job.name} id=${job.id}`, { result });
+  logTech.info(`completed job=${job.name} id=${job.id}`, { 
+    results: {
+      technologies: result.result.technologies.length,
+      waf: result.result.waf.length,
+      secureHeaders: result.result.secureHeaders.length,
+      cookies: result.result.cookies.length
+    } 
+  });
 });
 workerTechstack.on('failed', (job, err) => {
   logTech.warn(`failed job=${job?.name} id=${job?.id}`, err?.message || err);
@@ -146,7 +153,6 @@ const workerAnalyzer = new Worker(
     if (job.name === 'sast-analyze') {
       const { url, html, scripts, forms, iframes, includeSnippets } = job.data || {};
 
-      // ✅ Passiamo il flag includeSnippets (default: false)
       const result = await resolveAnalyzer({
         url,
         html,

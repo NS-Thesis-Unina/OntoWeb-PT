@@ -1,0 +1,105 @@
+.sendtechstack-div {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+  width: 100%;
+}
+
+.sendtechstack-div .description {
+  display: flex;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.sendtechstack-div .alert-block {
+  width: 100%;
+  margin: 5px;
+}
+
+.sendtechstack-div .content-box {
+  width: 95%;
+}
+
+.sendtechstack-div .step-full {
+  width: 100%;
+}
+
+.sendtechstack-div .full-list {
+  width: 100%;
+}
+
+.sendtechstack-div .centered-loading {
+  display: flex;
+  justify-content: center;
+  padding: 16px;
+}
+
+.sendtechstack-div .empty-box {
+  padding: 16px;
+}
+
+.sendtechstack-div .label-bold {
+  margin-right: 8px;
+  font-weight: 700;
+}
+
+.sendtechstack-div .label-bold-sm {
+  margin-right: 4px;
+  font-weight: 700;
+}
+
+.sendtechstack-div .row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.sendtechstack-div .row-align-start {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+}
+
+.sendtechstack-div .text-wrap-flex {
+  white-space: normal;
+  word-break: break-word;
+  flex: 1;
+}
+
+.sendtechstack-div .actions {
+  margin-bottom: 16px;
+}
+
+.sendtechstack-div .btn {
+  margin-top: 8px;
+  margin-right: 8px;
+}
+
+.sendtechstack-div .completion-box {
+  padding: 24px;
+}
+
+.jobsummaries-description {
+  margin-bottom: 10px !important;
+}
+
+.jobsummaries-item {
+  padding: 5px;
+  margin-bottom: 5px !important;
+}
+
+.jobsummaries-item .item-div {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  align-items: center;
+  gap: 10px;
+}
+
+.jobsummaries-loading-div {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
