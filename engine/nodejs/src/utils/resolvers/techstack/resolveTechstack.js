@@ -4,48 +4,124 @@ const log = makeLogger('resolver:techstack');
 
 const NVD_BASE = 'https://services.nvd.nist.gov/rest/json/cves/2.0';
 
+// === NVD rate limiting config ===
+// Without API key: 5 requests / 30 seconds
+// With API key:   50 requests / 30 seconds
+const NVD_WINDOW_MS = 30_000;
+const NVD_LIMIT_NO_KEY = 5;
+const NVD_LIMIT_WITH_KEY = 50;
+
+// API key from environment (optional)
+const NVD_API_KEY = process.env.NVD_API_KEY || null;
+
+// In-memory list of timestamps for recent NVD calls
+let nvdCallTimestamps = [];
+
+// Simple sleep helper
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// Wrapper around axios.get with basic client-side rate limiting
+async function rateLimitedGet(url, config = {}) {
+  const now = Date.now();
+  const limit = NVD_API_KEY ? NVD_LIMIT_WITH_KEY : NVD_LIMIT_NO_KEY;
+
+  // Drop timestamps that are outside the current window
+  nvdCallTimestamps = nvdCallTimestamps.filter(
+    (t) => now - t < NVD_WINDOW_MS
+  );
+
+  if (nvdCallTimestamps.length >= limit) {
+    const oldest = nvdCallTimestamps[0];
+    const waitMs = NVD_WINDOW_MS - (now - oldest) + 100; // small safety margin
+    log.info(
+      `NVD rate limit reached (${nvdCallTimestamps.length}/${limit}), sleeping ${waitMs}ms`
+    );
+    await sleep(waitMs);
+  }
+
+  nvdCallTimestamps.push(Date.now());
+
+  const headers = {
+    ...(config.headers || {}),
+  };
+
+  if (NVD_API_KEY) {
+    // NVD expects the API key in the "apiKey" header
+    headers.apiKey = NVD_API_KEY;
+  }
+
+  return axios.get(url, {
+    timeout: 15000,
+    ...config,
+    headers,
+  });
+}
 
 async function lookupNvd(product, version = '') {
   const keyword = encodeURIComponent(`${product}${version ? ' ' + version : ''}`);
   const url = `${NVD_BASE}?keywordSearch=${keyword}`;
-  try {
-    const res = await axios.get(url, { timeout: 15000 });
-    const vulns = res.data?.vulnerabilities || [];
 
-    const cves = [];
-    const cpes = new Set();
+  const maxRetries = 2; // number of retries on HTTP 429
+  let attempt = 0;
 
-    for (const v of vulns) {
-      const id = v?.cve?.id;
-      if (!id) continue;
+  while (attempt <= maxRetries) {
+    try {
+      const res = await rateLimitedGet(url);
+      const vulns = res.data?.vulnerabilities || [];
 
- 
-      const metrics = v.cve?.metrics || {};
-      const cvssV3 = metrics.cvssMetricV31?.[0]?.cvssData || metrics.cvssMetricV30?.[0]?.cvssData;
-      const cvssV2 = metrics.cvssMetricV2?.[0]?.cvssData;
-      const cvss = cvssV3 || cvssV2 || {};
-      const score = cvss.baseScore || null;
-      const severity = cvss.baseSeverity || 'UNKNOWN';
+      const cves = [];
+      const cpes = new Set();
 
-      cves.push({ id, severity, score });
+      for (const v of vulns) {
+        const id = v?.cve?.id;
+        if (!id) continue;
 
-      const configs = v?.cve?.configurations || [];
-      for (const c of configs) {
-        for (const node of c?.nodes || []) {
-          for (const match of node?.cpeMatch || []) {
-            if (match?.criteria) cpes.add(match.criteria);
+        const metrics = v.cve?.metrics || {};
+        const cvssV3 =
+          metrics.cvssMetricV31?.[0]?.cvssData ||
+          metrics.cvssMetricV30?.[0]?.cvssData;
+        const cvssV2 = metrics.cvssMetricV2?.[0]?.cvssData;
+        const cvss = cvssV3 || cvssV2 || {};
+        const score = cvss.baseScore || null;
+        const severity = cvss.baseSeverity || 'UNKNOWN';
+
+        cves.push({ id, severity, score });
+
+        const configs = v?.cve?.configurations || [];
+        for (const c of configs) {
+          for (const node of c?.nodes || []) {
+            for (const match of node?.cpeMatch || []) {
+              if (match?.criteria) cpes.add(match.criteria);
+            }
           }
         }
       }
+
+      return { cve: cves.slice(0, 10), cpe: [...cpes].slice(0, 10) };
+    } catch (err) {
+      const status = err?.response?.status;
+      const msg = err?.message || String(err);
+
+      if (status === 429 && attempt < maxRetries) {
+        const backoffMs = 2000 * (attempt + 1);
+        log.warn(
+          `lookup 429 for ${product} ${version}, retrying in ${backoffMs}ms (attempt ${attempt + 1}/${maxRetries})`
+        );
+        await sleep(backoffMs);
+        attempt += 1;
+        continue;
+      }
+
+      log.warn(`lookup failed for ${product} ${version}: status=${status} msg=${msg}`);
+      return { cve: [], cpe: [] };
     }
-
-    return { cve: cves.slice(0, 10), cpe: [...cpes].slice(0, 10) };
-  } catch (err) {
-    log.warn(`lookup failed for ${product} ${version}: ${err?.message}`);
-    return { cve: [], cpe: [] };
   }
-}
 
+  // Fallback (should not normally reach here)
+  return { cve: [], cpe: [] };
+}
 
 function classifyHeaders(headers = []) {
   const results = [];
@@ -147,7 +223,7 @@ async function resolveTechstack({ technologies = [], waf = [], secureHeaders = [
     technologies: analyzedTech,
     waf: analyzedWaf,
     secureHeaders: headerFindings,
-    cookies: cookieFindings, 
+    cookies: cookieFindings,
   };
 }
 

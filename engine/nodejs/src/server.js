@@ -59,8 +59,9 @@ attachSockets(server).catch((err) => log.error('attachSockets failed', err?.mess
 
 // Start HTTP server
 const PORT = Number(process.env.SERVER_PORT || 8081);
+const HOST = process.env.SERVER_HOST || "localhost";
 server.listen(PORT, () => {
-  log.info(`API listening on http://localhost:${PORT}`);
+  log.info(`API listening on http://${HOST}:${PORT}`);
   // Explicitly mark server as up in the health registry
   setState('server', 'up');
 });

@@ -1,7 +1,7 @@
 const acorn = require('acorn');
 const { ancestor, full } = require('acorn-walk');
 const staticRules = require('./rules/staticRules');
-const formRules = require('./rules/formRules'); // 👈 nuovo
+const formRules = require('./rules/formRules');
 const taintRules = require('./rules/taintRules');
 const axios = require('axios').default;
 

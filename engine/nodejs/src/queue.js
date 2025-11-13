@@ -74,10 +74,13 @@ const queueTechstack = new Queue(queueNameTechstackWrites, {
 const queueAnalyzer = new Queue(queueNameAnalyzerWrites, {
   connection,
   defaultJobOptions: {
-    attempts: 3,
-    backoff: { type: 'exponential', delay: 2000 },
-    removeOnComplete: 300,
-    removeOnFail: 800,
+    attempts: Number(process.env.JOB_ANALYZER_ATTEMPTS) || 3,
+    backoff: {
+      type: process.env.JOB_ANALYZER_BACKOFF_TYPE || 'exponential',
+      delay: Number(process.env.JOB_ANALYZER_BACKOFF_DELAY) || 2000,
+    },
+    removeOnComplete: Number(process.env.JOB_ANALYZER_REMOVE_ON_COMPLETE) || 300,
+    removeOnFail: Number(process.env.JOB_ANALYZER_REMOVE_ON_FAIL) || 800,
   },
 });
 

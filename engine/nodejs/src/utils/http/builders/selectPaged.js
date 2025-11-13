@@ -74,11 +74,14 @@ PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 SELECT
   (?idVal AS ?id) ?httpVersion ?methodName
   ?uriFull ?scheme ?authority ?path ?fragment ?queryXml
-  ?bodyBase64
+  # ?bodyBase64
   ?hdrName ?hdrValue
   ?paramName ?paramValue
   # Response fields
-  ?resHttpVersion ?resBodyBase64 ?statusCodeNumber ?reasonPhrase
+  ?resHttpVersion 
+  # ?resBodyBase64 
+  ?statusCodeNumber 
+  ?reasonPhrase
   ?rhdrName ?rhdrValue
   # Connection field
   ?connAuthority
@@ -159,7 +162,7 @@ WHERE {
       BIND(STRAFTER(STR(?methodInd), "#") AS ?methodName)
 
       OPTIONAL { ?req ex:httpVersion ?httpVersion . }
-      OPTIONAL { ?req ex:body ?bodyBase64 . }
+      # OPTIONAL { ?req ex:body ?bodyBase64 . }
 
       ?uriRes a ex:URI .
       OPTIONAL { ?uriRes ex:uri       ?uriFull . }
@@ -201,7 +204,7 @@ WHERE {
         ?req ex:resp ?res .
         ?res a ex:Response .
         OPTIONAL { ?res ex:httpVersion ?resHttpVersion . }
-        OPTIONAL { ?res ex:body ?resBodyBase64 . }
+        # OPTIONAL { ?res ex:body ?resBodyBase64 . }
         OPTIONAL {
           ?res ex:sc ?scNode .
           OPTIONAL { ?scNode ex:statusCodeNumber ?statusCodeNumber . }

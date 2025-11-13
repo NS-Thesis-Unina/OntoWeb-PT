@@ -2,7 +2,7 @@ import { io } from "socket.io-client";
 
 class ToolEngine {
   constructor() {
-    this.serverUrl = "http://localhost";
+    this.serverUrl = `http://${import.meta.env.EXTENSION_PUBLIC_SERVER_HOST}` || "http://localhost";
     this.status = {
       ok: false,
       components: { server: "down", redis: "down", graphdb: "down" },
@@ -77,7 +77,7 @@ class ToolEngine {
     if (payload == null) throw new Error("Missing payload");
 
     const ctrl = new AbortController();
-    const t = setTimeout(() => ctrl.abort(), 30000);
+    const t = setTimeout(() => ctrl.abort(), Number(import.meta.env.EXTENSION_PUBLIC_REQUESTS_ABORT_MS || 30000));
 
     try {
       const res = await fetch(`${this.serverUrl}/http-requests/ingest-http`, {
@@ -104,7 +104,7 @@ class ToolEngine {
     if (payload == null) throw new Error("Missing payload");
 
     const ctrl = new AbortController();
-    const t = setTimeout(() => ctrl.abort(), 30000);
+    const t = setTimeout(() => ctrl.abort(), Number(import.meta.env.EXTENSION_PUBLIC_REQUESTS_ABORT_MS || 30000));
 
     try {
       const res = await fetch(`${this.serverUrl}/techstack/analyze`, {
@@ -131,7 +131,7 @@ class ToolEngine {
     if (payload == null) throw new Error("Missing payload");
 
     const ctrl = new AbortController();
-    const t = setTimeout(() => ctrl.abort(), 30000);
+    const t = setTimeout(() => ctrl.abort(), Number(import.meta.env.EXTENSION_PUBLIC_REQUESTS_ABORT_MS || 30000));
 
     try {
       const res = await fetch(`${this.serverUrl}/analyzer/analyze`, {
@@ -170,7 +170,7 @@ class ToolEngine {
       if (this.socket?.connected) return done();
       const onConnect = () => { this.socket?.off("connect", onConnect); done(); };
       try { this.socket?.on("connect", onConnect); } catch { /* ignore */ }
-      setTimeout(done, 1500); // do not block forever
+      setTimeout(done, Number(import.meta.env.EXTENSION_PUBLIC_ENSURE_SOCKET_CONNECTED_TIMEOUT || 1500)); // do not block forever
     });
   }
 
@@ -181,7 +181,7 @@ class ToolEngine {
     this.socket = io(this.serverUrl, {
       transports: ["websocket"],
       withCredentials: false,
-      timeout: 5000,
+      timeout: Number(import.meta.env.EXTENSION_PUBLIC_CONNECT_SOCKET_TIMEOUT || 5000),
     });
 
     this.socket.on("connect", () => {
