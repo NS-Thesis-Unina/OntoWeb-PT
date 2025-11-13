@@ -344,7 +344,7 @@ function SendToOntologyInterceptor(){
       const results = await Promise.all(
         payloads.map(async (item) => {
           try {
-            const res = await toolReactController.ingestHttp(item);
+            const res = await toolReactController.ingestHttp({...item, activateResolver: step4ActivateResolver});
             if (res?.accepted && res?.jobId) {
               subscribeJob(res.jobId);
             }

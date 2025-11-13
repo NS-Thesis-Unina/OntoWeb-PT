@@ -113,7 +113,10 @@ const requestSchema = Joi.object({
 const ingestPayloadSchema = Joi.alternatives().try(
   requestSchema,
   Joi.array().items(requestSchema).min(1),
-  Joi.object({ items: Joi.array().items(requestSchema).min(1).required() }).unknown(false)
+  Joi.object({ 
+    items: Joi.array().items(requestSchema).min(1).required(), 
+    activateResolver: Joi.boolean().default(false) 
+  }).unknown(false)
 );
 
 /**
@@ -140,8 +143,18 @@ const idParamSchema = Joi.object({
   id: idSchema.required()
 }).unknown(false);
 
+/**
+ * Params schema for GET /analyzer/results/:jobId
+ * Matches the style used in other validators (techstack/jobId).
+ * @type {import('joi').ObjectSchema}
+ */
+const jobIdParamSchema = Joi.object({
+  jobId: Joi.string().required(),
+}).unknown(false);
+
 module.exports = {
   ingestPayloadSchema,
   listQuerySchema,
-  idParamSchema
+  idParamSchema,
+  jobIdParamSchema
 };

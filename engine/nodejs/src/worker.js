@@ -49,7 +49,16 @@ const workerHttpRequests = new Worker(
             : buildInsertFromHttpRequestsArray(list);
 
         const status = await runUpdate(update);
-        return { status, count: list.length };
+        return { status, count: list.length, payload };
+      }
+      case 'http-resolver': {
+        const { list } = job.data || {};
+        if (!list) throw new Error('Missing requests list');
+
+        //Run resolve
+        //List is an array of obects (requests)
+
+        return { list };
       }
       default:
         throw new Error(`Unknown job: ${job.name}`);
@@ -63,7 +72,7 @@ const workerHttpRequests = new Worker(
 );
 
 workerHttpRequests.on('completed', (job, result) => {
-  logHttp.info(`completed job=${job.name} id=${job.id}`, { result });
+  logHttp.info(`completed job=${job.name} id=${job.id}`, job.name === "http-ingest" ? { status: result.status, count: result.count } : { /* Result resolver */ });
 });
 workerHttpRequests.on('failed', (job, err) => {
   logHttp.warn(`failed job=${job?.name} id=${job?.id}`, err?.message || err);

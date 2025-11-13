@@ -30,12 +30,11 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8081/http-requests/ingest-http",
+							"raw": "http://localhost/http-requests/ingest-http",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8081",
 							"path": [
 								"http-requests",
 								"ingest-http"
@@ -57,7 +56,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"items\": [\r\n    {\r\n      \"id\": \"req-1002\",\r\n      \"method\": \"POST\",\r\n      \"uri\": { \"full\": \"https://api.example.com/v1/items\" },\r\n      \"connection\": { \"authority\": \"api.example.com:443\" },\r\n      \"requestHeaders\": [ { \"name\": \"Content-Type\", \"value\": \"application/json\" } ],\r\n      \"bodyBase64\": \"eyJuYW1lIjoiZm9vIn0=\",\r\n      \"response\": {\r\n        \"status\": 201,\r\n        \"reason\": \"Created\",\r\n        \"headers\": [ { \"name\": \"Location\", \"value\": \"/v1/items/123\" } ]\r\n      }\r\n    },\r\n    {\r\n      \"id\": \"req-1003\",\r\n      \"method\": \"DELETE\",\r\n      \"uri\": { \"full\": \"https://api.example.com/v1/items/123\" },\r\n      \"connection\": { \"authority\": \"api.example.com:443\" }\r\n    }\r\n  ]\r\n}\r\n",
+							"raw": "{\r\n  \"items\": [\r\n    {\r\n      \"id\": \"req-002\",\r\n      \"method\": \"POST\",\r\n      \"httpVersion\": \"HTTP/2\",\r\n      \"bodyBase64\": \"SGVsbG8gYm9keQ==\",\r\n      \"graph\": \"http://example.com/graphs/http-requests\",\r\n      \"uri\": {\r\n        \"full\": \"https://api.example.com/v1/items\",\r\n        \"scheme\": \"https\",\r\n        \"authority\": \"api.example.com\",\r\n        \"path\": \"/v1/items\",\r\n        \"queryRaw\": \"page=1&size=20\"\r\n      },\r\n      \"requestHeaders\": [\r\n        { \"name\": \"Content-Type\", \"value\": \"application/json\" }\r\n      ],\r\n      \"connection\": { \"authority\": \"api.example.com\" },\r\n      \"response\": {\r\n        \"httpVersion\": \"HTTP/2\",\r\n        \"status\": 201,\r\n        \"reason\": \"Created\",\r\n        \"headers\": [\r\n          { \"name\": \"Location\", \"value\": \"/v1/items/123\" }\r\n        ]\r\n      }\r\n    },\r\n    {\r\n      \"id\": \"req-003\",\r\n      \"method\": \"PUT\",\r\n      \"uri\": {\r\n        \"full\": \"https://api.example.com/v1/items/123?soft=true\",\r\n        \"scheme\": \"https\",\r\n        \"authority\": \"api.example.com\",\r\n        \"path\": \"/v1/items/123\",\r\n        \"params\": [\r\n          { \"name\": \"soft\", \"value\": \"true\" }\r\n        ]\r\n      },\r\n      \"requestHeaders\": [\r\n        { \"name\": \"Accept\", \"value\": \"application/json\" }\r\n      ],\r\n      \"response\": { \"status\": 204, \"reason\": \"No Content\" }\r\n    }\r\n  ]\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -65,12 +64,11 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8081/http-requests/ingest-http",
+							"raw": "http://localhost/http-requests/ingest-http",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8081",
 							"path": [
 								"http-requests",
 								"ingest-http"
@@ -91,15 +89,24 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8081/http-requests/list",
+							"raw": "http://localhost/http-requests/list?limit=709&offset=0",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8081",
 							"path": [
 								"http-requests",
 								"list"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "709"
+								},
+								{
+									"key": "offset",
+									"value": "0"
+								}
 							]
 						}
 					},
@@ -117,15 +124,34 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8081/http-requests/req-001",
+							"raw": "http://localhost/http-requests/req-1763028206922-1",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8081",
 							"path": [
 								"http-requests",
-								"req-001"
+								"req-1763028206922-1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetJob",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost/http-requests/results/595",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"http-requests",
+								"results",
+								"595"
 							]
 						}
 					},
@@ -157,12 +183,11 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8081/sparql/query",
+							"raw": "http://localhost/sparql/query",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8081",
 							"path": [
 								"sparql",
 								"query"
@@ -192,12 +217,11 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8081/sparql/update",
+							"raw": "http://localhost/sparql/update",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8081",
 							"path": [
 								"sparql",
 								"update"
@@ -259,7 +283,7 @@
 							"raw": "{\r\n    \"cookies\": [\r\n        {\r\n            \"domain\": \".it.linkedin.com\",\r\n            \"httpOnly\": false,\r\n            \"name\": \"JSESSIONID\",\r\n            \"value\": \"ajax:8480182616414958243\"\r\n        },\r\n        {\r\n            \"domain\": \".linkedin.com\",\r\n            \"httpOnly\": false,\r\n            \"name\": \"lang\",\r\n            \"value\": \"v=2&lang=it-it\"\r\n        },\r\n        {\r\n            \"domain\": \".linkedin.com\",\r\n            \"httpOnly\": false,\r\n            \"name\": \"bcookie\",\r\n            \"value\": \"\\\"v=2&aa8bc417-dd50-4112-8c3c-ccc41f01632c\\\"\"\r\n        },\r\n        {\r\n            \"domain\": \".it.linkedin.com\",\r\n            \"httpOnly\": true,\r\n            \"name\": \"bscookie\",\r\n            \"value\": \"\\\"v=1&202511111157463041dc5f-d121-4ebf-86ba-0fda95885d2dAQGybM6b6X6umxJhyDVqn2JzpMykKm0r\\\"\"\r\n        },\r\n        {\r\n            \"domain\": \".linkedin.com\",\r\n            \"httpOnly\": false,\r\n            \"name\": \"li_gc\",\r\n            \"value\": \"MTswOzE3NjI4NjIyNjY7MjswMjGiHIKgANn4nk/qaM4rcGq598w1KWy3Xy7RRQdHk83VYg==\"\r\n        },\r\n        {\r\n            \"domain\": \".linkedin.com\",\r\n            \"httpOnly\": false,\r\n            \"name\": \"lidc\",\r\n            \"value\": \"\\\"b=VGST01:s=V:r=V:a=V:p=V:g=3688:u=1:x=1:i=1762862267:t=1762948667:v=2:sig=AQHVuB6NFyN37aY7Is-j_vOIlYM7ndb2\\\"\"\r\n        },\r\n        {\r\n            \"domain\": \"it.linkedin.com\",\r\n            \"httpOnly\": false,\r\n            \"name\": \"li_alerts\",\r\n            \"value\": \"e30=\"\r\n        },\r\n        {\r\n            \"domain\": \".linkedin.com\",\r\n            \"httpOnly\": true,\r\n            \"name\": \"__cf_bm\",\r\n            \"value\": \"C30or0DaYPZPo9K_CrzQnZZaqeu40.grX7e4p5aYsK4-1762862267-1.0.1.1-ObGLRTiIpL1FTYb6baY75SyoBzBsNIzlwLK7IC4I9zEza_dvz9jLZNSoQL2fZ15Cx5xrKBwCYEkyvekr_gJp.P.O3Fs0EiMAIvOCBUI12lU\"\r\n        },\r\n        {\r\n            \"domain\": \".linkedin.com\",\r\n            \"httpOnly\": false,\r\n            \"name\": \"lang\",\r\n            \"value\": \"v=2&lang=it-it\"\r\n        },\r\n        {\r\n            \"domain\": \".linkedin.com\",\r\n            \"httpOnly\": false,\r\n            \"name\": \"bcookie\",\r\n            \"value\": \"\\\"v=2&aa8bc417-dd50-4112-8c3c-ccc41f01632c\\\"\"\r\n        },\r\n        {\r\n            \"domain\": \".linkedin.com\",\r\n            \"httpOnly\": false,\r\n            \"name\": \"li_gc\",\r\n            \"value\": \"MTswOzE3NjI4NjIyNjY7MjswMjGiHIKgANn4nk/qaM4rcGq598w1KWy3Xy7RRQdHk83VYg==\"\r\n        },\r\n        {\r\n            \"domain\": \".linkedin.com\",\r\n            \"httpOnly\": false,\r\n            \"name\": \"lidc\",\r\n            \"value\": \"\\\"b=VGST01:s=V:r=V:a=V:p=V:g=3688:u=1:x=1:i=1762862267:t=1762948667:v=2:sig=AQHVuB6NFyN37aY7Is-j_vOIlYM7ndb2\\\"\"\r\n        },\r\n        {\r\n            \"domain\": \".linkedin.com\",\r\n            \"httpOnly\": true,\r\n            \"name\": \"__cf_bm\",\r\n            \"value\": \"C30or0DaYPZPo9K_CrzQnZZaqeu40.grX7e4p5aYsK4-1762862267-1.0.1.1-ObGLRTiIpL1FTYb6baY75SyoBzBsNIzlwLK7IC4I9zEza_dvz9jLZNSoQL2fZ15Cx5xrKBwCYEkyvekr_gJp.P.O3Fs0EiMAIvOCBUI12lU\"\r\n        },\r\n        {\r\n            \"domain\": \".linkedin.com\",\r\n            \"httpOnly\": false,\r\n            \"name\": \"lang\",\r\n            \"value\": \"v=2&lang=it-it\"\r\n        },\r\n        {\r\n            \"domain\": \".linkedin.com\",\r\n            \"httpOnly\": false,\r\n            \"name\": \"bcookie\",\r\n            \"value\": \"\\\"v=2&aa8bc417-dd50-4112-8c3c-ccc41f01632c\\\"\"\r\n        },\r\n        {\r\n            \"domain\": \".linkedin.com\",\r\n            \"httpOnly\": false,\r\n            \"name\": \"li_gc\",\r\n            \"value\": \"MTswOzE3NjI4NjIyNjY7MjswMjGiHIKgANn4nk/qaM4rcGq598w1KWy3Xy7RRQdHk83VYg==\"\r\n        },\r\n        {\r\n            \"domain\": \".linkedin.com\",\r\n            \"httpOnly\": false,\r\n            \"name\": \"lidc\",\r\n            \"value\": \"\\\"b=VGST01:s=V:r=V:a=V:p=V:g=3688:u=1:x=1:i=1762862267:t=1762948667:v=2:sig=AQHVuB6NFyN37aY7Is-j_vOIlYM7ndb2\\\"\"\r\n        },\r\n        {\r\n            \"domain\": \".www.linkedin.com\",\r\n            \"httpOnly\": false,\r\n            \"name\": \"JSESSIONID\",\r\n            \"value\": \"ajax:5015200226827290925\"\r\n        },\r\n        {\r\n            \"domain\": \".www.linkedin.com\",\r\n            \"httpOnly\": true,\r\n            \"name\": \"bscookie\",\r\n            \"value\": \"\\\"v=1&20251111115747829c4a13-c6d1-4fb4-8654-754e6b69751cAQG6_nAiqtoqeWgH983PuZg-flRtGcrc\\\"\"\r\n        },\r\n        {\r\n            \"domain\": \".linkedin.com\",\r\n            \"httpOnly\": true,\r\n            \"name\": \"__cf_bm\",\r\n            \"value\": \"C30or0DaYPZPo9K_CrzQnZZaqeu40.grX7e4p5aYsK4-1762862267-1.0.1.1-ObGLRTiIpL1FTYb6baY75SyoBzBsNIzlwLK7IC4I9zEza_dvz9jLZNSoQL2fZ15Cx5xrKBwCYEkyvekr_gJp.P.O3Fs0EiMAIvOCBUI12lU\"\r\n        }\r\n    ],\r\n    \"raw\": {\r\n        \"resolved\": [\r\n            {\r\n                \"categories\": [\r\n                    {\r\n                        \"groups\": [\r\n                            9\r\n                        ],\r\n                        \"id\": 27,\r\n                        \"name\": \"Programming languages\",\r\n                        \"priority\": 5,\r\n                        \"slug\": \"programming-languages\"\r\n                    }\r\n                ],\r\n                \"confidence\": 100,\r\n                \"cpe\": \"cpe:2.3:a:oracle:jre:*:*:*:*:*:*:*:*\",\r\n                \"description\": \"Java is a class-based, object-oriented programming language that is designed to have as few implementation dependencies as possible.\",\r\n                \"icon\": \"Java.svg\",\r\n                \"name\": \"Java\",\r\n                \"pricing\": [],\r\n                \"slug\": \"java\",\r\n                \"version\": \"\",\r\n                \"website\": \"https://java.com\"\r\n            },\r\n            {\r\n                \"categories\": [\r\n                    {\r\n                        \"groups\": [\r\n                            7\r\n                        ],\r\n                        \"id\": 23,\r\n                        \"name\": \"Caching\",\r\n                        \"priority\": 7,\r\n                        \"slug\": \"caching\"\r\n                    }\r\n                ],\r\n                \"confidence\": 100,\r\n                \"cpe\": \"cpe:2.3:a:varnish-software:varnish_cache:*:*:*:*:*:*:*:*\",\r\n                \"description\": \"Varnish is a reverse caching proxy.\",\r\n                \"icon\": \"Varnish.svg\",\r\n                \"name\": \"Varnish\",\r\n                \"pricing\": [],\r\n                \"slug\": \"varnish\",\r\n                \"version\": \"\",\r\n                \"website\": \"https://www.varnish-cache.org\"\r\n            },\r\n            {\r\n                \"categories\": [\r\n                    {\r\n                        \"groups\": [\r\n                            7\r\n                        ],\r\n                        \"id\": 65,\r\n                        \"name\": \"Load balancers\",\r\n                        \"priority\": 7,\r\n                        \"slug\": \"load-balancers\"\r\n                    }\r\n                ],\r\n                \"confidence\": 100,\r\n                \"cpe\": null,\r\n                \"description\": \"Azure Front Door is a scalable and secure entry point for fast delivery of your global web applications.\",\r\n                \"icon\": \"Azure.svg\",\r\n                \"name\": \"Azure Front Door\",\r\n                \"pricing\": [],\r\n                \"slug\": \"azure-front-door\",\r\n                \"version\": \"\",\r\n                \"website\": \"https://docs.microsoft.com/en-us/azure/frontdoor/\"\r\n            },\r\n            {\r\n                \"categories\": [\r\n                    {\r\n                        \"groups\": [\r\n                            7\r\n                        ],\r\n                        \"id\": 63,\r\n                        \"name\": \"IaaS\",\r\n                        \"priority\": 8,\r\n                        \"slug\": \"iaas\"\r\n                    }\r\n                ],\r\n                \"confidence\": 100,\r\n                \"cpe\": \"cpe:2.3:a:google:cloud_platform:*:*:*:*:*:*:*:*\",\r\n                \"description\": \"Google Cloud is a suite of cloud computing services.\",\r\n                \"icon\": \"Google Cloud.svg\",\r\n                \"name\": \"Google Cloud\",\r\n                \"pricing\": [],\r\n                \"slug\": \"google-cloud\",\r\n                \"version\": \"\",\r\n                \"website\": \"https://cloud.google.com\"\r\n            },\r\n            {\r\n                \"categories\": [\r\n                    {\r\n                        \"groups\": [\r\n                            7\r\n                        ],\r\n                        \"id\": 62,\r\n                        \"name\": \"PaaS\",\r\n                        \"priority\": 8,\r\n                        \"slug\": \"paas\"\r\n                    }\r\n                ],\r\n                \"confidence\": 100,\r\n                \"cpe\": null,\r\n                \"description\": \"Azure is a cloud computing service for building, testing, deploying, and managing applications and services through Microsoft-managed data centers.\",\r\n                \"icon\": \"Azure.svg\",\r\n                \"name\": \"Azure\",\r\n                \"pricing\": [],\r\n                \"slug\": \"azure\",\r\n                \"version\": \"\",\r\n                \"website\": \"https://azure.microsoft.com\"\r\n            },\r\n            {\r\n                \"categories\": [\r\n                    {\r\n                        \"groups\": [\r\n                            8\r\n                        ],\r\n                        \"id\": 10,\r\n                        \"name\": \"Analytics\",\r\n                        \"priority\": 9,\r\n                        \"slug\": \"analytics\"\r\n                    }\r\n                ],\r\n                \"confidence\": 100,\r\n                \"cpe\": null,\r\n                \"description\": \"Naver Analytics is a Korean based analytics service.\",\r\n                \"icon\": \"Naver Analytics.svg\",\r\n                \"name\": \"Naver Analytics\",\r\n                \"pricing\": [\r\n                    \"freemium\",\r\n                    \"payg\"\r\n                ],\r\n                \"slug\": \"naver-analytics\",\r\n                \"version\": \"\",\r\n                \"website\": \"https://analytics.naver.com\"\r\n            },\r\n            {\r\n                \"categories\": [\r\n                    {\r\n                        \"groups\": [\r\n                            11\r\n                        ],\r\n                        \"id\": 16,\r\n                        \"name\": \"Security\",\r\n                        \"priority\": 9,\r\n                        \"slug\": \"security\"\r\n                    }\r\n                ],\r\n                \"confidence\": 100,\r\n                \"cpe\": null,\r\n                \"description\": \"HTTP Strict Transport Security (HSTS) informs browsers that the site should only be accessed using HTTPS.\",\r\n                \"icon\": \"default.svg\",\r\n                \"name\": \"HSTS\",\r\n                \"pricing\": [],\r\n                \"slug\": \"hsts\",\r\n                \"version\": \"\",\r\n                \"website\": \"https://www.rfc-editor.org/rfc/rfc6797#section-6.1\"\r\n            },\r\n            {\r\n                \"categories\": [\r\n                    {\r\n                        \"groups\": [\r\n                            7\r\n                        ],\r\n                        \"id\": 31,\r\n                        \"name\": \"CDN\",\r\n                        \"priority\": 9,\r\n                        \"slug\": \"cdn\"\r\n                    }\r\n                ],\r\n                \"confidence\": 100,\r\n                \"cpe\": null,\r\n                \"description\": \"Cloud CDN uses Google's global edge network to serve content closer to users.\",\r\n                \"icon\": \"google-cloud-cdn.svg\",\r\n                \"name\": \"Google Cloud CDN\",\r\n                \"pricing\": [],\r\n                \"slug\": \"google-cloud-cdn\",\r\n                \"version\": \"\",\r\n                \"website\": \"https://cloud.google.com/cdn\"\r\n            },\r\n            {\r\n                \"categories\": [\r\n                    {\r\n                        \"groups\": [\r\n                            11\r\n                        ],\r\n                        \"id\": 16,\r\n                        \"name\": \"Security\",\r\n                        \"priority\": 9,\r\n                        \"slug\": \"security\"\r\n                    }\r\n                ],\r\n                \"confidence\": 100,\r\n                \"cpe\": null,\r\n                \"description\": \"Cloudflare bot management solution identifies and mitigates automated traffic to protect websites from bad bots.\",\r\n                \"icon\": \"CloudFlare.svg\",\r\n                \"name\": \"Cloudflare Bot Management\",\r\n                \"pricing\": [],\r\n                \"slug\": \"cloudflare-bot-management\",\r\n                \"version\": \"\",\r\n                \"website\": \"https://www.cloudflare.com/en-gb/products/bot-management/\"\r\n            },\r\n            {\r\n                \"categories\": [\r\n                    {\r\n                        \"groups\": [\r\n                            7\r\n                        ],\r\n                        \"id\": 31,\r\n                        \"name\": \"CDN\",\r\n                        \"priority\": 9,\r\n                        \"slug\": \"cdn\"\r\n                    }\r\n                ],\r\n                \"confidence\": 100,\r\n                \"cpe\": null,\r\n                \"description\": \"Cloudflare is a web-infrastructure and website-security company, providing content-delivery-network services, DDoS mitigation, Internet security, and distributed domain-name-server services.\",\r\n                \"icon\": \"CloudFlare.svg\",\r\n                \"name\": \"Cloudflare\",\r\n                \"pricing\": [],\r\n                \"slug\": \"cloudflare\",\r\n                \"version\": \"\",\r\n                \"website\": \"https://www.cloudflare.com\"\r\n            },\r\n            {\r\n                \"categories\": [\r\n                    {\r\n                        \"groups\": [\r\n                            6\r\n                        ],\r\n                        \"id\": 19,\r\n                        \"name\": \"Miscellaneous\",\r\n                        \"priority\": 10,\r\n                        \"slug\": \"miscellaneous\"\r\n                    }\r\n                ],\r\n                \"confidence\": 100,\r\n                \"cpe\": null,\r\n                \"description\": \"HTTP/3 is the third major version of the Hypertext Transfer Protocol used to exchange information on the World Wide Web.\",\r\n                \"icon\": \"HTTP3.svg\",\r\n                \"name\": \"HTTP/3\",\r\n                \"pricing\": [],\r\n                \"slug\": \"http-3\",\r\n                \"version\": \"\",\r\n                \"website\": \"https://httpwg.org/\"\r\n            },\r\n            {\r\n                \"categories\": [\r\n                    {\r\n                        \"groups\": [\r\n                            6\r\n                        ],\r\n                        \"id\": 19,\r\n                        \"name\": \"Miscellaneous\",\r\n                        \"priority\": 10,\r\n                        \"slug\": \"miscellaneous\"\r\n                    }\r\n                ],\r\n                \"confidence\": 100,\r\n                \"cpe\": null,\r\n                \"description\": \"Google Cloud Storage allows world-wide storage and retrieval of any amount of data at any time.\",\r\n                \"icon\": \"google-cloud-storage.svg\",\r\n                \"name\": \"Google Cloud Storage\",\r\n                \"pricing\": [],\r\n                \"slug\": \"google-cloud-storage\",\r\n                \"version\": \"\",\r\n                \"website\": \"https://cloud.google.com/storage\"\r\n            }\r\n        ],\r\n        \"wafResolved\": [\r\n            {\r\n                \"categories\": [\r\n                    {\r\n                        \"id\": 100,\r\n                        \"name\": \"WAF\",\r\n                        \"priority\": 1,\r\n                        \"slug\": \"waf\"\r\n                    }\r\n                ],\r\n                \"confidence\": 100,\r\n                \"cpe\": null,\r\n                \"description\": null,\r\n                \"icon\": \"default.svg\",\r\n                \"name\": \"FortiWeb (Fortinet)\",\r\n                \"pricing\": [],\r\n                \"slug\": \"fortiweb-fortinet\",\r\n                \"version\": \"\",\r\n                \"website\": null\r\n            },\r\n            {\r\n                \"categories\": [\r\n                    {\r\n                        \"id\": 100,\r\n                        \"name\": \"WAF\",\r\n                        \"priority\": 1,\r\n                        \"slug\": \"waf\"\r\n                    }\r\n                ],\r\n                \"confidence\": 100,\r\n                \"cpe\": null,\r\n                \"description\": null,\r\n                \"icon\": \"default.svg\",\r\n                \"name\": \"Cloudflare (Cloudflare Inc.)\",\r\n                \"pricing\": [],\r\n                \"slug\": \"cloudflare-cloudflare-inc\",\r\n                \"version\": \"\",\r\n                \"website\": null\r\n            }\r\n        ]\r\n    },\r\n    \"secureHeaders\": [\r\n        {\r\n            \"description\": \"X-Content-Type-Options header not found or wrong value\",\r\n            \"header\": \"X-Content-Type-Options\",\r\n            \"urls\": [\r\n                \"https://li.protechts.net/index.html?ts=1762862267560&r_id=AAZDUFs2DY8hMqg0%2FpesZA%3D%3D&app_id=PXdOjV695v&uc=scraping&d_id=2818f25c0e74e4e68afe02f2db65be474439ec1cdd83804fd945b3e0d08f1356\",\r\n                \"https://tzm.protechts.net/ns?c=a4180d30-bef5-11f0-8771-3799cba0bae6\"\r\n            ]\r\n        },\r\n        {\r\n            \"description\": \"Strict-Transport-Security header not found\",\r\n            \"header\": \"HSTS\",\r\n            \"urls\": [\r\n                \"https://accounts.google.com/gsi/status?client_id=990339570472-k6nqn1tpmitg8pui82bfaun3jrpmiuhs.apps.googleusercontent.com&as=vp1we82e3QihF3s%2BWH98KQ&has_opted_out_fedcm=true\",\r\n                \"https://accounts.google.com/gsi/button?logo_alignment=center&shape=pill&size=large&text=continue_with&theme=filled_blue&type=undefined&width=400px&client_id=990339570472-k6nqn1tpmitg8pui82bfaun3jrpmiuhs.apps.googleusercontent.com&iframe_id=gsi_267662_324897&as=vp1we82e3QihF3s%2BWH98KQ&hl=it_IT\",\r\n                \"https://tzm.protechts.net/ns?c=a4180d30-bef5-11f0-8771-3799cba0bae6\"\r\n            ]\r\n        },\r\n        {\r\n            \"description\": \"X-Frame-Options header is deprecated\",\r\n            \"header\": \"X-Frame-Options\",\r\n            \"urls\": [\r\n                \"https://it.linkedin.com/?utm_source=edge_ntp&utm_medium=top&utm_campaign=it\",\r\n                \"https://www.linkedin.com/litms/api/events/tms-load\"\r\n            ]\r\n        },\r\n        {\r\n            \"description\": \"X-XSS-Protection header is deprecated\",\r\n            \"header\": \"X-XSS-Protection\",\r\n            \"urls\": [\r\n                \"https://accounts.google.com/gsi/status?client_id=990339570472-k6nqn1tpmitg8pui82bfaun3jrpmiuhs.apps.googleusercontent.com&as=vp1we82e3QihF3s%2BWH98KQ&has_opted_out_fedcm=true\",\r\n                \"https://accounts.google.com/gsi/button?logo_alignment=center&shape=pill&size=large&text=continue_with&theme=filled_blue&type=undefined&width=400px&client_id=990339570472-k6nqn1tpmitg8pui82bfaun3jrpmiuhs.apps.googleusercontent.com&iframe_id=gsi_267662_324897&as=vp1we82e3QihF3s%2BWH98KQ&hl=it_IT\"\r\n            ]\r\n        }\r\n    ],\r\n    \"storage\": {\r\n        \"localStorage\": [],\r\n        \"sessionStorage\": []\r\n    },\r\n    \"technologies\": [\r\n        {\r\n            \"name\": \"Java\",\r\n            \"version\": \"\"\r\n        },\r\n        {\r\n            \"name\": \"Varnish\",\r\n            \"version\": \"\"\r\n        },\r\n        {\r\n            \"name\": \"Azure Front Door\",\r\n            \"version\": \"\"\r\n        },\r\n        {\r\n            \"name\": \"Google Cloud\",\r\n            \"version\": \"\"\r\n        },\r\n        {\r\n            \"name\": \"Azure\",\r\n            \"version\": \"\"\r\n        },\r\n        {\r\n            \"name\": \"Naver Analytics\",\r\n            \"version\": \"\"\r\n        },\r\n        {\r\n            \"name\": \"HSTS\",\r\n            \"version\": \"\"\r\n        },\r\n        {\r\n            \"name\": \"Google Cloud CDN\",\r\n            \"version\": \"\"\r\n        },\r\n        {\r\n            \"name\": \"Cloudflare Bot Management\",\r\n            \"version\": \"\"\r\n        },\r\n        {\r\n            \"name\": \"Cloudflare\",\r\n            \"version\": \"\"\r\n        },\r\n        {\r\n            \"name\": \"HTTP/3\",\r\n            \"version\": \"\"\r\n        },\r\n        {\r\n            \"name\": \"Google Cloud Storage\",\r\n            \"version\": \"\"\r\n        }\r\n    ],\r\n    \"waf\": [\r\n        {\r\n            \"name\": \"FortiWeb (Fortinet)\",\r\n            \"version\": \"\"\r\n        },\r\n        {\r\n            \"name\": \"Cloudflare (Cloudflare Inc.)\",\r\n            \"version\": \"\"\r\n        }\r\n    ]\r\n}"
 						},
 						"url": {
-							"raw": "http://localhost/techstack/results/19",
+							"raw": "http://localhost/techstack/results/42",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -267,7 +291,7 @@
 							"path": [
 								"techstack",
 								"results",
-								"19"
+								"42"
 							]
 						}
 					},
@@ -316,7 +340,19 @@
 					"name": "GetJob",
 					"request": {
 						"method": "GET",
-						"header": []
+						"header": [],
+						"url": {
+							"raw": "http://localhost/analyzer/results/41",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"analyzer",
+								"results",
+								"41"
+							]
+						}
 					},
 					"response": []
 				}
@@ -326,7 +362,16 @@
 			"name": "Health",
 			"request": {
 				"method": "GET",
-				"header": []
+				"header": [],
+				"url": {
+					"raw": "localhost/health",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"health"
+					]
+				}
 			},
 			"response": []
 		}
