@@ -28,14 +28,15 @@ class AnalyzerEngine {
           tabId: sender?.tab?.id ?? null,
           url: sender?.tab?.url ?? null,
         };
+        const html = message.data.html;
 
         const key = `analyzerResults_${timestamp}`;
-        browser.storage.local.set({ [key]: { meta, results } }).catch(() => {});
+        browser.storage.local.set({ [key]: { meta, results, html } }).catch(() => {});
 
-        this._setSessionValue("analyzer_lastResult", { meta, results });
+        this._setSessionValue("analyzer_lastResult", { meta, results, html });
         if (meta.tabId != null) {
           this._updateSessionMap("analyzer_lastByTab", (map) => {
-            map[meta.tabId] = { meta, results };
+            map[meta.tabId] = { meta, results, html };
             return map;
           });
         }
@@ -43,7 +44,7 @@ class AnalyzerEngine {
         if (this.resultCallback) {
           const cb = this.resultCallback;
           this.resultCallback = null;
-          try { cb({ meta, results }); } catch {}
+          try { cb({ meta, results, html }); } catch {}
         }
 
         sendResponse?.({ status: "ok", received: true });
@@ -62,11 +63,11 @@ class AnalyzerEngine {
           const timestamp = message.data.timestamp || Date.now();
 
           const results = this.processHtml(html);
-          const meta = { tabId, url, title: results?.head?.title || title || null, timestamp };
+          const meta = { tabId, url, title: results?.head?.title || title || null, timestamp, html };
 
           const key = meta.url || "(unknown_url)";
           if (!this._runtimeDataset[key]) this._runtimeDataset[key] = [];
-          this._runtimeDataset[key].push({ meta, results });
+          this._runtimeDataset[key].push({ meta, results, html });
           this._runtimeTotalScans += 1;
 
           this._runtimeCallbacks.onUpdate?.(key, {

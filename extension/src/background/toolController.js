@@ -54,6 +54,14 @@ class ToolBackgroundController {
           return true; // async
         }
 
+        /** Route for analyzer one-time scan API */
+        case "tool_analyzeAnalyzerOneTimeScan": {
+          this.engine.analyzeOneTimeScan(message.payload)
+            .then((data) => sendResponse(data))
+            .catch((err) => sendResponse({ accepted: false, error: String(err?.message || err) }));
+          return true; // async
+        }
+
         /** Socket-driven job subscriptions from the UI */
         case "tool_subscribeJob": {
           const jobId = String(message.jobId || "");

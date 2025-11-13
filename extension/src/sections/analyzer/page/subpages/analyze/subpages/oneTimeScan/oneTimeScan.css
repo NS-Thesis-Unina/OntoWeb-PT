@@ -1,0 +1,105 @@
+.sendanalyzerots-div {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+  width: 100%;
+}
+
+.sendanalyzerots-div .description {
+  display: flex;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.sendanalyzerots-div .alert-block {
+  width: 100%;
+  margin: 5px;
+}
+
+.sendanalyzerots-div .content-box {
+  width: 95%;
+}
+
+.sendanalyzerots-div .step-full {
+  width: 100%;
+}
+
+.sendanalyzerots-div .full-list {
+  width: 100%;
+}
+
+.sendanalyzerots-div .centered-loading {
+  display: flex;
+  justify-content: center;
+  padding: 16px;
+}
+
+.sendanalyzerots-div .empty-box {
+  padding: 16px;
+}
+
+.sendanalyzerots-div .label-bold {
+  margin-right: 8px;
+  font-weight: 700;
+}
+
+.sendanalyzerots-div .label-bold-sm {
+  margin-right: 4px;
+  font-weight: 700;
+}
+
+.sendanalyzerots-div .row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.sendanalyzerots-div .row-align-start {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+}
+
+.sendanalyzerots-div .text-wrap-flex {
+  white-space: normal;
+  word-break: break-word;
+  flex: 1;
+}
+
+.sendanalyzerots-div .actions {
+  margin-bottom: 16px;
+}
+
+.sendanalyzerots-div .btn {
+  margin-top: 8px;
+  margin-right: 8px;
+}
+
+.sendanalyzerots-div .completion-box {
+  padding: 24px;
+}
+
+.jobsummaries-description {
+  margin-bottom: 10px !important;
+}
+
+.jobsummaries-item {
+  padding: 5px;
+  margin-bottom: 5px !important;
+}
+
+.jobsummaries-item .item-div {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  align-items: center;
+  gap: 10px;
+}
+
+.jobsummaries-loading-div {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}

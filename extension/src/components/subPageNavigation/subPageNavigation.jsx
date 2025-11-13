@@ -1,15 +1,14 @@
-import Typography from "@mui/material/Typography";
 import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
 import Divider from "@mui/material/Divider";
-import "./archiveNavigation.css";
+import "./subPageNavigation.css";
 import { Slide } from "@mui/material";
 
-function ArchiveNavigation({ children }) {
+function SubPageNavigation({ children }) {
 
   return (
     <Slide in={true} timeout={300} direction="down">
-    <Paper className="archiveNavigation-div">
+    <Paper className="subPageNavigation-div">
       <Stack
         className="buttons"
         direction="row"
@@ -23,4 +22,4 @@ function ArchiveNavigation({ children }) {
   );
 }
 
-export default ArchiveNavigation;
+export default SubPageNavigation;

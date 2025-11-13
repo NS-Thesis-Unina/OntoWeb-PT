@@ -12,7 +12,6 @@ class ToolEngine {
     this.socket = null;
     this._socketInitStarted = false;
     this._joinedJobs = new Set();
-    this._connectTimer = null;
 
     this._pollTimer = null;
   }
@@ -75,7 +74,6 @@ class ToolEngine {
   }
 
   async ingestHttp(payload) {
-
     if (payload == null) throw new Error("Missing payload");
 
     const ctrl = new AbortController();
@@ -101,9 +99,7 @@ class ToolEngine {
     }
   }
 
-  /** Post a techstack snapshot to /techstack/analyze and return server payload.
-   *  Expected server behavior: accept payload, enqueue job, return { accepted:true, jobId, ... }.
-   */
+  /** Post a techstack snapshot to /techstack/analyze (enqueue a BullMQ job). */
   async analyzeTechstack(payload) {
     if (payload == null) throw new Error("Missing payload");
 
@@ -121,6 +117,33 @@ class ToolEngine {
       if (!res.ok) {
         const text = await res.text().catch(() => "");
         throw new Error(`techstack/analyze failed (${res.status}) ${text}`);
+      }
+
+      const data = await res.json();
+      return data;
+    } finally {
+      clearTimeout(t);
+    }
+  }
+
+  /** Post a one-time analyzer scan to /analyzer/analyze (enqueue a BullMQ job). */
+  async analyzeOneTimeScan(payload) {
+    if (payload == null) throw new Error("Missing payload");
+
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 30000);
+
+    try {
+      const res = await fetch(`${this.serverUrl}/analyzer/analyze`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        signal: ctrl.signal,
+      });
+
+      if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        throw new Error(`analyzer/analyze failed (${res.status}) ${text}`);
       }
 
       const data = await res.json();
@@ -153,7 +176,7 @@ class ToolEngine {
 
   /**
    * Internal connect routine: sets up event listeners and reconnection handling.
-   */
+  */
   _connectSocket() {
     this.socket = io(this.serverUrl, {
       transports: ["websocket"],
@@ -177,7 +200,8 @@ class ToolEngine {
     });
 
     // Forward any job event to UI subscribers.
-    // NOTE: server emits { event: 'completed'|'failed', queue: 'http'|'sparql'|'techstack', jobId, ... }
+    // Server is expected to emit payloads like:
+    //   { event: 'completed'|'failed', queue: 'http'|'sparql'|'techstack'|'analyzer', jobId, ... }
     this.socket.on("completed", (payload) => {
       const evt = { event: "completed", ...payload };
       this._notifyJob(evt);

@@ -5,6 +5,7 @@ const {
   queueNameHttpRequestsWrites,
   queueNameSparqlWrites,
   queueNameTechstackWrites,
+  queueNameAnalyzerWrites
 } = require('./queue');
 const { makeLogger } = require('./utils');
 
@@ -18,8 +19,9 @@ module.exports = async function attachSockets(httpServer) {
   const qHttp = new QueueEvents(queueNameHttpRequestsWrites, { connection });
   const qSp = new QueueEvents(queueNameSparqlWrites, { connection });
   const qTech = new QueueEvents(queueNameTechstackWrites, { connection }); 
+  const qAnaly = new QueueEvents(queueNameAnalyzerWrites, { connection }); 
 
-  await Promise.all([qHttp.waitUntilReady(), qSp.waitUntilReady(), qTech.waitUntilReady()]);
+  await Promise.all([qHttp.waitUntilReady(), qSp.waitUntilReady(), qTech.waitUntilReady(), qAnaly.waitUntilReady()]);
   log.info('QueueEvents ready');
 
   io.on('connection', (socket) => {
@@ -50,17 +52,20 @@ module.exports = async function attachSockets(httpServer) {
   const fHttp = forward('http');
   const fSp = forward('sparql');
   const fTech = forward('techstack');
+  const fAnaly = forward('analyzer');
 
   // Event forwarding
   qHttp.on('completed', (p) => fHttp('completed', p));
   qSp.on('completed', (p) => fSp('completed', p));
   qTech.on('completed', (p) => fTech('completed', p));
+  qAnaly.on('completed', (p) => fAnaly('completed', p));
 
   qHttp.on('failed', (p) => fHttp('failed', p));
   qSp.on('failed', (p) => fSp('failed', p));
   qTech.on('failed', (p) => fTech('failed', p)); 
+  qAnaly.on('failed', (p) => fAnaly('failed', p));
 
-  [qHttp, qSp, qTech].forEach((qe) =>
+  [qHttp, qSp, qTech, qAnaly].forEach((qe) =>
     qe.on('error', (err) => log.warn('QueueEvents error', err?.message || err))
   );
 

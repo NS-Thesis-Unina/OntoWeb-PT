@@ -1,7 +1,7 @@
 import { Button } from "@mui/material";
-import ArchiveNavigation from "../components/archiveNavigation/archiveNavigation";
 import "./archive.css";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import SubPageNavigation from "../../../../../components/subPageNavigation/subPageNavigation";
 
 function ArchiveAnalyzer() {
   const navigate = useNavigate();
@@ -12,10 +12,10 @@ function ArchiveAnalyzer() {
 
   return (
     <div className="archiveAnalyzer-div">
-      <ArchiveNavigation>
+      <SubPageNavigation>
         <Button disabled={isOnetime} onClick={() => navigate("onetime")}>One-Time Scan</Button>
         <Button disabled={isRuntime} onClick={() => navigate("runtime")}>Runtime Scan</Button>
-      </ArchiveNavigation>
+      </SubPageNavigation>
       <Outlet />
     </div>
   );

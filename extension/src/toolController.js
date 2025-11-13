@@ -44,6 +44,16 @@ const toolReactController = {
     }
   },
 
+  /** Submit a one-time analyzer scan (HTML, scripts, forms, iframes) to /analyzer/analyze. */
+  async analyzeOneTimeScan(payload) {
+    try {
+      const res = await browser.runtime.sendMessage({ type: "tool_analyzeAnalyzerOneTimeScan", payload });
+      return res;
+    } catch (err) {
+      return { accepted: false, error: String(err?.message || err) };
+    }
+  },
+
   /** Ask background to subscribe this UI to a job's websocket room. */
   async subscribeJob(jobId) {
     try {

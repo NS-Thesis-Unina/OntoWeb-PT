@@ -1,4 +1,4 @@
-.archiveNavigation-div {
+.subPageNavigation-div {
   display: flex;
   width: 100%;
   flex-direction: row;
@@ -9,13 +9,13 @@
   border-start-end-radius: 0px !important;
 }
 
-.archiveNavigation-div .buttons {
+.subPageNavigation-div .buttons {
   display: flex;
   justify-content: center;
   width: 100%;
 }
 
-.archiveNavigation-div .buttons button {
+.subPageNavigation-div .buttons button {
   border-radius: 0px;
   width: 50%;
 }

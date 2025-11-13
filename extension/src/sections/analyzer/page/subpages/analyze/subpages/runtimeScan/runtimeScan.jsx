@@ -1,49 +1,45 @@
-import { Alert, Box, Button, Checkbox, CircularProgress, FormControlLabel, FormGroup, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Paper, Stack, Step, StepContent, StepLabel, Stepper, Typography, Zoom, Dialog, DialogTitle, DialogContent, DialogActions } from "@mui/material";
-import "./sendToOntology.css";
+import { Alert, Box, Button, Checkbox, CircularProgress, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Paper, Stack, Step, StepContent, StepLabel, Stepper, Typography, Zoom, Dialog, DialogTitle, DialogContent, DialogActions } from "@mui/material";
+import "./runtimeScan.css";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import browser from "webextension-polyfill";
-import interceptorReactController from "../../../interceptorController";
-import { formatWhen, prettyBytes } from "../../../../../libs/formatting";
-import DataGridSelectableInterceptor from "../components/dataGridSelectableInterceptor/dataGridSelectableInterceptor";
-import { makeBatchPayloads } from "./makeBatchPayloads";
-import toolReactController from "../../../../../toolController";
-import { getLock, subscribeLockChanges } from "../../../../../scanLock";
+import { formatWhen } from "../../../../../../../libs/formatting";
+import toolReactController from "../../../../../../../toolController";
+import { getLock, subscribeLockChanges } from "../../../../../../../scanLock";
 import { enqueueSnackbar } from "notistack";
 import Brightness1Icon from "@mui/icons-material/Brightness1";
+import analyzerReactController from "../../../../../analyzerController";
+import OneTimeScanResults from "../../../components/oneTimeScanResults/oneTimeScanResults";
+import Collapsible from "../../../../../../../components/collapsible/collapsible";
 
 const steps = [
   {
-    label: 'Send requests to the ontology',
-    description: `Follow the steps below to submit requests to the ontology. 
-    Choose a saved scan, pick a website from that scan, select the requests 
-    you want, and then confirm to send them.`,
+    label: "Analyze runtime scan pages with the ontology",
+    description: `Follow the steps to submit a page snapshot, taken from an analyzer runtime scan, to the backend.
+    The backend will run a resolver that maps detected HTML elements and scripts to the ontology
+    and attempts to identify potential vulnerabilities.`,
   },
   {
-    label: 'Choose a scan',
-    description:
-      `From all scans saved in local storage, select the scan you want to 
-      use as the source of requests.`,
+    label: "Select a runtime scan",
+    description: `From the analyzer runtime scans saved in local storage, choose the run you want to use
+    as the source for the analysis.`,
   },
   {
-    label: 'Choose a website',
-    description: `From the selected scan, choose the crawled website whose 
-    requests you want to submit to the ontology.`,
+    label: "Select a crawled page",
+    description: `From the selected runtime scan, choose the crawled page (URL) whose snapshot
+    you want to analyze with the ontology.`,
   },
   {
-    label: 'Select requests',
-    description: `From the data grid, select the specific HTTP requests you 
-    want to include. If you also want to run a vulnerability check, enable the 
-    resolver option.`,
+    label: "Select a page snapshot",
+    description: `From the available snapshots for the chosen page, select the specific snapshot
+    you want to review and send to the analyzer.`,
   },
   {
-    label: 'Confirm and send',
-    description: `Review your selection and confirm. If the resolver is enabled, 
-    the system will attempt to detect potential vulnerabilities before inserting 
-    the requests into GraphDB.`,
+    label: "Review the snapshot and submit to the tool",
+    description: `Preview the selected snapshot, verify its details, and then submit it to the tool
+    to start the ontology-based analysis and vulnerability detection.`,
   },
 ];
 
-function SendToOntologyInterceptor(){
+function SendRuntimeScanAnalyzer(){
 
   const [scanLock, setScanLock] = useState(null);
 
@@ -60,12 +56,11 @@ function SendToOntologyInterceptor(){
   const [step2WebSiteSelected, setStep2WebSiteSelected] = useState(null);
   const [step2LoadingList, setStep2LoadingList] = useState(true);
 
-  const [step3RequestsSelected, setStep3RequestsSelected] = useState([]);
+  const [step3WebSiteScanList, setStep3WebSiteScanList] = useState([]);
+  const [step3WebSiteScanSelected, setStep3WebSiteScanSelected] = useState(null);
+  const [step3LoadingList, setStep3LoadingList] = useState(true);
 
-  const [step4ConfirmRequestsSelected, setStep4ConfirmRequestsSelected] = useState([]);
-  const [step4ActivateResolver, setStep4ActivateResolver] = useState(false);
   const [step4LoadingSendRequests, setStep4LoadingSendRequests] = useState(false);
-
   const [step4JobEvents, setStep4JobEvents] = useState([]);
   const subscribedJobIdsRef = useRef(new Set());
   const [openJobsDialog, setOpenJobsDialog] = useState(false);
@@ -130,6 +125,10 @@ function SendToOntologyInterceptor(){
         renderWebSiteList();
         break;
       }
+      case 2: {
+        renderWebSiteScanList();
+        break;
+      }
       case 4: {
         sendRequests();
         break;
@@ -160,13 +159,12 @@ function SendToOntologyInterceptor(){
         break;
       }
       case 3: {
-        setStep3RequestsSelected([]);
+        setStep3WebSiteScanList([]);
+        setStep3WebSiteScanSelected(null);
         break;
       }
       case 4: {
-        setStep3RequestsSelected([]);
-        setStep4ConfirmRequestsSelected([]);
-        setStep4JobEvents([]);
+        setStep3WebSiteScanSelected(null);
         try {
           for (const id of subscribedJobIdsRef.current) {
             toolReactController.unsubscribeJob(String(id)).catch(() => {});
@@ -187,9 +185,6 @@ function SendToOntologyInterceptor(){
     setStep1ScanSelected(null);
     setStep2WebSiteList([]);
     setStep2WebSiteSelected(null);
-    setStep3RequestsSelected([]);
-    setStep4ConfirmRequestsSelected([]);
-    setStep4ActivateResolver(false);
     setContinueDisabled(false);
     setStep4JobEvents([]);
     try {
@@ -226,7 +221,7 @@ function SendToOntologyInterceptor(){
           break;
         }
         case 3: {
-          if(step3RequestsSelected.length === 0){
+          if(step3LoadingList || !step3WebSiteScanSelected || step3WebSiteScanList.length === 0){
             setContinueDisabled(true);
           }else{
             setContinueDisabled(false);
@@ -234,11 +229,12 @@ function SendToOntologyInterceptor(){
           break;
         }
         case 4: {
-          if(step4ConfirmRequestsSelected.length === 0){
+          if(!step3WebSiteScanSelected || step4LoadingSendRequests){
             setContinueDisabled(true);
           }else{
             setContinueDisabled(false);
           }
+          break;
         }
         default: {
           //ignore
@@ -247,41 +243,18 @@ function SendToOntologyInterceptor(){
     }else{
       setContinueDisabled(true);
     }
-  },[activeStep, step1ScanSelected, step2WebSiteSelected, step3RequestsSelected, step4ConfirmRequestsSelected, toolStatus, scanLock]);
+  },[activeStep, step1LoadingList, step1ScanSelected, step1ScanList, step2WebSiteList, step2WebSiteSelected, step2LoadingList, step3WebSiteScanList, step3WebSiteScanSelected, step3LoadingList, step4LoadingSendRequests, toolStatus, scanLock]);
 
   //Step 1 - Scan List
   const handleToggle = (value) => () => {
     setStep1ScanSelected(value);
   };
 
-  function hasValidMeta(meta) {
-    return meta && typeof meta === "object"
-      && Number.isFinite(meta.startedAt)
-      && Number.isFinite(meta.stoppedAt)
-      && Number.isFinite(meta.totalEvents)
-      && Number.isFinite(meta.pagesCount)
-      && Number.isFinite(meta.totalBytes);
-  }
-
   const loadScansFromLocalStorage = useCallback(async () => {
     setStep1LoadingList(true);
     try {
-      const res = await interceptorReactController.listRuns();
-      const list = Array.isArray(res?.runs) ? res.runs : [];
-
-      const cleaned = list.filter(item =>
-        item &&
-        typeof item.key === "string" &&
-        item.key !== "interceptorRun_lastKey" &&
-        item.key.startsWith("interceptorRun_") &&
-        hasValidMeta(item.meta)
-      );
-
-      const runsKeys = cleaned.map(v => v.key);
-
-      await Promise.all(
-        runsKeys.map(value => loadScanContentFromLocalStorage(value))
-      );
+      const list = await analyzerReactController.getAllRuntimeResults();
+      setStep1ScanList(Array.isArray(list) ? list : []);
 
       setStep1LoadingList(false);
     } catch (e) {
@@ -290,34 +263,28 @@ function SendToOntologyInterceptor(){
     }
   }, []);
 
-  const loadScanContentFromLocalStorage = async (keyId) => {
-    try {
-      const all = await browser.storage.local.get(keyId);
-      const r = all?.[keyId] || null;
-      if (!r) {
-        console.log("Run not found in storage.");
-      } else {
-        setStep1ScanList((prevList) => [...prevList, r]);
-      }
-    } catch (e) {
-      console.log(e?.message || "Error reading run from storage.");
-    }
-  };
-
   //Step 2
   const handleToggleWebSite = (value) => () => {
     setStep2WebSiteSelected(value);
   };
 
   const renderWebSiteList = () => {
-    setStep2WebSiteList(Object.entries(step1ScanSelected.dataset));
+    setStep2WebSiteList(Object.entries(step1ScanSelected.run.dataset));
     setStep2LoadingList(false)
   }
 
-  //Step 4
-  const onChangeActivateResolver = () => {
-    setStep4ActivateResolver(!step4ActivateResolver);
+  //Step 3
+  const handleToggleWebSiteScan = (value) => () => {
+    setStep3WebSiteScanSelected(value);
+  };
+
+  const renderWebSiteScanList = () => {
+    setStep3LoadingList(true);
+    setStep3WebSiteScanList(step2WebSiteSelected[1]);
+    setStep3LoadingList(false);
   }
+
+  //Step 4
 
   const subscribeJob = useCallback(async (jobId) => {
     const id = String(jobId);
@@ -334,32 +301,34 @@ function SendToOntologyInterceptor(){
   }, []);
 
   const sendRequests = async () => {
+    if (!step3WebSiteScanSelected) return;
+    
     setStep4LoadingSendRequests(true);
     try {
-      const payloads = makeBatchPayloads(
-        step4ConfirmRequestsSelected, 
-        { graph: "http://example.com/graphs/http-requests" }, 
-        { maxBytes: 2 * 1024 * 1024, safetyMargin: 600 * 1024 }
-      );
-      const results = await Promise.all(
-        payloads.map(async (item) => {
-          try {
-            const res = await toolReactController.ingestHttp(item);
-            if (res?.accepted && res?.jobId) {
-              subscribeJob(res.jobId);
-            }
-            return res;
-          } catch (e) {
-            enqueueSnackbar("Error while sending the request (check the console for details).", { variant: "error" });
-            console.log("Error while sending the request:", e);
-            return { accepted: false, error: String(e?.message || e) };
-          }
-        })
-      );
+      const { meta, results, html } = step3WebSiteScanSelected;
 
-      const ok = results.filter(r => r?.accepted).length;
-      const total = results.length;
-      enqueueSnackbar(`Requests accepted by the backend: ${ok}/${total}. Waiting for results from the worker...`, { variant: ok > 0 ? "success" : "warning" });
+      const res = await toolReactController.analyzeOneTimeScan({
+        url: meta.url,
+        html,
+        forms: results.body.forms,
+        iframes: results.body.iframes,
+        scripts: (results.head.scripts || []).map(({ inline, src }) => ({
+          code: inline || null,
+          src: src || null,
+        })),
+      });
+
+      if (res?.accepted) {
+        enqueueSnackbar("Scan accepted by backend. Waiting for results from the worker...", { variant: "success" });
+        if (res?.jobId) {
+          await subscribeJob(res.jobId);
+        }
+      } else {
+        enqueueSnackbar(res?.error || "The backend did not accept the scan.", { variant: "warning" });
+      }
+    } catch (e) {
+      enqueueSnackbar("Error while sending the scan (see console for details).", { variant: "error" });
+      console.log("Error sending analyzer one-time scan:", e);
     } finally {
       setStep4LoadingSendRequests(false);
       setOpenJobsDialog(true);
@@ -405,10 +374,9 @@ function SendToOntologyInterceptor(){
       <Paper className="description">
         <Zoom in={true}>
           <Typography variant="body2">
-            <strong>Send to ontology</strong> lets you persist selected HTTP requests from your 
-            saved scans into GraphDB (the ontology). You can also enable the resolver to perform a 
-            basic, best-effort detection of potential vulnerabilities on the selected requests 
-            before they are stored.
+            <strong>Analyzer Runtime Scan</strong> submits a page snapshot taken from a saved runtime scan
+            (HTML, scripts, forms, iframes) to your backend analyzer. The backend enqueues a background job
+            (BullMQ via Redis) and emits status events over WebSockets.
           </Typography>
         </Zoom>
       </Paper>
@@ -439,7 +407,7 @@ function SendToOntologyInterceptor(){
                     {!step1LoadingList && step1ScanList.length === 0 && (
                       <Box className="empty-box">
                         <Typography variant="body2" color="text.secondary" align="center">
-                          No scans available to select.
+                          No runtime scans available to select.
                         </Typography>
                       </Box>
                     )}
@@ -467,7 +435,7 @@ function SendToOntologyInterceptor(){
                             </ListItemIcon>
                             <ListItemText
                               id={labelId}
-                              primary={`Started: ${formatWhen(value.startedAt)} | Stopped: ${formatWhen(value.stoppedAt)} | Pages: ${value.pagesCount} | Events: ${value.totalEvents} | Bytes: ${prettyBytes(value.totalBytes)}`}
+                              primary={`Started: ${formatWhen(value.run.startedAt)} | Stopped: ${formatWhen(value.run.stoppedAt)} | Pages: ${value.run.pagesCount} | Scans: ${value.run.totalScans}`}
                             />
                           </ListItemButton>
                         </ListItem>
@@ -487,7 +455,7 @@ function SendToOntologyInterceptor(){
                     {!step2LoadingList && step2WebSiteList.length === 0 && (
                       <Box className="empty-box">
                         <Typography variant="body2" color="text.secondary" align="center">
-                          No websites available to select.
+                          No crawled pages available to select.
                         </Typography>
                       </Box>
                     )}
@@ -517,7 +485,7 @@ function SendToOntologyInterceptor(){
                                 </Typography>
                               </Stack>
                               <Stack className="row">
-                                <Typography className="label-bold-sm">Requests:</Typography>
+                                <Typography className="label-bold-sm">Scans:</Typography>
                                 <Typography>{value[1].length}</Typography>
                               </Stack>
                             </Stack>
@@ -528,22 +496,58 @@ function SendToOntologyInterceptor(){
                   </List>
                 )}
                 {activeStep === 3 && (
-                  <DataGridSelectableInterceptor items={step2WebSiteSelected[1]} setArray={setStep3RequestsSelected} />
+                  <List className="full-list">
+                    {step3LoadingList && (
+                      <Box className="centered-loading">
+                        <CircularProgress />
+                      </Box>
+                    )}
+
+                    {!step3LoadingList && step3WebSiteScanList.length === 0 && (
+                      <Box className="empty-box">
+                        <Typography variant="body2" color="text.secondary" align="center">
+                          No page snapshots available to select for the chosen URL.
+                        </Typography>
+                      </Box>
+                    )}
+
+                    {!step3LoadingList && step3WebSiteScanList.length > 0 && step3WebSiteScanList.map((value, index) => {
+
+                      return (
+                        <ListItem
+                          key={index}
+                          disablePadding
+                          divider
+                        >
+                          <ListItemButton role={undefined} onClick={handleToggleWebSiteScan(value)} dense>
+                            <ListItemIcon>
+                              <Checkbox
+                                edge="start"
+                                checked={step3WebSiteScanSelected === value}
+                                tabIndex={-1}
+                                disableRipple
+                              />
+                            </ListItemIcon>
+                            <Collapsible defaultOpen={false} title={`Page: ${value.meta.url} | TabID: ${value.meta.tabId}`}>
+                              <OneTimeScanResults key={index} results={value} titleDisabled/>
+                            </Collapsible>
+                          </ListItemButton>
+                        </ListItem>
+                      );
+                    })}
+                  </List>
                 )}
-                {activeStep === 4 && (
+                {activeStep === 4 && step3WebSiteScanSelected && (
                   <>
-                    <DataGridSelectableInterceptor items={step3RequestsSelected} setArray={setStep4ConfirmRequestsSelected} />
-                    <FormGroup>
-                      <FormControlLabel control={<Checkbox onChange={onChangeActivateResolver} value={step4ActivateResolver} />} label="Enable resolver to detect potential vulnerabilities." />
-                    </FormGroup>
+                    <OneTimeScanResults results={step3WebSiteScanSelected} titleDisabled />
                     <Dialog open={openJobsDialog} fullWidth>
                       <DialogTitle>
                         Job Summaries
                       </DialogTitle>
                       <DialogContent>
                         <Typography variant="body2" className="jobsummaries-description">
-                          This dialog displays a list of background jobs processed via BullMQ and Redis.  
-                          Each job shows its ID and whether it has been successfully completed or not.
+                          This dialog displays background jobs processed via BullMQ and Redis.
+                          Each job shows its ID and completion status.
                         </Typography>
                         {jobSummaries.length > 0 ? (
                           jobSummaries.map((job, index) => (
@@ -587,7 +591,7 @@ function SendToOntologyInterceptor(){
                     disabled={continueDisabled}
                     loading={activeStep === 4 && step4LoadingSendRequests}
                   >
-                    {index === steps.length - 1 ? 'Send Requests' : 'Continue'}
+                    {index === steps.length - 1 ? 'Send Scan' : 'Continue'}
                   </Button>
                   <Button
                     disabled={index === 0 || (activeStep === 4 && step4LoadingSendRequests) || toolStatus === "tool_off"}
@@ -606,4 +610,4 @@ function SendToOntologyInterceptor(){
   );
 }
 
-export default SendToOntologyInterceptor;
+export default SendRuntimeScanAnalyzer;
