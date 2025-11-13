@@ -1,6 +1,7 @@
 const acorn = require('acorn');
 const { ancestor, full } = require('acorn-walk');
 const staticRules = require('./rules/staticRules');
+const formRules = require('./rules/formRules'); // 👈 nuovo
 const taintRules = require('./rules/taintRules');
 const axios = require('axios').default;
 
@@ -8,39 +9,43 @@ const axios = require('axios').default;
 class sastEngine {
   /**
    * @param {object} [options]
-   * @param {number} [options.policy] 
-   * @param {boolean} [options.includeSnippets] 
+   * @param {number} [options.policy]
+   * @param {boolean} [options.includeSnippets]
    */
   constructor(options = {}) {
-    this.rules = staticRules.concat(taintRules);
+
+    this.rules = staticRules.concat(formRules, taintRules);
     this.policy = options.policy || 0;
     this.includeSnippets = options.includeSnippets ?? false;
   }
 
   /**
+   * 
    * @param {Array<{code: string, src?: string}>} scripts
    * @param {string} html
    * @param {string} file
+   * @param {Array} forms
+   * @param {Array} iframes
    * @returns {Promise<Array>}
    */
-  async scanCode(scripts = [], html = '', file = '') {
+  async scanCode(scripts = [], html = '', file = '', forms = [], iframes = []) {
     const codeByFile = Object.create(null);
     const allBodies = [];
     const rawFindings = [];
 
-
+   
     for (const rule of this.rules) {
       try {
         if (typeof rule.checkHtml === 'function') {
           const htmlFindings = rule.checkHtml(html);
           if (Array.isArray(htmlFindings)) rawFindings.push(...htmlFindings);
         }
-      } catch (err) {
-        continue; 
+      } catch {
+        continue;
       }
     }
 
-
+  
     const inlineSnippets = this.extractInlineHandlers(html);
     for (let i = 0; i < inlineSnippets.length; i++) {
       const snippet = inlineSnippets[i];
@@ -59,6 +64,7 @@ class sastEngine {
       }
     }
 
+   
     for (const script of scripts) {
       const fileId = script.src || `inline-script[#${allBodies.length}]`;
       let code = script.code || '';
@@ -87,10 +93,9 @@ class sastEngine {
       }
     }
 
-
     if (allBodies.length === 0) return rawFindings;
 
-
+ 
     const firstFileId = Object.keys(codeByFile)[0];
     const firstCode = codeByFile[firstFileId];
     const templateAST = acorn.parse(firstCode, {
@@ -98,7 +103,6 @@ class sastEngine {
       sourceType: 'module',
       locations: true,
     });
-    // @ts-ignore
     templateAST.body = allBodies.flat();
 
 
@@ -113,7 +117,9 @@ class sastEngine {
       if (rawFindings.length > 300) break;
     }
 
+ 
     const issues = [];
+
     for (const issue of rawFindings) {
       const { file: fId, location, sourceFile, sourceLoc, sinkFile, sinkLoc } = issue;
 
@@ -127,13 +133,106 @@ class sastEngine {
         issue.sinkSnippet = this.getCodeSnippetExt(codeByFile[sinkFile], sinkLoc);
       }
 
+    
+      let contextVector = { type: 'unknown', index: null };
+
+
+      if (fId?.startsWith('inline-script')) {
+        const idx = Number(fId.match(/\[#(\d+)\]/)?.[1] ?? -1);
+        const s = scripts[idx];
+        contextVector = {
+          type: 'script',
+          index: idx,
+          origin: s?.src ? 'external' : 'inline',
+          src: s?.src || null,
+        };
+      }
+
+
+      else if (fId?.startsWith('inline-handler')) {
+        const idx = Number(fId.match(/\[#(\d+)\]/)?.[1] ?? -1);
+        contextVector = {
+          type: 'html-inline-handler',
+          index: idx,
+          origin: 'markup',
+        };
+      }
+
+
+      else if (fId === 'HTML Document') {
+        // @ts-ignore
+        contextVector = { type: 'html', origin: 'markup' };
+      }
+
+    
+      else {
+        const match = scripts.findIndex((s) => s.src === fId);
+        if (match >= 0) {
+          const s = scripts[match];
+          contextVector = {
+            type: 'script',
+            index: match,
+            origin: s?.src ? 'external' : 'inline',
+            src: s?.src || null,
+          };
+        }
+      }
+
+
+      if (issue.ruleId?.includes('iframe')) {
+        let idx = -1;
+        for (let i = 0; i < iframes.length; i++) {
+          const f = iframes[i];
+          if (!f?.src) continue;
+          if (
+            f.src.includes('data:text/html') ||
+            html.includes(f.src) ||
+            issue.snippet?.includes('iframe') ||
+            issue.description?.toLowerCase().includes('iframe')
+          ) {
+            idx = i;
+            break;
+          }
+        }
+        const iframe = idx >= 0 ? iframes[idx] : null;
+        contextVector = {
+          type: 'iframe',
+          index: idx >= 0 ? idx : null,
+          origin: 'markup',
+          src: iframe?.src || null,
+          title: iframe?.title || null,
+        };
+      }
+
+
+      if (issue.ruleId?.includes('form')) {
+        const idx = forms.findIndex((f) =>
+          (f.action && html.includes(f.action)) ||
+          issue.snippet?.includes(f.action)
+        );
+        const form = forms[idx] || null;
+        contextVector = {
+          type: 'form',
+          index: idx >= 0 ? idx : null,
+          origin: 'markup',
+          action: form?.action || null,
+          method: form?.method || null,
+          inputs: Array.isArray(form?.inputs)
+            ? form.inputs.map((i) =>
+                typeof i === 'string' ? i : i.name || i.tag || ''
+              )
+            : [],
+        };
+      }
+
+      issue.contextVector = contextVector;
       issues.push(issue);
     }
 
     return issues;
   }
 
-
+ 
   extractInlineHandlers(htmlText) {
     const attrs = [
       'onclick', 'onload', 'onerror', 'onsubmit', 'onmouseover',
@@ -141,7 +240,10 @@ class sastEngine {
     ];
     const snippets = [];
     for (const attr of attrs) {
-      const re = new RegExp(`\\b${attr}\\s*=\\s*"(.*?)"|\\b${attr}\\s*=\\s*'(.*?)'`, 'gi');
+      const re = new RegExp(
+        `\\b${attr}\\s*=\\s*"(.*?)"|\\b${attr}\\s*=\\s*'(.*?)'`,
+        'gi'
+      );
       let match;
       while ((match = re.exec(htmlText))) {
         const inner = (match[1] || match[2] || '').trim();
@@ -151,7 +253,7 @@ class sastEngine {
     return snippets;
   }
 
-
+  
   getCodeSnippetExt(code, location) {
     if (!code || !location) return '';
     const lines = code.split(/\r?\n/);
