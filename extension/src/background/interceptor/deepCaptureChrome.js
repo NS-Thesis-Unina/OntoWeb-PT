@@ -1,7 +1,3 @@
-// deepCaptureChrome.js
-// Deep capture via Chrome DevTools Protocol (Chromium-based browsers).
-// Exports: DeepCaptureChrome, isChromeLike
-
 const isChromeLike = typeof chrome !== "undefined" && !!chrome.debugger;
 
 class DeepCaptureChrome {

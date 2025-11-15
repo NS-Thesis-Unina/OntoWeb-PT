@@ -8,10 +8,9 @@ class AnalyzerBackgroundController {
   }
 
   initListener() {
-
     browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
       switch (message.type) {
-        /* ---------- ONE-TIME ---------- */
+        /* ---------- ONE-TIME START ---------- */
         case "analyzer_startOneTimeScan": {
           this.engine
             .runOneTimeScan(message.tabId, (data) => {
@@ -27,7 +26,7 @@ class AnalyzerBackgroundController {
             });
           break;
         }
-                
+
         /* ---------- RUNTIME START ---------- */
         case "analyzer_startRuntimeScan": {
           this.engine.startRuntimeScan({
@@ -56,26 +55,99 @@ class AnalyzerBackgroundController {
           return true;
         }
 
-        /* ---------- ARCHIVIO ONE-TIME ---------- */
+        /* ---------- ARCHIVE ONE-TIME ---------- */
         case "analyzer_getLocalScanResults": {
-          this.engine.getLocalScanResults().then(localResults => sendResponse({ localResults }));
+          this.engine
+            .getLocalScanResults()
+            .then((localResults) => sendResponse({ localResults }))
+            .catch(() => sendResponse({ localResults: [] }));
           return true;
         }
 
-        /* ---------- ULTIMO RUNTIME SALVATO ---------- */
+        /* ---------- LAST RUNTIME SAVED ---------- */
         case "analyzer_getLastRuntimeResults": {
-          this.engine.getLastRuntimeResults().then(res => sendResponse(res));
+          this.engine
+            .getLastRuntimeResults()
+            .then((res) => sendResponse(res))
+            .catch(() => sendResponse({ key: null, run: null }));
           return true;
         }
 
-        /* ✅ TUTTI I RUNTIME SALVATI */
+        /* ---------- ALL RUNTIME RUNS ---------- */
         case "analyzer_getAllRuntimeResults": {
-          this.engine.getAllRuntimeResults().then(runs => sendResponse({ runs }));
+          this.engine
+            .getAllRuntimeResults()
+            .then((runs) => sendResponse({ runs }))
+          .catch(() => sendResponse({ runs: [] }));
+          return true;
+        }
+
+        /* ---------- DELETE ONE-TIME BY ID ---------- */
+        case "analyzer_deleteOneTimeResultById": {
+          this.engine
+            .deleteOneTimeResultById(message.resultKey)
+            .then((info) => sendResponse({ ok: true, info }))
+            .catch((err) =>
+              sendResponse({
+                ok: false,
+                error:
+                  err?.message ||
+                  "Unable to delete analyzer scan.",
+              })
+            );
+          return true;
+        }
+
+        /* ---------- CLEAR ALL ONE-TIME RESULTS ---------- */
+        case "analyzer_clearAllOneTimeResults": {
+          this.engine
+            .clearAllOneTimeResults()
+            .then((info) => sendResponse({ ok: true, info }))
+            .catch((err) =>
+              sendResponse({
+                ok: false,
+                error:
+                  err?.message ||
+                  "Unable to clear analyzer one-time scans.",
+              })
+            );
+          return true;
+        }
+
+        /* ---------- DELETE RUNTIME BY ID ---------- */
+        case "analyzer_deleteRuntimeResultById": {
+          this.engine
+            .deleteRuntimeResultById(message.runtimeKey)
+            .then((info) => sendResponse({ ok: true, info }))
+            .catch((err) =>
+              sendResponse({
+                ok: false,
+                error:
+                  err?.message ||
+                  "Unable to delete analyzer runtime scan.",
+              })
+            );
+          return true;
+        }
+
+        /* ---------- CLEAR ALL RUNTIME RESULTS ---------- */
+        case "analyzer_clearAllRuntimeResults": {
+          this.engine
+            .clearAllRuntimeResults()
+            .then((info) => sendResponse({ ok: true, info }))
+            .catch((err) =>
+              sendResponse({
+                ok: false,
+                error:
+                  err?.message ||
+                  "Unable to clear analyzer runtime scans.",
+              })
+            );
           return true;
         }
 
         default:
-          //console.warn("[AnalyzerBackground] Unknown type:", message.type);
+        // console.warn("[AnalyzerBackground] Unknown type:", message.type);
       }
     });
   }

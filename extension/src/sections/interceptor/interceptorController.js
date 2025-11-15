@@ -31,6 +31,8 @@ class InterceptorReactController {
     return () => this.subscribers.delete(callbacks);
   }
 
+  // --- Control: start / stop / status ---
+
   start(config) {
     return browser.runtime.sendMessage({ type: "interceptor_start", config });
   }
@@ -43,12 +45,48 @@ class InterceptorReactController {
     return browser.runtime.sendMessage({ type: "interceptor_getStatus" });
   }
 
+  // --- Archive helpers ---
+
   getLastKey() {
     return browser.runtime.sendMessage({ type: "interceptor_getLastKey" });
   }
 
   listRuns() {
     return browser.runtime.sendMessage({ type: "interceptor_listRuns" });
+  }
+
+  // --- Deletion API ---
+
+  /**
+   * Delete a single interceptor run by its key (interceptorRun_<timestamp>).
+   * Throws if the run does not exist or cannot be deleted.
+   */
+  async deleteRunById(runKey) {
+    const response = await browser.runtime.sendMessage({
+      type: "interceptor_deleteRunById",
+      runKey,
+    });
+
+    if (!response?.ok) {
+      throw new Error(response?.error || "Unable to delete interceptor run.");
+    }
+
+    return response.info;
+  }
+
+  /**
+   * Delete all interceptor runs from local storage (including the last key).
+   */
+  async clearAllRuns() {
+    const response = await browser.runtime.sendMessage({
+      type: "interceptor_clearAllRuns",
+    });
+
+    if (!response?.ok) {
+      throw new Error(response?.error || "Unable to clear interceptor runs.");
+    }
+
+    return response.info;
   }
 }
 

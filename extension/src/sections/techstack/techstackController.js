@@ -108,6 +108,49 @@ class TechStackReactController {
 
     return { source: "none", data: null };
   }
+
+  // --- Deletion API (local + session) ---
+
+  /**
+   * Delete a specific tech stack scan by its storage key (techstackResults_<timestamp>).
+   * If the scan is not found anywhere, this will throw an error.
+   */
+  async deleteResultById(resultKey) {
+    try {
+      const response = await browser.runtime.sendMessage({
+        type: "techstack_deleteResultById",
+        resultKey,
+      });
+
+      if (!response?.ok) {
+        throw new Error(response?.error || "Unable to delete tech stack result.");
+      }
+
+      return response.info; // { removedLocal, clearedSessionLast, clearedSessionTabs }
+    } catch (err) {
+      // Bubble up so the UI can show proper feedback
+      throw err;
+    }
+  }
+
+  /**
+   * Delete all stored tech stack scans (local archive + session helpers).
+   */
+  async clearAllResults() {
+    try {
+      const response = await browser.runtime.sendMessage({
+        type: "techstack_clearAllResults",
+      });
+
+      if (!response?.ok) {
+        throw new Error(response?.error || "Unable to clear tech stack results.");
+      }
+
+      return response.info; // { removedKeys, clearedSessionLast, clearedSessionTabs }
+    } catch (err) {
+      throw err;
+    }
+  }
 }
 
 const techStackReactController = new TechStackReactController();

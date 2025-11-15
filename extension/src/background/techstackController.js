@@ -8,7 +8,6 @@ class TechStackBackgroundController {
   }
 
   initListener() {
-
     browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
       switch (message.type) {
         case "techstack_startOneTimeScan": {
@@ -34,22 +33,63 @@ class TechStackBackgroundController {
         }
 
         case "techstack_getLocalResults": {
-          this.engine.getLocalStackResults().then(localResults => sendResponse({ localResults })).catch(() => sendResponse({ localResults: [] }));
+          this.engine
+            .getLocalStackResults()
+            .then((localResults) => sendResponse({ localResults }))
+            .catch(() => sendResponse({ localResults: [] }));
           return true;
         }
 
         case "techstack_getSessionLastForTab": {
-          this.engine.getSessionLastForTab(message.tabId).then(res => sendResponse({ res })).catch(() => sendResponse({ res: null }));
+          this.engine
+            .getSessionLastForTab(message.tabId)
+            .then((res) => sendResponse({ res }))
+            .catch(() => sendResponse({ res: null }));
           return true;
         }
 
         case "techstack_getSessionLast": {
-          this.engine.getSessionLast().then(res => sendResponse({ res })).catch(() => sendResponse({ res: null }));
+          this.engine
+            .getSessionLast()
+            .then((res) => sendResponse({ res }))
+            .catch(() => sendResponse({ res: null }));
+          return true;
+        }
+
+        // Delete a single stored tech stack result by key
+        case "techstack_deleteResultById": {
+          this.engine
+            .deleteResultById(message.resultKey)
+            .then((info) => sendResponse({ ok: true, info }))
+            .catch((err) =>
+              sendResponse({
+                ok: false,
+                error:
+                  err?.message ||
+                  "Unable to delete tech stack result.",
+              })
+            );
+          return true;
+        }
+
+        // Delete all tech stack results from storage
+        case "techstack_clearAllResults": {
+          this.engine
+            .clearAllResults()
+            .then((info) => sendResponse({ ok: true, info }))
+            .catch((err) =>
+              sendResponse({
+                ok: false,
+                error:
+                  err?.message ||
+                  "Unable to clear tech stack results.",
+              })
+            );
           return true;
         }
 
         default:
-          //console.warn("[TechStack Background] Unknown type:", message.type);
+        // console.warn("[TechStack Background] Unknown type:", message.type);
       }
     });
   }

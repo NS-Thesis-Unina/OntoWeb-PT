@@ -341,12 +341,21 @@ function SendToOntologyInterceptor(){
         { graph: "http://example.com/graphs/http-requests" }, 
         { maxBytes: 2 * 1024 * 1024, safetyMargin: 600 * 1024 }
       );
+      let ok = 0;
+      let total = 0;
       const results = await Promise.all(
         payloads.map(async (item) => {
           try {
             const res = await toolReactController.ingestHttp({...item, activateResolver: step4ActivateResolver});
-            if (res?.accepted && res?.jobId) {
-              subscribeJob(res.jobId);
+            if(res?.resRequest){
+              if (res?.resRequest?.accepted && res?.resRequest?.jobId) {
+                subscribeJob(res.resRequest.jobId);
+              }
+            }
+            if(res?.resResolver){
+              if (res?.resResolver?.accepted && res?.resResolver?.jobId) {
+                subscribeJob(res.resResolver.jobId);
+              }
             }
             return res;
           } catch (e) {
@@ -357,8 +366,12 @@ function SendToOntologyInterceptor(){
         })
       );
 
-      const ok = results.filter(r => r?.accepted).length;
-      const total = results.length;
+      ok = results.filter(r => r?.resRequest?.accepted).length;
+      total = results.length;
+      if(step4ActivateResolver){
+        ok = ok + results.filter(r => r?.resResolver?.accepted).length;
+        total = total + results.length;
+      }
       enqueueSnackbar(`Requests accepted by the backend: ${ok}/${total}. Waiting for results from the worker...`, { variant: ok > 0 ? "success" : "warning" });
     } finally {
       setStep4LoadingSendRequests(false);

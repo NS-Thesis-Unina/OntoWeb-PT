@@ -40,15 +40,19 @@ router.post(
         ? raw.items
         : [raw];
 
+      var objRes = {};
       const job = await queueHttpRequests.add('http-ingest', { payload: list });
       log.info('ingest-http enqueued', { jobId: job.id, count: list.length });
 
+      objRes = {resRequest: { accepted: true, jobId: job.id, count: list.length }}
+
       if(raw?.activateResolver){
         const jobRes = await queueHttpRequests.add('http-resolver', {list});
+        objRes = {...objRes, resResolver: { accepted: true, jobId: jobRes.id, count: list.length } }
         log.info('http-resolver enqueued', { jobId: jobRes.id, count: list.length });
       }
 
-      res.status(202).json({ accepted: true, jobId: job.id, count: list.length });
+      res.status(202).json(objRes);
     } catch (err) {
       log.error('ingest-http enqueue failed', err?.message || err);
       res

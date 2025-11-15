@@ -1,4 +1,4 @@
-import { Backdrop, Button, Chip, CircularProgress, Grid, Paper, Typography, Zoom, Alert, FormGroup, FormControlLabel, Checkbox, Divider, Stack } from "@mui/material";
+import { Backdrop, Button, Chip, CircularProgress, Grid, Paper, Typography, Zoom, Alert } from "@mui/material";
 import "./runtimeScan.css";
 import Collapsible from '../../../../../components/collapsible/collapsible';
 import { useCallback, useEffect, useState } from "react";
@@ -14,15 +14,28 @@ function RuntimeScanInterceptor(){
 
   const OWNER = OWNERS.INTERCEPTOR_RUNTIME;
 
+  const EMPTY_STATUS = { active: false, startedAt: 0, totalEvents: 0, pagesCount: 0, totalBytes: 0 };
+
   const [loading, setLoading] = useState(true);
-  const [status, setStatus] = useState({ active: false, startedAt: 0, totalEvents: 0, pagesCount: 0, totalBytes: 0 });
+  const [status, setStatus] = useState(EMPTY_STATUS);
   const [stopping, setStopping] = useState(false);
   const [lastRun, setLastRun] = useState(null);
   const [globalLock, setGlobalLock] = useState(null);
 
   const refreshStatus = useCallback(async () => {
     const s = await interceptorReactController.getStatus();
-    setStatus(s || { active: false, startedAt: 0, totalEvents: 0, pagesCount: 0, totalBytes: 0 });
+
+    if (!s || !s.active) {
+      setStatus(EMPTY_STATUS);
+    } else {
+      setStatus({
+        active: !!s.active,
+        startedAt: s.startedAt ?? 0,
+        totalEvents: s.totalEvents ?? 0,
+        pagesCount: s.pagesCount ?? 0,
+        totalBytes: s.totalBytes ?? 0,
+      });
+    }
 
     const cur = await getLock();
     if (s?.active && (!cur || cur.owner !== OWNER)) {

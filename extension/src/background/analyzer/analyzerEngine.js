@@ -88,6 +88,7 @@ class AnalyzerEngine {
       }
     } catch {}
   }
+
   async _updateSessionMap(key, mutator) {
     try {
       if (browser.storage?.session?.get && browser.storage?.session?.set) {
@@ -149,12 +150,13 @@ class AnalyzerEngine {
 
   async getLocalScanResults() {
     try {
-    const all = await browser.storage.local.get(null);
-    return Object.entries(all)
-      .filter(([key]) => key.startsWith("analyzerResults_"))
-      .map(([key, value]) => ({ key, results: value }));
-    } catch(e){
-      //ignore
+      const all = await browser.storage.local.get(null);
+      return Object.entries(all)
+        .filter(([key]) => key.startsWith("analyzerResults_"))
+        .map(([key, value]) => ({ key, results: value }));
+    } catch (e) {
+      // ignore and return empty list
+      return [];
     }
   }
 
@@ -229,7 +231,7 @@ class AnalyzerEngine {
     const all = await browser.storage.local.get(null);
     let key = all.analyzerRuntime_lastKey || null;
     if (!key) {
-      const keys = Object.keys(all).filter(k => k.startsWith("analyzerRuntime_"));
+      const keys = Object.keys(all).filter(k => k.startsWith("analyzerRuntime_") && k !== "analyzerRuntime_lastKey");
       if (keys.length) {
         keys.sort((a, b) => Number(b.split("_")[1]) - Number(a.split("_")[1]));
         key = keys[0];
@@ -243,6 +245,7 @@ class AnalyzerEngine {
     const items = Object.entries(all)
       .filter(([key]) => {
         if (!key.startsWith("analyzerRuntime_")) return false;
+        if (key === "analyzerRuntime_lastKey") return false;
         const suffix = key.split("_")[1];
         return /^\d+$/.test(suffix);
       })
@@ -265,7 +268,241 @@ class AnalyzerEngine {
     } catch {}
   }
 
-  // ---------- Parser HTML ----------
+  // ---------- Deletion helpers: ONE-TIME RESULTS ----------
+
+  /**
+   * Delete a single one-time analyzer result by key (analyzerResults_<timestamp>).
+   * Removes the local entry and cleans session references pointing to that timestamp.
+   * Throws if the result is not found anywhere.
+   */
+  async deleteOneTimeResultById(resultKey) {
+    const key = String(resultKey || "");
+
+    if (!key.startsWith("analyzerResults_")) {
+      throw new Error("Invalid analyzer result key.");
+    }
+
+    const tsStr = key.split("_")[1];
+    const ts = Number(tsStr);
+    const targetTimestamp = Number.isFinite(ts) ? ts : null;
+
+    let removedLocal = false;
+    let clearedSessionLast = false;
+    let clearedSessionTabs = 0;
+
+    // Remove from local archive
+    try {
+      const existing = await browser.storage.local.get(key);
+      if (existing && Object.prototype.hasOwnProperty.call(existing, key)) {
+        await browser.storage.local.remove(key);
+        removedLocal = true;
+      }
+    } catch {
+      // ignore, keep removedLocal as false
+    }
+
+    // Remove references from session storage
+    if (browser.storage?.session?.get && (browser.storage.session.remove || browser.storage.session.set)) {
+      try {
+        const obj = await browser.storage.session.get([
+          "analyzer_lastResult",
+          "analyzer_lastByTab",
+        ]);
+
+        const last = obj?.analyzer_lastResult ?? null;
+        const byTab = obj?.analyzer_lastByTab ?? null;
+
+        // analyzer_lastResult
+        if (
+          targetTimestamp != null &&
+          last?.meta?.timestamp === targetTimestamp
+        ) {
+          if (browser.storage.session.remove) {
+            await browser.storage.session.remove("analyzer_lastResult");
+          } else if (browser.storage.session.set) {
+            await browser.storage.session.set({ analyzer_lastResult: null });
+          }
+          clearedSessionLast = true;
+        }
+
+        // analyzer_lastByTab
+        if (targetTimestamp != null && byTab && typeof byTab === "object") {
+          const newMap = { ...byTab };
+          let changed = false;
+
+          for (const [tabId, val] of Object.entries(byTab)) {
+            if (val?.meta?.timestamp === targetTimestamp) {
+              delete newMap[tabId];
+              clearedSessionTabs++;
+              changed = true;
+            }
+          }
+
+          if (changed && browser.storage.session.set) {
+            await browser.storage.session.set({ analyzer_lastByTab: newMap });
+          }
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    if (!removedLocal && !clearedSessionLast && clearedSessionTabs === 0) {
+      throw new Error("Analyzer scan not found in storage.");
+    }
+
+    return { removedLocal, clearedSessionLast, clearedSessionTabs };
+  }
+
+  /**
+   * Delete all one-time analyzer results from local and session storage.
+   */
+  async clearAllOneTimeResults() {
+    let removedKeys = 0;
+    let clearedSessionLast = false;
+    let clearedSessionTabs = false;
+
+    // Remove all local analyzerResults_*
+    try {
+      const all = await browser.storage.local.get(null);
+      const keysToRemove = Object.keys(all).filter((k) =>
+        k.startsWith("analyzerResults_")
+      );
+
+      if (keysToRemove.length > 0) {
+        await browser.storage.local.remove(keysToRemove);
+        removedKeys = keysToRemove.length;
+      }
+    } catch {
+      // ignore
+    }
+
+    // Remove session helpers
+    if (browser.storage?.session?.remove) {
+      try {
+        await browser.storage.session.remove([
+          "analyzer_lastResult",
+          "analyzer_lastByTab",
+        ]);
+        clearedSessionLast = true;
+        clearedSessionTabs = true;
+      } catch {
+        // ignore
+      }
+    } else if (browser.storage?.session?.set) {
+      // Fallback: overwrite with empty values if remove is not available
+      try {
+        await browser.storage.session.set({
+          analyzer_lastResult: null,
+          analyzer_lastByTab: {},
+        });
+        clearedSessionLast = true;
+        clearedSessionTabs = true;
+      } catch {
+        // ignore
+      }
+    }
+
+    return { removedKeys, clearedSessionLast, clearedSessionTabs };
+  }
+
+  // ---------- Deletion helpers: RUNTIME RESULTS ----------
+
+  /**
+   * Delete a single runtime analyzer result by key (analyzerRuntime_<timestamp>).
+   * Updates analyzerRuntime_lastKey if the deleted run was the last key;
+   * if no other runs remain, analyzerRuntime_lastKey is removed.
+   */
+  async deleteRuntimeResultById(runtimeKey) {
+    const key = String(runtimeKey || "");
+
+    if (!key.startsWith("analyzerRuntime_") || key === "analyzerRuntime_lastKey") {
+      throw new Error("Invalid analyzer runtime key.");
+    }
+
+    const suffix = key.split("_")[1];
+    if (!/^\d+$/.test(suffix)) {
+      throw new Error("Invalid analyzer runtime key format.");
+    }
+
+    const all = await browser.storage.local.get(null);
+
+    if (!Object.prototype.hasOwnProperty.call(all, key)) {
+      throw new Error("Analyzer runtime scan not found in storage.");
+    }
+
+    // Remove the specific runtime entry
+    await browser.storage.local.remove(key);
+
+    const previousLastKey = all.analyzerRuntime_lastKey || null;
+    let updatedLastKey = null;
+    let removedLastKey = false;
+    let lastKeyUnchanged = false;
+
+    if (previousLastKey === key) {
+      // Need to compute the new last key from remaining runtime entries
+      const remainingRuntimeKeys = Object.keys(all).filter((k) =>
+        k.startsWith("analyzerRuntime_") &&
+        k !== "analyzerRuntime_lastKey" &&
+        k !== key
+      );
+
+      if (remainingRuntimeKeys.length > 0) {
+        remainingRuntimeKeys.sort(
+          (a, b) => Number(b.split("_")[1]) - Number(a.split("_")[1])
+        );
+        const newLast = remainingRuntimeKeys[0];
+        await browser.storage.local.set({ analyzerRuntime_lastKey: newLast });
+        updatedLastKey = newLast;
+      } else {
+        // No more runtime runs: remove lastKey
+        if (Object.prototype.hasOwnProperty.call(all, "analyzerRuntime_lastKey")) {
+          await browser.storage.local.remove("analyzerRuntime_lastKey");
+        }
+        removedLastKey = true;
+      }
+    } else {
+      // Deleted run is not the lastKey, so lastKey stays as is
+      lastKeyUnchanged = previousLastKey != null;
+    }
+
+    return {
+      removedRuntime: true,
+      previousLastKey,
+      updatedLastKey,
+      removedLastKey,
+      lastKeyUnchanged,
+    };
+  }
+
+  /**
+   * Delete all runtime analyzer results from local storage, including analyzerRuntime_lastKey.
+   */
+  async clearAllRuntimeResults() {
+    const all = await browser.storage.local.get(null);
+
+    const runtimeKeys = Object.keys(all).filter((k) =>
+      k.startsWith("analyzerRuntime_") &&
+      k !== "analyzerRuntime_lastKey"
+    );
+
+    if (runtimeKeys.length > 0) {
+      await browser.storage.local.remove(runtimeKeys);
+    }
+
+    let hadLastKey = false;
+    if (Object.prototype.hasOwnProperty.call(all, "analyzerRuntime_lastKey")) {
+      hadLastKey = true;
+      await browser.storage.local.remove("analyzerRuntime_lastKey");
+    }
+
+    return {
+      removedRuntimeKeys: runtimeKeys.length,
+      hadLastKey,
+    };
+  }
+
+  // ---------- HTML parser ----------
   processHtml(html) {
     const $ = cheerio.load(html);
 

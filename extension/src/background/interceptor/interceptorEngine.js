@@ -229,6 +229,101 @@ class InterceptorEngine {
       totalBytes: run.totalBytes
     };
   }
+
+  // ---------- Deletion helpers ----------
+
+  /**
+   * Delete a single interceptor run by key (interceptorRun_<timestamp>).
+   * Updates interceptorRun_lastKey if needed; removes it when no runs remain.
+   */
+  async deleteRunById(runKey) {
+    const key = String(runKey || "");
+
+    if (!key.startsWith(DATASET_KEY_PREFIX) || key === LAST_KEY) {
+      throw new Error("Invalid interceptor run key.");
+    }
+
+    const suffix = key.split("_")[1];
+    if (!/^\d+$/.test(suffix)) {
+      throw new Error("Invalid interceptor run key format.");
+    }
+
+    const all = await browser.storage.local.get(null);
+
+    if (!Object.prototype.hasOwnProperty.call(all, key)) {
+      throw new Error("Interceptor run not found in storage.");
+    }
+
+    // Remove the specific run
+    await browser.storage.local.remove(key);
+
+    const previousLastKey = all[LAST_KEY] || null;
+    let updatedLastKey = null;
+    let removedLastKey = false;
+    let lastKeyUnchanged = false;
+
+    if (previousLastKey === key) {
+      // Deleted run was the last key → compute new last key
+      const remainingKeys = Object.keys(all).filter((k) =>
+        k.startsWith(DATASET_KEY_PREFIX) &&
+        k !== LAST_KEY &&
+        k !== key
+      );
+
+      if (remainingKeys.length > 0) {
+        remainingKeys.sort(
+          (a, b) => Number(b.split("_")[1]) - Number(a.split("_")[1])
+        );
+        const newLast = remainingKeys[0];
+        await browser.storage.local.set({ [LAST_KEY]: newLast });
+        updatedLastKey = newLast;
+      } else {
+        // No remaining runs → remove LAST_KEY
+        if (Object.prototype.hasOwnProperty.call(all, LAST_KEY)) {
+          await browser.storage.local.remove(LAST_KEY);
+        }
+        removedLastKey = true;
+      }
+    } else {
+      // Deleted run is not the last key → lastKey stays unchanged
+      lastKeyUnchanged = previousLastKey != null;
+    }
+
+    return {
+      removedRun: true,
+      previousLastKey,
+      updatedLastKey,
+      removedLastKey,
+      lastKeyUnchanged,
+    };
+  }
+
+  /**
+   * Delete all interceptor runs from local storage (including interceptorRun_lastKey).
+   */
+  async clearAllRuns() {
+    const all = await browser.storage.local.get(null);
+
+    const runKeys = Object.keys(all).filter((k) =>
+      k.startsWith(DATASET_KEY_PREFIX) &&
+      k !== LAST_KEY
+    );
+
+    if (runKeys.length > 0) {
+      await browser.storage.local.remove(runKeys);
+    }
+
+    let hadLastKey = false;
+    if (Object.prototype.hasOwnProperty.call(all, LAST_KEY)) {
+      hadLastKey = true;
+      await browser.storage.local.remove(LAST_KEY);
+    }
+
+    return {
+      removedRunKeys: runKeys.length,
+      hadLastKey,
+    };
+  }
 }
 
 export default InterceptorEngine;

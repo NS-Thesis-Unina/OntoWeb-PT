@@ -27,7 +27,6 @@ function OneTimeScanAnalyzer(){
           setLoadSource(null);
           setLoading(false);
           enqueueSnackbar("One-Time scan complete successfully! Results below.", { variant: "success" });
-          console.log("One-Time Scan results:", data);  
           releaseLock(OWNER);
         }
       },

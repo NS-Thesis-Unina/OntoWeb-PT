@@ -7,11 +7,14 @@ import analyzerReactController from "../../../../../analyzerController";
 import RefreshIcon from '@mui/icons-material/Refresh';
 import RuntimeScanResults from "../../../components/runtimeScanResults/runtimeScanResults";
 import { formatWhen } from "../../../../../../../libs/formatting";
+import DeleteScanDialog from "../../../../../../../components/deleteScanDialog/deleteScanDialog";
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 
 function RuntimeScanArchiveAnalyzer(){
 
   const [loading, setLoading] = useState(true);
   const [runs, setRuns] = useState([]);
+  const [openDeleteAllScans, setOpenDeleteAllScans] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -25,6 +28,26 @@ function RuntimeScanArchiveAnalyzer(){
       setLoading(false);
     }
   }, []);
+
+  const deleteScan = async(timestamp) => {
+    try{
+      await analyzerReactController.deleteRuntimeResultById(`analyzerRuntime_${timestamp}`);
+      load();
+      enqueueSnackbar("Scan deleted successfully from storage.", { variant: "success" });
+    }catch(err){
+      enqueueSnackbar("Error deleting scan from storage.", { variant: "error" });
+    }
+  }
+
+  const deleteAllScans = async() => {
+    try{
+      await analyzerReactController.clearAllRuntimeResults();
+      load();
+      enqueueSnackbar("All scans deleted successfully from storage.", { variant: "success" });
+    }catch(err){
+      enqueueSnackbar("Error deleting all scans from storage.", { variant: "error" });
+    }
+  }
 
   useEffect(() => {
     load();
@@ -91,6 +114,12 @@ function RuntimeScanArchiveAnalyzer(){
           Archive Data
         </Typography>
         <div className="aots-options">
+          <Tooltip title={"Delete All Scan"} >
+            <IconButton variant="contained" size="small" onClick={() => setOpenDeleteAllScans(true)} >
+              <DeleteForeverIcon />
+            </IconButton>
+          </Tooltip>
+          <DeleteScanDialog open={openDeleteAllScans} setOpen={setOpenDeleteAllScans} deleteFn={deleteAllScans} allScans={true} />
           <Tooltip title={"Refresh"} >
             <IconButton variant="contained" size="small" onClick={load} >
               <RefreshIcon />
@@ -103,7 +132,7 @@ function RuntimeScanArchiveAnalyzer(){
         (
           runs.map((snap, index) => (
             <Collapsible defaultOpen={false} title={`Date: ${formatWhen(snap.run.startedAt)} | Pages Count: ${snap.run.pagesCount}`} key={index}>
-              <RuntimeScanResults results={snap} titleDisabled />
+              <RuntimeScanResults results={snap} titleDisabled deleteScan={() => deleteScan(snap?.run?.stoppedAt)} deleteDisable={false} />
             </Collapsible>
           ))
         )

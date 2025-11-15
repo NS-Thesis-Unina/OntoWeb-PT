@@ -55,6 +55,38 @@ class InterceptorBackgroundController {
           break;
         }
 
+        // --- Deletion: single run ---
+        case "interceptor_deleteRunById": {
+          this.engine
+            .deleteRunById(message.runKey)
+            .then((info) => sendResponse({ ok: true, info }))
+            .catch((err) =>
+              sendResponse({
+                ok: false,
+                error:
+                  err?.message ||
+                  "Unable to delete interceptor run.",
+              })
+            );
+          return true;
+        }
+
+        // --- Deletion: all runs ---
+        case "interceptor_clearAllRuns": {
+          this.engine
+            .clearAllRuns()
+            .then((info) => sendResponse({ ok: true, info }))
+            .catch((err) =>
+              sendResponse({
+                ok: false,
+                error:
+                  err?.message ||
+                  "Unable to clear interceptor runs.",
+              })
+            );
+          return true;
+        }
+
         default:
           break;
       }

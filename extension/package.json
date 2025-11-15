@@ -10,12 +10,10 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "dev-chrome": "extension dev --polyfill --browser=chrome --port=8085",
-    "dev-edge": "extension dev --polyfill --browser=edge --port=8085",
+    "dev-edge": "extension dev --browser=edge --port=5173",
     "build-edge": "extension build --browser=edge",
     "build-chrome": "extension build --browser=chrome",
-    "start-edge": "extension start --browser=edge --port=8085",
-    "start-chrome": "extension start --browser=chrome --port=8085"
+    "start-edge": "extension start --browser=edge --port=5173"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

@@ -6,14 +6,18 @@ import { useEffect, useState } from "react";
 import { formatWhen, getDomainAccurate } from "../../../../../../libs/formatting";
 import CollapsibleDataGrid from "../../../../../../components/collapsible/collapsibleDataGrid/collapsibleDataGrid";
 import CollapsibleList from "../../../../../../components/collapsible/collapsibleList/collapsibleList";
+import DownloadJsonButton from "../../../../../../components/downloadJsonButton/downloadJsonButton";
+import DeleteIcon from '@mui/icons-material/Delete';
+import DeleteScanDialog from "../../../../../../components/deleteScanDialog/deleteScanDialog";
 
-function OneTimeScanResults({results, loadSource, titleDisabled = false}){
+function OneTimeScanResults({results, loadSource, titleDisabled = false, deleteDisable = true, deleteScan}){
 
   const SECTION_IDS = ["head", "body", "stats"];
   const [sections, setSections] = useState(
     Object.fromEntries(SECTION_IDS.map(id => [id, { open: false, key: 0 }]))
   );
   const [allOpen, setAllOpen] = useState(false);
+  const [openDeleteScan, setOpenDeleteScan] = useState(false);
 
   const toggleAll = () => {
     setSections(prev => {
@@ -107,6 +111,12 @@ function OneTimeScanResults({results, loadSource, titleDisabled = false}){
           </Typography>
         )}
         <div className="sr-options">
+          {!deleteDisable && (<Tooltip title={"Delete Scan"} >
+            <IconButton variant="contained" size="small" onClick={() => setOpenDeleteScan(true)}>
+              <DeleteIcon />
+            </IconButton>
+          </Tooltip>)}
+          {results && <DownloadJsonButton data={results} filename={`analyzerResults_${results.meta.timestamp}`} />}
           <Tooltip title={allOpen ? "Collapse All":"Expand All"} >
             <IconButton variant="contained" size="small" onClick={toggleAll}>
               {allOpen ? <IndeterminateCheckBoxOutlinedIcon /> : <IndeterminateCheckBoxIcon />}
@@ -115,6 +125,8 @@ function OneTimeScanResults({results, loadSource, titleDisabled = false}){
         </div>
       </div>
       {!titleDisabled && (<Divider orientation="horizontal" />)}
+
+      <DeleteScanDialog open={openDeleteScan} setOpen={setOpenDeleteScan} deleteFn={deleteScan} />
 
       <Grid container className="sr-mt10">
         <Grid size={4}>

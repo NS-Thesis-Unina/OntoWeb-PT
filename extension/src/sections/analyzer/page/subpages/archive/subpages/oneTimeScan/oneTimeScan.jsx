@@ -8,6 +8,8 @@ import OneTimeScanResults from "../../../components/oneTimeScanResults/oneTimeSc
 import { formatWhen, getDomainAccurate } from "../../../../../../../libs/formatting";
 import RefreshIcon from '@mui/icons-material/Refresh';
 import browser from "webextension-polyfill";
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
+import DeleteScanDialog from "../../../../../../../components/deleteScanDialog/deleteScanDialog";
 
 function OneTimeScanArchiveAnalyzer() {
 
@@ -16,6 +18,7 @@ function OneTimeScanArchiveAnalyzer() {
   const [otherTabsSnaps, setOtherTabsSnaps] = useState([]);
   const [sessionSnap, setSessionSnap] = useState(null);
   const [localSnaps, setLocalSnaps] = useState([]);
+  const [openDeleteAllScans, setOpenDeleteAllScans] = useState(false);
 
   function normalizeSnapshot(snap) {
     if (!snap) return null;
@@ -75,6 +78,26 @@ function OneTimeScanArchiveAnalyzer() {
     });
     return () => off();
   }, [load]);
+
+  const deleteScan = async(timestamp) => {
+    try{
+      await analyzerReactController.deleteOneTimeResultById(`analyzerResults_${timestamp}`);
+      load();
+      enqueueSnackbar("Scan deleted successfully from storage.", { variant: "success" });
+    }catch(err){
+      enqueueSnackbar("Error deleting scan from storage.", { variant: "error" });
+    }
+  }
+
+  const deleteAllScans = async() => {
+    try{
+      await analyzerReactController.clearAllOneTimeResults();
+      load();
+      enqueueSnackbar("All scans deleted successfully from storage.", { variant: "success" });
+    }catch(err){
+      enqueueSnackbar("Error deleting all scans from storage.", { variant: "error" });
+    }
+  }
 
   if(loading){
     return(
@@ -140,6 +163,12 @@ function OneTimeScanArchiveAnalyzer() {
           Archive Data
         </Typography>
         <div className="aots-options">
+          <Tooltip title={"Delete All Scan"} >
+            <IconButton variant="contained" size="small" onClick={() => setOpenDeleteAllScans(true)} >
+              <DeleteForeverIcon />
+            </IconButton>
+          </Tooltip>
+          <DeleteScanDialog open={openDeleteAllScans} setOpen={setOpenDeleteAllScans} deleteFn={deleteAllScans} allScans={true} />
           <Tooltip title={"Refresh"} >
             <IconButton variant="contained" size="small" onClick={load} >
               <RefreshIcon />
@@ -151,7 +180,7 @@ function OneTimeScanArchiveAnalyzer() {
       <Collapsible title={"Current Tab"} defaultOpen={false}>
         {currentTabSnap ? 
           (
-            <OneTimeScanResults results={currentTabSnap} titleDisabled />
+            <OneTimeScanResults results={currentTabSnap} titleDisabled deleteDisable={false} deleteScan={() => deleteScan(currentTabSnap?.meta?.timestamp)} />
           )
           :
           (
@@ -166,7 +195,7 @@ function OneTimeScanArchiveAnalyzer() {
           (
             otherTabsSnaps.map((snap, index) => (
               <Collapsible key={index} title={`Tab Id: ${snap.meta.tabId}`} defaultOpen={false}>
-                <OneTimeScanResults results={snap} titleDisabled />
+                <OneTimeScanResults results={snap} titleDisabled deleteDisable={false} deleteScan={() => deleteScan(snap?.meta?.timestamp)} />
               </Collapsible>
             ))
           )
@@ -181,7 +210,7 @@ function OneTimeScanArchiveAnalyzer() {
       <Collapsible title={"Last Global Session Run"} defaultOpen={false}>
       {sessionSnap ?
         (
-          <OneTimeScanResults results={sessionSnap} titleDisabled />
+          <OneTimeScanResults results={sessionSnap} titleDisabled deleteDisable={false} deleteScan={() => deleteScan(sessionSnap?.meta?.timestamp)}/>
         )
         :
         (
@@ -196,7 +225,7 @@ function OneTimeScanArchiveAnalyzer() {
         (
           localSnaps.map((snap, index) => (
             <Collapsible key={index} title={`Date: ${formatWhen(snap.ts)} | Domain: ${getDomainAccurate(snap.snap.meta.url)}`} defaultOpen={false}>
-              <OneTimeScanResults results={snap.snap} titleDisabled />
+              <OneTimeScanResults results={snap.snap} titleDisabled deleteDisable={false} deleteScan={() => deleteScan(snap?.snap?.meta?.timestamp)}/>
             </Collapsible>
           ))
         )

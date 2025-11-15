@@ -8,6 +8,8 @@ import Collapsible from "../../../../../components/collapsible/collapsible";
 import RuntimeScanResults from "../components/runtimeScanResults/runtimeScanResults";
 import browser from "webextension-polyfill";
 import { formatWhen, prettyBytes } from "../../../../../libs/formatting";
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
+import DeleteScanDialog from "../../../../../components/deleteScanDialog/deleteScanDialog";
 
 const LAST_KEY_SENTINEL = "interceptorRun_lastKey";
 
@@ -24,6 +26,7 @@ function ArchiveInterceptor(){
 
   const [loading, setLoading] = useState(true);
   const [runs, setRuns] = useState([]); // [{ key, meta }]
+  const [openDeleteAllScans, setOpenDeleteAllScans] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -58,6 +61,16 @@ function ArchiveInterceptor(){
   }, [load]);
 
   const hasRuns = useMemo(() => runs.length > 0, [runs]);
+
+  const deleteAllScans = async() => {
+    try{
+      await interceptorReactController.clearAllRuns();
+      load();
+      enqueueSnackbar("All scans deleted successfully from storage.", { variant: "success" });
+    }catch(err){
+      enqueueSnackbar("Error deleting all scans from storage.", { variant: "error" });
+    }
+  }
 
   if (loading) {
     return (
@@ -127,6 +140,12 @@ function ArchiveInterceptor(){
       <div className="title">
         <Typography variant="h6">Archive</Typography>
         <div className="aots-options">
+          <Tooltip title={"Delete All Scan"} >
+            <IconButton variant="contained" size="small" onClick={() => setOpenDeleteAllScans(true)} >
+              <DeleteForeverIcon />
+            </IconButton>
+          </Tooltip>
+          <DeleteScanDialog open={openDeleteAllScans} setOpen={setOpenDeleteAllScans} deleteFn={deleteAllScans} allScans={true} />
           <Tooltip title={"Refresh"}>
             <IconButton variant="contained" size="small" onClick={load}>
               <RefreshIcon />
@@ -141,7 +160,7 @@ function ArchiveInterceptor(){
           const title = `Started: ${formatWhen(meta.startedAt)} | Stopped: ${formatWhen(meta.stoppedAt)} | Pages: ${meta.pagesCount} | Events: ${meta.totalEvents} | Bytes: ${prettyBytes(meta.totalBytes)}`;
           return (
             <Collapsible key={key} defaultOpen={false} title={title}>
-              <RunResultsByKey keyId={key} />
+              <RunResultsByKey keyId={key} load={load} />
             </Collapsible>
           );
         })
@@ -153,10 +172,20 @@ function ArchiveInterceptor(){
 }
 
 // Loads a run directly from storage and renders it through the shared results component.
-function RunResultsByKey({ keyId }) {
+function RunResultsByKey({ keyId, load }) {
   const [loading, setLoading] = useState(false);
   const [run, setRun] = useState(null);
   const [error, setError] = useState(null);
+
+  const deleteScan = async(timestamp) => {
+    try{
+      await interceptorReactController.deleteRunById(`interceptorRun_${timestamp}`);
+      load();
+      enqueueSnackbar("Scan deleted successfully from storage.", { variant: "success" });
+    }catch(err){
+      enqueueSnackbar("Error deleting scan from storage.", { variant: "error" });
+    }
+  }
 
   const loadFromStorage = useCallback(async () => {
     if (loading || run) return;
@@ -206,7 +235,7 @@ function RunResultsByKey({ keyId }) {
     );
   }
 
-  return <RuntimeScanResults results={{ key: keyId, run }} titleDisabled />;
+  return <RuntimeScanResults results={{ key: keyId, run }} titleDisabled deleteScan={() => deleteScan(run?.stoppedAt)} deleteDisable={false} />;
 }
 
 export default ArchiveInterceptor;

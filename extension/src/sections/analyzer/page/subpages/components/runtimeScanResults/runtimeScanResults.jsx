@@ -1,9 +1,14 @@
-import { Divider, Grid, Paper, Typography } from "@mui/material";
+import { Divider, Grid, IconButton, Paper, Tooltip, Typography } from "@mui/material";
 import "./runtimeScanResults.css";
 import OneTimeScanResults from "../oneTimeScanResults/oneTimeScanResults";
 import Collapsible from "../../../../../../components/collapsible/collapsible";
+import DeleteIcon from '@mui/icons-material/Delete';
+import DeleteScanDialog from "../../../../../../components/deleteScanDialog/deleteScanDialog";
+import { useState } from "react";
 
-function RuntimeScanResults({results, titleDisabled = false}){
+function RuntimeScanResults({results, titleDisabled = false, deleteDisable = true, deleteScan}){
+
+  const [openDeleteScan, setOpenDeleteScan] = useState(false);
 
   return(
     <Paper className="rt-scanresults">
@@ -13,7 +18,18 @@ function RuntimeScanResults({results, titleDisabled = false}){
             Runtime Scan Results
           </Typography>
         )}
+        <div className="rt-options">
+          {!deleteDisable && (
+            <Tooltip title={"Delete Scan"} >
+              <IconButton variant="contained" size="small" onClick={() => setOpenDeleteScan(true)}>
+                <DeleteIcon />
+              </IconButton>
+          </Tooltip>
+          )}
+        </div>
+        <DeleteScanDialog open={openDeleteScan} setOpen={setOpenDeleteScan} deleteFn={deleteScan} />
       </div>
+      
       {!titleDisabled && (<Divider orientation="horizontal" />)}
       <Paper className="rts-status-paper">
         <Grid container className="grid-container">

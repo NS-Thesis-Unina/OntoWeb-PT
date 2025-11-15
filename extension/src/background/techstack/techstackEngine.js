@@ -328,6 +328,142 @@ class TechStackEngine {
   getRuntimeStatus() {
     return { runtimeActive: false };
   }
+
+  // ===== Deletion helpers =====
+
+  /**
+   * Delete a single tech stack result by key (techstackResults_<timestamp>).
+   * It will remove the local archive entry and clean session references that point to that timestamp.
+   */
+  async deleteResultById(resultKey) {
+    const key = String(resultKey || "");
+
+    if (!key.startsWith("techstackResults_")) {
+      throw new Error("Invalid tech stack result key.");
+    }
+
+    // Parse timestamp from key suffix
+    const tsStr = key.split("_")[1];
+    const ts = Number(tsStr);
+    const targetTimestamp = Number.isFinite(ts) ? ts : null;
+
+    let removedLocal = false;
+    let clearedSessionLast = false;
+    let clearedSessionTabs = 0;
+
+    // Remove from local archive
+    try {
+      const existing = await browser.storage.local.get(key);
+      if (existing && Object.prototype.hasOwnProperty.call(existing, key)) {
+        await browser.storage.local.remove(key);
+        removedLocal = true;
+      }
+    } catch {
+      // ignore, we will still check session
+    }
+
+    // Remove references from session storage
+    if (browser.storage?.session?.get && browser.storage?.session?.set) {
+      try {
+        const obj = await browser.storage.session.get([
+          "techstack_lastResult",
+          "techstack_lastByTab",
+        ]);
+
+        const last = obj?.techstack_lastResult ?? null;
+        const byTab = obj?.techstack_lastByTab ?? null;
+
+        // If lastResult matches this timestamp, remove the key
+        if (
+          targetTimestamp != null &&
+          last?.meta?.timestamp === targetTimestamp &&
+          browser.storage.session.remove
+        ) {
+          await browser.storage.session.remove("techstack_lastResult");
+          clearedSessionLast = true;
+        }
+
+        // If any tab entry matches this timestamp, drop only those entries
+        if (targetTimestamp != null && byTab && typeof byTab === "object") {
+          const newMap = { ...byTab };
+          let changed = false;
+
+          for (const [tabId, val] of Object.entries(byTab)) {
+            if (val?.meta?.timestamp === targetTimestamp) {
+              delete newMap[tabId];
+              clearedSessionTabs++;
+              changed = true;
+            }
+          }
+
+          if (changed) {
+            await browser.storage.session.set({ techstack_lastByTab: newMap });
+          }
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    if (!removedLocal && !clearedSessionLast && clearedSessionTabs === 0) {
+      // Not found anywhere
+      throw new Error("Tech stack scan not found in storage.");
+    }
+
+    return { removedLocal, clearedSessionLast, clearedSessionTabs };
+  }
+
+  /**
+   * Delete all tech stack results from local and session storage.
+   */
+  async clearAllResults() {
+    let removedKeys = 0;
+    let clearedSessionLast = false;
+    let clearedSessionTabs = false;
+
+    // Remove all local archive entries
+    try {
+      const all = await browser.storage.local.get(null);
+      const keysToRemove = Object.keys(all).filter((k) =>
+        k.startsWith("techstackResults_")
+      );
+
+      if (keysToRemove.length > 0) {
+        await browser.storage.local.remove(keysToRemove);
+        removedKeys = keysToRemove.length;
+      }
+    } catch {
+      // ignore
+    }
+
+    // Remove session helpers
+    if (browser.storage?.session?.remove) {
+      try {
+        await browser.storage.session.remove([
+          "techstack_lastResult",
+          "techstack_lastByTab",
+        ]);
+        clearedSessionLast = true;
+        clearedSessionTabs = true;
+      } catch {
+        // ignore
+      }
+    } else if (browser.storage?.session?.set) {
+      // Fallback: overwrite with empty values if remove is not available
+      try {
+        await browser.storage.session.set({
+          techstack_lastResult: null,
+          techstack_lastByTab: {},
+        });
+        clearedSessionLast = true;
+        clearedSessionTabs = true;
+      } catch {
+        // ignore
+      }
+    }
+
+    return { removedKeys, clearedSessionLast, clearedSessionTabs };
+  }
 }
 
 export default TechStackEngine;

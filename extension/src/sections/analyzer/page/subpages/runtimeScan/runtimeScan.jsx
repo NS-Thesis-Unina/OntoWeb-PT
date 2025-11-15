@@ -12,15 +12,35 @@ function RuntimeScanAnalyzer(){
 
   const OWNER = OWNERS.ANALYZER_RUNTIME;
 
+  const EMPTY_STATUS = {
+    runtimeActive: false,
+    totalScans: 0,
+    pagesCount: 0,
+    startedAt: 0,
+    active: false,
+  };
+
   const [loading, setLoading] = useState(true);
-  const [status, setStatus] = useState({ runtimeActive: false, totalScans: 0, pagesCount: 0, startedAt: 0, active: false });
+  const [status, setStatus] = useState(EMPTY_STATUS);
   const [stopping, setStopping] = useState(false);
   const [lastRun, setLastRun] = useState(null);
   const [globalLock, setGlobalLock] = useState(null);
 
   const refreshStatus = useCallback(async () => {
     const s = await analyzerReactController.getScanStatus();
-    setStatus(s || { runtimeActive: false, totalScans: 0, pagesCount: 0, startedAt: 0, active: false });
+
+    if (!s || (!s.runtimeActive && !s.active)) {
+      setStatus(EMPTY_STATUS);
+    } else {
+      setStatus({
+        ...EMPTY_STATUS,
+        runtimeActive: !!(s.runtimeActive ?? s.active),
+        active: !!(s.runtimeActive ?? s.active),
+        totalScans: s.totalScans ?? 0,
+        pagesCount: s.pagesCount ?? 0,
+        startedAt: s.startedAt ?? 0,
+      });
+    }
 
     const cur = await getLock();
     if ((s?.runtimeActive || s?.active) && (!cur || cur.owner !== OWNER)) {
@@ -65,7 +85,7 @@ function RuntimeScanAnalyzer(){
           setLastRun({ key: payload.key, run: payload.run });
           enqueueSnackbar("Runtime scan complete successfully! Results below.", { variant: "success" })
         } else loadLastRun();
-        // release lock se è nostro
+        // release lock if it is ours
         releaseLock(OWNER);
       }
     });

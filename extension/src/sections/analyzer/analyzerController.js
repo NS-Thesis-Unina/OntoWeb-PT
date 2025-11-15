@@ -37,54 +37,129 @@ class AnalyzerReactController {
     return () => this.subscribers.delete(callbacks);
   }
 
-  // One-time
+  // ---------- One-time scan (commands) ----------
   sendStartOneTimeScan(tabId) {
     browser.runtime.sendMessage({ type: "analyzer_startOneTimeScan", tabId });
   }
 
-  // Runtime
+  // ---------- Runtime scan (commands) ----------
   sendStartRuntimeScan() {
     browser.runtime.sendMessage({ type: "analyzer_startRuntimeScan" });
   }
+
   sendStopRuntimeScan() {
     browser.runtime.sendMessage({ type: "analyzer_stopRuntimeScan" });
   }
+
   async getScanStatus() {
     return browser.runtime.sendMessage({ type: "analyzer_getScanStatus" });
   }
+
   async getLastRuntimeResults() {
     return browser.runtime.sendMessage({ type: "analyzer_getLastRuntimeResults" });
   }
 
-  // Archive one-time
+  // ---------- Archive one-time ----------
   async getLocalScanResults() {
     const response = await browser.runtime.sendMessage({ type: "analyzer_getLocalScanResults" });
-    return response.localResults;
+    return response?.localResults ?? [];
   }
 
-  // Archive runtime – tutti i run
+  // ---------- Archive runtime – all runs ----------
   async getAllRuntimeResults() {
     const response = await browser.runtime.sendMessage({ type: "analyzer_getAllRuntimeResults" });
-    return response.runs;
+    return response?.runs ?? [];
   }
 
-  // Session
+  // ---------- Session helpers ----------
   async getSessionLastResult() {
     const { analyzer_lastResult } = await browser.storage.session.get("analyzer_lastResult");
     return analyzer_lastResult ?? null;
   }
+
   async getSessionLastResultForTab(tabId) {
     const { analyzer_lastByTab } = await browser.storage.session.get("analyzer_lastByTab");
     if (!analyzer_lastByTab || tabId == null) return null;
     return analyzer_lastByTab[tabId] ?? null;
   }
+
   async getCurrentTabId() {
     const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
     return tab?.id ?? null;
   }
+
   async getSessionByTabMap() {
     const { analyzer_lastByTab } = await browser.storage.session.get("analyzer_lastByTab");
     return analyzer_lastByTab ?? {};
+  }
+
+  // ---------- Deletion API: one-time scans ----------
+
+  /**
+   * Delete a single one-time analyzer scan by its storage key (analyzerResults_<timestamp>).
+   * It will remove the local archive entry and clean session references pointing to that timestamp.
+   * Throws if the scan cannot be found/removed.
+   */
+  async deleteOneTimeResultById(resultKey) {
+    const response = await browser.runtime.sendMessage({
+      type: "analyzer_deleteOneTimeResultById",
+      resultKey,
+    });
+
+    if (!response?.ok) {
+      throw new Error(response?.error || "Unable to delete analyzer scan.");
+    }
+
+    return response.info;
+  }
+
+  /**
+   * Delete all one-time analyzer scans from local and session storage.
+   */
+  async clearAllOneTimeResults() {
+    const response = await browser.runtime.sendMessage({
+      type: "analyzer_clearAllOneTimeResults",
+    });
+
+    if (!response?.ok) {
+      throw new Error(response?.error || "Unable to clear analyzer one-time scans.");
+    }
+
+    return response.info;
+  }
+
+  // ---------- Deletion API: runtime scans ----------
+
+  /**
+   * Delete a single runtime scan by its key (analyzerRuntime_<timestamp>).
+   * Updates analyzerRuntime_lastKey if needed, or removes it when no runs remain.
+   */
+  async deleteRuntimeResultById(runtimeKey) {
+    const response = await browser.runtime.sendMessage({
+      type: "analyzer_deleteRuntimeResultById",
+      runtimeKey,
+    });
+
+    if (!response?.ok) {
+      throw new Error(response?.error || "Unable to delete analyzer runtime scan.");
+    }
+
+    return response.info;
+  }
+
+  /**
+   * Delete all runtime scans from local storage (including analyzerRuntime_lastKey).
+   */
+  async clearAllRuntimeResults() {
+    const response = await browser.runtime.sendMessage({
+      type: "analyzer_clearAllRuntimeResults",
+    });
+
+    if (!response?.ok) {
+      throw new Error(response?.error || "Unable to clear analyzer runtime scans.");
+    }
+
+    return response.info;
   }
 }
 

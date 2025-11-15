@@ -10,8 +10,11 @@ import IndeterminateCheckBoxIcon from '@mui/icons-material/IndeterminateCheckBox
 import IndeterminateCheckBoxOutlinedIcon from '@mui/icons-material/IndeterminateCheckBoxOutlined';
 import { useState } from "react";
 import { formatWhen, getDomainAccurate } from "../../../../../../libs/formatting";
+import DownloadJsonButton from "../../../../../../components/downloadJsonButton/downloadJsonButton";
+import DeleteIcon from '@mui/icons-material/Delete';
+import DeleteScanDialog from "../../../../../../components/deleteScanDialog/deleteScanDialog";
 
-function ScanResults({results, loadSource, titleDisabled = false}){
+function ScanResults({results, loadSource, titleDisabled = false, deleteDisable = true, deleteScan}){
 
   const { mode } = useThemeMode();
 
@@ -21,6 +24,7 @@ function ScanResults({results, loadSource, titleDisabled = false}){
     setAllOpen(o => !o);
     setResetKey(k => k + 1);
   };
+  const [openDeleteScan, setOpenDeleteScan] = useState(false);
 
   const cookiesColumns = [
     {field: "name", headerName: "Name"}, 
@@ -47,6 +51,12 @@ function ScanResults({results, loadSource, titleDisabled = false}){
           </Typography>
         )}
         <div className="sr-options">
+          {!deleteDisable && (<Tooltip title={"Delete Scan"} >
+            <IconButton variant="contained" size="small" onClick={() => setOpenDeleteScan(true)}>
+              <DeleteIcon />
+            </IconButton>
+          </Tooltip>)}
+          {results && (<DownloadJsonButton data={results} filename={`techstackResults_${results.meta.timestamp}`} />)}
           <Tooltip title={allOpen ? "Collapse All":"Expand All"} >
             <IconButton variant="contained" size="small" onClick={toggleAll}>
               {allOpen ? <IndeterminateCheckBoxOutlinedIcon /> : <IndeterminateCheckBoxIcon />}
@@ -55,6 +65,8 @@ function ScanResults({results, loadSource, titleDisabled = false}){
         </div>
       </div>
       {!titleDisabled && (<Divider orientation="horizontal" />)}
+
+      <DeleteScanDialog open={openDeleteScan} setOpen={setOpenDeleteScan} deleteFn={deleteScan} />
 
       <Grid container className="sr-mt10">
         <Grid size={4}>

@@ -1,7 +1,3 @@
-// deepCaptureFirefox.js
-// Deep capture for Firefox using webRequest + filterResponseData
-// Exports: DeepCaptureFirefox, isFirefoxLike
-
 const isFirefoxLike = typeof browser !== "undefined" && !!browser.webRequest && !!browser.webRequest.filterResponseData;
 
 class DeepCaptureFirefox {

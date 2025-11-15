@@ -8,6 +8,8 @@ import { enqueueSnackbar } from "notistack";
 import techStackReactController from "../../../techstackController";
 import ScanResults from "../components/scanResults/scanResults";
 import { formatWhen, getDomainAccurate } from "../../../../../libs/formatting";
+import DeleteScanDialog from "../../../../../components/deleteScanDialog/deleteScanDialog";
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 
 function ArchiveTechStack(){
 
@@ -16,6 +18,7 @@ function ArchiveTechStack(){
   const [otherTabsSnaps, setOtherTabsSnaps] = useState([]);
   const [sessionSnap, setSessionSnap] = useState(null);
   const [localSnaps, setLocalSnaps] = useState([]);
+  const [openDeleteAllScans, setOpenDeleteAllScans] = useState(false);
 
   function normalizeSnapshot(snap) {
     if (!snap) return null;
@@ -95,6 +98,26 @@ function ArchiveTechStack(){
     return () => off();
   }, [load]);
 
+  const deleteScan = async(timestamp) => {
+    try{
+      await techStackReactController.deleteResultById(`techstackResults_${timestamp}`);
+      load();
+      enqueueSnackbar("Scan deleted successfully from storage.", { variant: "success" });
+    }catch(err){
+      enqueueSnackbar("Error deleting scan from storage.", { variant: "error" });
+    }
+  }
+
+  const deleteAllScans = async() => {
+    try{
+      await techStackReactController.clearAllResults();
+      load();
+      enqueueSnackbar("All scans deleted successfully from storage.", { variant: "success" });
+    }catch(err){
+      enqueueSnackbar("Error deleting all scans from storage.", { variant: "error" });
+    }
+  }
+
   if(loading){
     return(
       <div className="scanteckstack-div">
@@ -126,6 +149,12 @@ function ArchiveTechStack(){
           Archive Data
         </Typography>
         <div className="ats-options">
+          <Tooltip title={"Delete All Scan"} >
+            <IconButton variant="contained" size="small" onClick={() => setOpenDeleteAllScans(true)} >
+              <DeleteForeverIcon />
+            </IconButton>
+          </Tooltip>
+          <DeleteScanDialog open={openDeleteAllScans} setOpen={setOpenDeleteAllScans} deleteFn={deleteAllScans} allScans={true} />
           <Tooltip title={"Refresh"} >
             <IconButton variant="contained" size="small" onClick={load} >
               <RefreshIcon />
@@ -136,7 +165,7 @@ function ArchiveTechStack(){
       <Divider className="divider" />
       <Collapsible defaultOpen={false} title={"Current Tab"}>
         {currentTabSnap ? (
-          <ScanResults results={currentTabSnap} titleDisabled />
+          <ScanResults results={currentTabSnap} titleDisabled deleteDisable={false} deleteScan={() => deleteScan(currentTabSnap.meta.timestamp)}/>
         )
         :
         (
@@ -148,7 +177,7 @@ function ArchiveTechStack(){
           otherTabsSnaps.length > 0 ? (
             otherTabsSnaps.map((scan, index) => (
               <Collapsible key={index} defaultOpen={false} title={`${getDomainAccurate(scan.meta.url)} - ${formatWhen(scan.meta.timestamp)}`}>
-                <ScanResults key={index} titleDisabled results={scan} />
+                <ScanResults key={index} titleDisabled results={scan} deleteDisable={false} deleteScan={() => deleteScan(scan.meta.timestamp)} />
               </Collapsible>
             ))
           )
@@ -159,8 +188,8 @@ function ArchiveTechStack(){
         }
       </Collapsible>
       <Collapsible defaultOpen={false} title={"Session (Global)"}>
-        {currentTabSnap ? (
-          <ScanResults results={sessionSnap} titleDisabled />
+        {sessionSnap ? (
+          <ScanResults results={sessionSnap} titleDisabled deleteDisable={false} deleteScan={() => deleteScan(sessionSnap.meta.timestamp)} />
         )
         :
         (
@@ -172,7 +201,7 @@ function ArchiveTechStack(){
           localSnaps.length > 0 ? (
             localSnaps.map((scan, index) => (
               <Collapsible key={index} defaultOpen={false} title={`${getDomainAccurate(scan.snap.meta.url)} - ${formatWhen(scan.ts)}`}>
-                <ScanResults key={index} titleDisabled results={scan.snap} />
+                <ScanResults key={index} titleDisabled results={scan.snap} deleteDisable={false} deleteScan={() => deleteScan(scan.snap.meta.timestamp)} />
               </Collapsible>
             ))
           )

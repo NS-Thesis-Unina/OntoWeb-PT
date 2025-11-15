@@ -14,6 +14,10 @@
   align-items: center;
 }
 
+.rt-scanresults .rt-options {
+  margin-left: auto;
+}
+
 .rt-scanresults .sr-mb5 {
   margin-bottom: 5px;
 }

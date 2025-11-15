@@ -5,6 +5,9 @@ import "./runtimeScanResults.css";
 import CollapsibleDataGridInterceptor from "../collapsibleDataGridInterceptor/collapsibleDataGridInterceptor";
 import React from "react";
 import { getHeader, prettyBytes } from "../../../../../../libs/formatting";
+import DownloadJsonButton from "../../../../../../components/downloadJsonButton/downloadJsonButton";
+import DeleteIcon from '@mui/icons-material/Delete';
+import DeleteScanDialog from "../../../../../../components/deleteScanDialog/deleteScanDialog";
 
 function buildRows(scans = []) {
   if (!Array.isArray(scans)) return [];
@@ -72,7 +75,7 @@ const columns = [
   }
 ];
 
-function RuntimeScanResults({ results, titleDisabled = false }) {
+function RuntimeScanResults({ results, titleDisabled = false, deleteScan, deleteDisable = true }) {
   // Uses defensive defaults for absent run or dataset.
   const run = React.useMemo(() => results?.run || {}, [results]);
   const dataset = React.useMemo(
@@ -82,6 +85,7 @@ function RuntimeScanResults({ results, titleDisabled = false }) {
 
   const domains = React.useMemo(() => Object.keys(dataset), [dataset]);
   const [sections, setSections] = React.useState({});
+  const [openDeleteScan, setOpenDeleteScan] = React.useState(false);
 
   const allOpen = React.useMemo(
     () => domains.length > 0 && domains.every(d => sections[d] === true),
@@ -123,6 +127,15 @@ function RuntimeScanResults({ results, titleDisabled = false }) {
           </Typography>
         )}
         <div className="sr-options">
+          {!deleteDisable && (
+            <Tooltip title={"Delete Scan"} >
+              <IconButton variant="contained" size="small" onClick={() => setOpenDeleteScan(true)}>
+                <DeleteIcon />
+              </IconButton>
+          </Tooltip>
+          )}
+          <DeleteScanDialog open={openDeleteScan} setOpen={setOpenDeleteScan} deleteFn={deleteScan} />
+          {results && <DownloadJsonButton data={results.run} filename={`interceptorResults_${results.run.startedAt}`} />}
           <Tooltip title={allOpen ? "Collapse All" : "Expand All"}>
             <IconButton size="small" onClick={toggleAll}>
               {allOpen ? <IndeterminateCheckBoxOutlinedIcon /> : <IndeterminateCheckBoxIcon />}

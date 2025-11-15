@@ -4,11 +4,13 @@ import TechStackBackgroundController from "./src/background/techstackController.
 import InterceptorBackgroundController from "./src/background/interceptorController.js";
 import ToolBackgroundController from "./src/background/toolController.js";
 
+// Clean up ui_lastRoute_byTab when a tab is closed.
 browser.tabs.onRemoved.addListener(async (tabId) => {
   try {
     const obj = await browser.storage.session.get("ui_lastRoute_byTab").catch(() => ({}));
-    const map = obj?.ui_lastRoute_byTab ?? {};
+    const map = obj && obj.ui_lastRoute_byTab ? obj.ui_lastRoute_byTab : {};
     const key = String(tabId);
+
     if (map && Object.prototype.hasOwnProperty.call(map, key)) {
       delete map[key];
       await browser.storage.session.set({ ui_lastRoute_byTab: map }).catch(() => {});
