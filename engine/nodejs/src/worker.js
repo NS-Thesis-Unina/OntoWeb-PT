@@ -19,6 +19,7 @@ const {
   resolvers: {
     techstack: { resolveTechstack },
     analyzer: { resolveAnalyzer },
+    http: { analyzeHttpRequests },
   },
   monitors: {
     startRedisMonitor,
@@ -52,13 +53,20 @@ const workerHttpRequests = new Worker(
         return { status, count: list.length, payload };
       }
       case 'http-resolver': {
-        const { list } = job.data || {};
-        if (!list) throw new Error('Missing requests list');
+         const { list } = job.data || {};
+          if (!list || !Array.isArray(list))
+            throw new Error('Missing or invalid requests list');
 
-        //Run resolve
-        //List is an array of obects (requests)
+          logHttp.info(`http-resolver start (count=${list.length})`);
 
-        return { list };
+          const result = await analyzeHttpRequests(list);
+
+          logHttp.info('http-resolver completed', {
+            totalFindings: result.totalFindings,
+            stats: result.stats,
+          });
+
+          return { result };
       }
       default:
         throw new Error(`Unknown job: ${job.name}`);
@@ -72,7 +80,7 @@ const workerHttpRequests = new Worker(
 );
 
 workerHttpRequests.on('completed', (job, result) => {
-  logHttp.info(`completed job=${job.name} id=${job.id}`, job.name === "http-ingest" ? { status: result.status, count: result.count } : { /* Result resolver */ });
+  logHttp.info(`completed job=${job.name} id=${job.id}`, job.name === "http-ingest" ? { status: result.status, count: result.count } : { result });
 });
 workerHttpRequests.on('failed', (job, err) => {
   logHttp.warn(`failed job=${job?.name} id=${job?.id}`, err?.message || err);

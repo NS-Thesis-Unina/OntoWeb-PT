@@ -54,5 +54,6 @@ module.exports = {
   resolvers: {
     techstack: require('./resolvers/techstack/resolveTechstack'),
     analyzer: require('./resolvers/analyzer/resolveAnalyzer'),
+    http: require('./resolvers/http/httpAnalyzer'),
   },
 };
