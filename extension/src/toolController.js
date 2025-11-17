@@ -73,6 +73,23 @@ const toolReactController = {
   },
 
   /**
+   * Hybrid job status: request a job status via REST as a fallback when
+   * websocket events are missing or delayed.
+   */
+  async getJobResult(queue, jobId) {
+    try {
+      const res = await browser.runtime.sendMessage({
+        type: "tool_getJobResult",
+        queue,
+        jobId: String(jobId),
+      });
+      return res;
+    } catch (err) {
+      return { ok: false, error: String(err?.message || err) };
+    }
+  },
+
+  /**
    * UI event wiring.
    * - onToolUpdate(payload): health status updates
    * - onJobEvent(evt): worker job events coming from websocket

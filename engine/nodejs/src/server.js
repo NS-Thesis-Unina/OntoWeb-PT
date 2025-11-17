@@ -34,7 +34,7 @@ const app = express();
 
 // Core middlewares
 app.use(cors());
-app.use(express.json({ limit: '2mb' }));
+app.use(express.json({ limit: '15mb' }));
 
 // Health endpoint (readiness): 200 only if server, GraphDB and Redis are UP; otherwise 503.
 app.get('/health', (_req, res) => {

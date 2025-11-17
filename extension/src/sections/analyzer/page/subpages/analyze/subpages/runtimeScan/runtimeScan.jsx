@@ -39,8 +39,7 @@ const steps = [
   },
 ];
 
-function SendRuntimeScanAnalyzer(){
-
+function SendRuntimeScanAnalyzer() {
   const [scanLock, setScanLock] = useState(null);
 
   const [toolStatus, setToolStatus] = useState("checking");
@@ -73,17 +72,25 @@ function SendRuntimeScanAnalyzer(){
       try {
         const current = await getLock();
         setScanLock(current);
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
 
       try {
         off = subscribeLockChanges((newVal) => {
           setScanLock(newVal ?? null);
         });
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
     })();
 
     return () => {
-      try { off?.(); } catch { /* ignore */ }
+      try {
+        off?.();
+      } catch {
+        /* ignore */
+      }
     };
   }, []);
 
@@ -116,7 +123,7 @@ function SendRuntimeScanAnalyzer(){
 
   //Stepper
   const handleNext = () => {
-    switch(activeStep){
+    switch (activeStep) {
       case 0: {
         loadScansFromLocalStorage();
         break;
@@ -140,14 +147,14 @@ function SendRuntimeScanAnalyzer(){
     setActiveStep((prevActiveStep) => {
       if (prevActiveStep !== 4) {
         return prevActiveStep + 1;
-      } else{
+      } else {
         return prevActiveStep;
       }
     });
   };
 
   const handleBack = () => {
-    switch(activeStep){
+    switch (activeStep) {
       case 1: {
         setStep1ScanList([]);
         setStep1ScanSelected(null);
@@ -170,7 +177,9 @@ function SendRuntimeScanAnalyzer(){
             toolReactController.unsubscribeJob(String(id)).catch(() => {});
           }
           subscribedJobIdsRef.current.clear();
-        } catch { /* ignore */ }
+        } catch {
+          /* ignore */
+        }
         break;
       }
       default: {
@@ -192,46 +201,48 @@ function SendRuntimeScanAnalyzer(){
         toolReactController.unsubscribeJob(String(id)).catch(() => {});
       }
       subscribedJobIdsRef.current.clear();
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     setOpenJobsDialog(false);
     setActiveStep(0);
   };
 
   useEffect(() => {
-    if(toolStatus === "tool_on" && !scanLock){
-      switch(activeStep){
+    if (toolStatus === "tool_on" && !scanLock) {
+      switch (activeStep) {
         case 0: {
           setContinueDisabled(false);
           break;
         }
         case 1: {
-          if(step1LoadingList || !step1ScanSelected || step1ScanList.length === 0 ){
+          if (step1LoadingList || !step1ScanSelected || step1ScanList.length === 0) {
             setContinueDisabled(true);
-          }else{
+          } else {
             setContinueDisabled(false);
           }
           break;
         }
         case 2: {
-          if(step2LoadingList || !step2WebSiteSelected || step2WebSiteList.length === 0){
+          if (step2LoadingList || !step2WebSiteSelected || step2WebSiteList.length === 0) {
             setContinueDisabled(true);
-          }else{
+          } else {
             setContinueDisabled(false);
           }
           break;
         }
         case 3: {
-          if(step3LoadingList || !step3WebSiteScanSelected || step3WebSiteScanList.length === 0){
+          if (step3LoadingList || !step3WebSiteScanSelected || step3WebSiteScanList.length === 0) {
             setContinueDisabled(true);
-          }else{
+          } else {
             setContinueDisabled(false);
           }
           break;
         }
         case 4: {
-          if(!step3WebSiteScanSelected || step4LoadingSendRequests){
+          if (!step3WebSiteScanSelected || step4LoadingSendRequests) {
             setContinueDisabled(true);
-          }else{
+          } else {
             setContinueDisabled(false);
           }
           break;
@@ -240,10 +251,24 @@ function SendRuntimeScanAnalyzer(){
           //ignore
         }
       }
-    }else{
+    } else {
       setContinueDisabled(true);
     }
-  },[activeStep, step1LoadingList, step1ScanSelected, step1ScanList, step2WebSiteList, step2WebSiteSelected, step2LoadingList, step3WebSiteScanList, step3WebSiteScanSelected, step3LoadingList, step4LoadingSendRequests, toolStatus, scanLock]);
+  }, [
+    activeStep,
+    step1LoadingList,
+    step1ScanSelected,
+    step1ScanList,
+    step2WebSiteList,
+    step2WebSiteSelected,
+    step2LoadingList,
+    step3WebSiteScanList,
+    step3WebSiteScanSelected,
+    step3LoadingList,
+    step4LoadingSendRequests,
+    toolStatus,
+    scanLock,
+  ]);
 
   //Step 1 - Scan List
   const handleToggle = (value) => () => {
@@ -270,8 +295,8 @@ function SendRuntimeScanAnalyzer(){
 
   const renderWebSiteList = () => {
     setStep2WebSiteList(Object.entries(step1ScanSelected.run.dataset));
-    setStep2LoadingList(false)
-  }
+    setStep2LoadingList(false);
+  };
 
   //Step 3
   const handleToggleWebSiteScan = (value) => () => {
@@ -282,7 +307,7 @@ function SendRuntimeScanAnalyzer(){
     setStep3LoadingList(true);
     setStep3WebSiteScanList(step2WebSiteSelected[1]);
     setStep3LoadingList(false);
-  }
+  };
 
   //Step 4
 
@@ -302,7 +327,7 @@ function SendRuntimeScanAnalyzer(){
 
   const sendRequests = async () => {
     if (!step3WebSiteScanSelected) return;
-    
+
     setStep4LoadingSendRequests(true);
     try {
       const { meta, results, html } = step3WebSiteScanSelected;
@@ -319,15 +344,24 @@ function SendRuntimeScanAnalyzer(){
       });
 
       if (res?.accepted) {
-        enqueueSnackbar("Scan accepted by backend. Waiting for results from the worker...", { variant: "success" });
+        enqueueSnackbar(
+          "Scan accepted by backend. Waiting for results from the worker...",
+          { variant: "success" }
+        );
         if (res?.jobId) {
           await subscribeJob(res.jobId);
         }
       } else {
-        enqueueSnackbar(res?.error || "The backend did not accept the scan.", { variant: "warning" });
+        enqueueSnackbar(
+          res?.error || "The backend did not accept the scan.",
+          { variant: "warning" }
+        );
       }
     } catch (e) {
-      enqueueSnackbar("Error while sending the scan (see console for details).", { variant: "error" });
+      enqueueSnackbar(
+        "Error while sending the scan (see console for details).",
+        { variant: "error" }
+      );
       console.log("Error sending analyzer one-time scan:", e);
     } finally {
       setStep4LoadingSendRequests(false);
@@ -340,20 +374,77 @@ function SendRuntimeScanAnalyzer(){
     for (const e of step4JobEvents) {
       const id = String(e.jobId ?? e.data?.jobId ?? "");
       if (!id) continue;
-      const prev = map.get(id) || { jobId: id, queue: e.queue, lastEvent: null, completed: false, failed: false, raw: [] };
+      const prev =
+        map.get(id) || {
+          jobId: id,
+          queue: e.queue || "analyzer",
+          lastEvent: null,
+          completed: false,
+          failed: false,
+          raw: [],
+        };
       prev.lastEvent = e.event || e.type || "event";
-      prev.queue = e.queue || prev.queue || "http";
+      prev.queue = e.queue || prev.queue || "analyzer";
       prev.raw.push(e);
       if (e.event === "completed") prev.completed = true;
       if (e.event === "failed") prev.failed = true;
       map.set(id, prev);
     }
-    return Array.from(map.values()).sort((a, b) => String(a.jobId).localeCompare(String(b.jobId)));
+    return Array.from(map.values()).sort((a, b) =>
+      String(a.jobId).localeCompare(String(b.jobId))
+    );
   }, [step4JobEvents]);
+
+  // ---------------------- Hybrid job tracking (websocket + REST fallback) ----------------------
+  useEffect(() => {
+    if (!openJobsDialog) return;
+
+    let cancelled = false;
+
+    const pollJobStatuses = async () => {
+      const ids = Array.from(subscribedJobIdsRef.current || []);
+      if (ids.length === 0) return;
+
+      await Promise.all(
+        ids.map(async (id) => {
+          try {
+            const res = await toolReactController.getJobResult("analyzer", id);
+            if (!res?.ok || !res.data) return;
+            const state = res.data.state;
+            const eventName =
+              state === "completed" || state === "failed" ? state : "update";
+
+            const syntheticEvent = {
+              event: eventName,
+              queue: "analyzer",
+              jobId: id,
+              data: res.data,
+            };
+
+            setStep4JobEvents((prev) => [...prev, syntheticEvent]);
+          } catch {
+            // best-effort
+          }
+        })
+      );
+    };
+
+    // First immediate poll, then periodic polling
+    pollJobStatuses().catch(() => {});
+
+    const interval = setInterval(() => {
+      if (cancelled) return;
+      pollJobStatuses().catch(() => {});
+    }, 3000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [openJobsDialog]);
 
   return (
     <div className="sendinterceptor-div">
-
       {toolStatus === "tool_off" && (
         <Alert variant="filled" severity="warning" className="alert-block">
           <Typography>The backend tool must be running to use this feature.</Typography>
@@ -412,37 +503,34 @@ function SendRuntimeScanAnalyzer(){
                       </Box>
                     )}
 
-                    {!step1LoadingList && step1ScanList.length > 0 && step1ScanList.map((value) => {
-                      const labelId = `checkbox-list-label-${value.startedAt}`;
-                      return (
-                        <ListItem
-                          key={value.startedAt}
-                          disablePadding
-                          divider
-                        >
-                          <ListItemButton
-                            role={undefined}
-                            onClick={handleToggle(value)}
-                            dense
-                          >
-                            <ListItemIcon>
-                              <Checkbox
-                                edge="start"
-                                checked={step1ScanSelected === value}
-                                tabIndex={-1}
-                                disableRipple
+                    {!step1LoadingList &&
+                      step1ScanList.length > 0 &&
+                      step1ScanList.map((value) => {
+                        const labelId = `checkbox-list-label-${value.startedAt}`;
+                        return (
+                          <ListItem key={value.startedAt} disablePadding divider>
+                            <ListItemButton
+                              role={undefined}
+                              onClick={handleToggle(value)}
+                              dense
+                            >
+                              <ListItemIcon>
+                                <Checkbox
+                                  edge="start"
+                                  checked={step1ScanSelected === value}
+                                  tabIndex={-1}
+                                  disableRipple
+                                />
+                              </ListItemIcon>
+                              <ListItemText
+                                id={labelId}
+                                primary={`Started: ${formatWhen(value.run.startedAt)} | Stopped: ${formatWhen(value.run.stoppedAt)} | Pages: ${value.run.pagesCount} | Scans: ${value.run.totalScans}`}
                               />
-                            </ListItemIcon>
-                            <ListItemText
-                              id={labelId}
-                              primary={`Started: ${formatWhen(value.run.startedAt)} | Stopped: ${formatWhen(value.run.stoppedAt)} | Pages: ${value.run.pagesCount} | Scans: ${value.run.totalScans}`}
-                            />
-                          </ListItemButton>
-                        </ListItem>
-                      );
-                    })}
+                            </ListItemButton>
+                          </ListItem>
+                        );
+                      })}
                   </List>
-
                 )}
                 {activeStep === 2 && (
                   <List className="full-list">
@@ -460,39 +548,34 @@ function SendRuntimeScanAnalyzer(){
                       </Box>
                     )}
 
-                    {!step2LoadingList && step2WebSiteList.length > 0 && step2WebSiteList.map((value) => {
-
-                      return (
-                        <ListItem
-                          key={value[0]}
-                          disablePadding
-                          divider
-                        >
-                          <ListItemButton role={undefined} onClick={handleToggleWebSite(value)} dense>
-                            <ListItemIcon>
-                              <Checkbox
-                                edge="start"
-                                checked={step2WebSiteSelected === value}
-                                tabIndex={-1}
-                                disableRipple
-                              />
-                            </ListItemIcon>
-                            <Stack>
-                              <Stack className="row-align-start">
-                                <Typography className="label-bold">Page:</Typography>
-                                <Typography className="text-wrap-flex">
-                                  {value[0]}
-                                </Typography>
+                    {!step2LoadingList &&
+                      step2WebSiteList.length > 0 &&
+                      step2WebSiteList.map((value) => {
+                        return (
+                          <ListItem key={value[0]} disablePadding divider>
+                            <ListItemButton role={undefined} onClick={handleToggleWebSite(value)} dense>
+                              <ListItemIcon>
+                                <Checkbox
+                                  edge="start"
+                                  checked={step2WebSiteSelected === value}
+                                  tabIndex={-1}
+                                  disableRipple
+                                />
+                              </ListItemIcon>
+                              <Stack>
+                                <Stack className="row-align-start">
+                                  <Typography className="label-bold">Page:</Typography>
+                                  <Typography className="text-wrap-flex">{value[0]}</Typography>
+                                </Stack>
+                                <Stack className="row">
+                                  <Typography className="label-bold-sm">Scans:</Typography>
+                                  <Typography>{value[1].length}</Typography>
+                                </Stack>
                               </Stack>
-                              <Stack className="row">
-                                <Typography className="label-bold-sm">Scans:</Typography>
-                                <Typography>{value[1].length}</Typography>
-                              </Stack>
-                            </Stack>
-                          </ListItemButton>
-                        </ListItem>
-                      );
-                    })}
+                            </ListItemButton>
+                          </ListItem>
+                        );
+                      })}
                   </List>
                 )}
                 {activeStep === 3 && (
@@ -511,39 +594,37 @@ function SendRuntimeScanAnalyzer(){
                       </Box>
                     )}
 
-                    {!step3LoadingList && step3WebSiteScanList.length > 0 && step3WebSiteScanList.map((value, index) => {
-
-                      return (
-                        <ListItem
-                          key={index}
-                          disablePadding
-                          divider
-                        >
-                          <ListItemButton role={undefined} onClick={handleToggleWebSiteScan(value)} dense>
-                            <ListItemIcon>
-                              <Checkbox
-                                edge="start"
-                                checked={step3WebSiteScanSelected === value}
-                                tabIndex={-1}
-                                disableRipple
-                              />
-                            </ListItemIcon>
-                            <Collapsible defaultOpen={false} title={`Page: ${value.meta.url} | TabID: ${value.meta.tabId}`}>
-                              <OneTimeScanResults key={index} results={value} titleDisabled/>
-                            </Collapsible>
-                          </ListItemButton>
-                        </ListItem>
-                      );
-                    })}
+                    {!step3LoadingList &&
+                      step3WebSiteScanList.length > 0 &&
+                      step3WebSiteScanList.map((value, index) => {
+                        return (
+                          <ListItem key={index} disablePadding divider>
+                            <ListItemButton role={undefined} onClick={handleToggleWebSiteScan(value)} dense>
+                              <ListItemIcon>
+                                <Checkbox
+                                  edge="start"
+                                  checked={step3WebSiteScanSelected === value}
+                                  tabIndex={-1}
+                                  disableRipple
+                                />
+                              </ListItemIcon>
+                              <Collapsible
+                                defaultOpen={false}
+                                title={`Page: ${value.meta.url} | TabID: ${value.meta.tabId}`}
+                              >
+                                <OneTimeScanResults key={index} results={value} titleDisabled />
+                              </Collapsible>
+                            </ListItemButton>
+                          </ListItem>
+                        );
+                      })}
                   </List>
                 )}
                 {activeStep === 4 && step3WebSiteScanSelected && (
                   <>
                     <OneTimeScanResults results={step3WebSiteScanSelected} titleDisabled />
                     <Dialog open={openJobsDialog} fullWidth>
-                      <DialogTitle>
-                        Job Summaries
-                      </DialogTitle>
+                      <DialogTitle>Job Summaries</DialogTitle>
                       <DialogContent>
                         <Typography variant="body2" className="jobsummaries-description">
                           This dialog displays background jobs processed via BullMQ and Redis.
@@ -553,7 +634,9 @@ function SendRuntimeScanAnalyzer(){
                           jobSummaries.map((job, index) => (
                             <Paper key={index} className="jobsummaries-item">
                               <div className="item-div">
-                                <Brightness1Icon color={job.completed ? "success" : "error"} />
+                                <Brightness1Icon
+                                  color={job.completed ? "success" : job.failed ? "error" : "warning"}
+                                />
                                 <Typography variant="body2">
                                   <strong>Queue:</strong> {job.queue}
                                 </Typography>
@@ -565,15 +648,22 @@ function SendRuntimeScanAnalyzer(){
                                 <Typography variant="body2">
                                   <strong>Completed:</strong> {job.completed ? "true" : "false"}
                                 </Typography>
+                                {job.failed && (
+                                  <>
+                                    <strong>|</strong>
+                                    <Typography variant="body2">
+                                      <strong>Failed:</strong> true
+                                    </Typography>
+                                  </>
+                                )}
                               </div>
                             </Paper>
-                          )))
-                          :
-                          (
-                            <div className="jobsummaries-loading-div">
-                              <CircularProgress />
-                            </div>
-                          )}
+                          ))
+                        ) : (
+                          <div className="jobsummaries-loading-div">
+                            <CircularProgress />
+                          </div>
+                        )}
                       </DialogContent>
                       <DialogActions>
                         <Button variant="contained" onClick={handleReset}>
@@ -591,7 +681,7 @@ function SendRuntimeScanAnalyzer(){
                     disabled={continueDisabled}
                     loading={activeStep === 4 && step4LoadingSendRequests}
                   >
-                    {index === steps.length - 1 ? 'Send Scan' : 'Continue'}
+                    {index === steps.length - 1 ? "Send Scan" : "Continue"}
                   </Button>
                   <Button
                     disabled={index === 0 || (activeStep === 4 && step4LoadingSendRequests) || toolStatus === "tool_off"}

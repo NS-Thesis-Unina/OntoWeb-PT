@@ -32,7 +32,11 @@ class ToolEngine {
   }
   _notifyJob(evt) {
     for (const cb of this.jobSubscribers) {
-      try { cb(evt); } catch { /* ignore */ }
+      try {
+        cb(evt);
+      } catch {
+        /* ignore */
+      }
     }
   }
 
@@ -77,7 +81,10 @@ class ToolEngine {
     if (payload == null) throw new Error("Missing payload");
 
     const ctrl = new AbortController();
-    const t = setTimeout(() => ctrl.abort(), Number(import.meta.env.EXTENSION_PUBLIC_REQUESTS_ABORT_MS || 30000));
+    const t = setTimeout(
+      () => ctrl.abort(),
+      Number(import.meta.env.EXTENSION_PUBLIC_REQUESTS_ABORT_MS || 30000)
+    );
 
     try {
       const res = await fetch(`${this.serverUrl}/http-requests/ingest-http`, {
@@ -104,7 +111,10 @@ class ToolEngine {
     if (payload == null) throw new Error("Missing payload");
 
     const ctrl = new AbortController();
-    const t = setTimeout(() => ctrl.abort(), Number(import.meta.env.EXTENSION_PUBLIC_REQUESTS_ABORT_MS || 30000));
+    const t = setTimeout(
+      () => ctrl.abort(),
+      Number(import.meta.env.EXTENSION_PUBLIC_REQUESTS_ABORT_MS || 30000)
+    );
 
     try {
       const res = await fetch(`${this.serverUrl}/techstack/analyze`, {
@@ -131,7 +141,10 @@ class ToolEngine {
     if (payload == null) throw new Error("Missing payload");
 
     const ctrl = new AbortController();
-    const t = setTimeout(() => ctrl.abort(), Number(import.meta.env.EXTENSION_PUBLIC_REQUESTS_ABORT_MS || 30000));
+    const t = setTimeout(
+      () => ctrl.abort(),
+      Number(import.meta.env.EXTENSION_PUBLIC_REQUESTS_ABORT_MS || 30000)
+    );
 
     try {
       const res = await fetch(`${this.serverUrl}/analyzer/analyze`, {
@@ -144,6 +157,56 @@ class ToolEngine {
       if (!res.ok) {
         const text = await res.text().catch(() => "");
         throw new Error(`analyzer/analyze failed (${res.status}) ${text}`);
+      }
+
+      const data = await res.json();
+      return data;
+    } finally {
+      clearTimeout(t);
+    }
+  }
+
+  /**
+   * Hybrid job-status lookup via REST.
+   * This is used as a fallback when websocket events are missed.
+   * It maps a logical queue name to the corresponding /{queue}/results/:jobId route.
+   */
+  async fetchJobResult(queue, jobId) {
+    const q = String(queue || "").toLowerCase();
+    const id = encodeURIComponent(String(jobId || ""));
+    if (!id) throw new Error("Missing jobId");
+
+    let path;
+    switch (q) {
+      case "http":
+        // Note: http requests routes are mounted under /http-requests
+        path = "/http-requests/results";
+        break;
+      case "analyzer":
+        path = "/analyzer/results";
+        break;
+      case "techstack":
+        path = "/techstack/results";
+        break;
+      default:
+        throw new Error(`Unsupported queue: ${queue}`);
+    }
+
+    const ctrl = new AbortController();
+    const t = setTimeout(
+      () => ctrl.abort(),
+      Number(import.meta.env.EXTENSION_PUBLIC_REQUESTS_ABORT_MS || 30000)
+    );
+
+    try {
+      const res = await fetch(`${this.serverUrl}${path}/${id}`, {
+        method: "GET",
+        signal: ctrl.signal,
+      });
+
+      if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        throw new Error(`job results failed (${res.status}) ${text}`);
       }
 
       const data = await res.json();
@@ -168,15 +231,25 @@ class ToolEngine {
     await new Promise((resolve) => {
       const done = () => resolve();
       if (this.socket?.connected) return done();
-      const onConnect = () => { this.socket?.off("connect", onConnect); done(); };
-      try { this.socket?.on("connect", onConnect); } catch { /* ignore */ }
-      setTimeout(done, Number(import.meta.env.EXTENSION_PUBLIC_ENSURE_SOCKET_CONNECTED_TIMEOUT || 1500)); // do not block forever
+      const onConnect = () => {
+        this.socket?.off("connect", onConnect);
+        done();
+      };
+      try {
+        this.socket?.on("connect", onConnect);
+      } catch {
+        /* ignore */
+      }
+      setTimeout(
+        done,
+        Number(import.meta.env.EXTENSION_PUBLIC_ENSURE_SOCKET_CONNECTED_TIMEOUT || 1500)
+      ); // do not block forever
     });
   }
 
   /**
    * Internal connect routine: sets up event listeners and reconnection handling.
-  */
+   */
   _connectSocket() {
     this.socket = io(this.serverUrl, {
       transports: ["websocket"],
@@ -185,18 +258,26 @@ class ToolEngine {
     });
 
     this.socket.on("connect", () => {
-      try { console.info("[tool] socket connected", this.socket.id); } catch {}
+      try {
+        console.info("[tool] socket connected", this.socket.id);
+      } catch {}
       for (const jobId of this._joinedJobs) {
-        try { this.socket.emit("subscribe-job", jobId); } catch {}
+        try {
+          this.socket.emit("subscribe-job", jobId);
+        } catch {}
       }
     });
 
     this.socket.on("disconnect", (reason) => {
-      try { console.info("[tool] socket disconnected:", reason); } catch {}
+      try {
+        console.info("[tool] socket disconnected:", reason);
+      } catch {}
     });
 
     this.socket.on("connect_error", (err) => {
-      try { console.warn("[tool] socket connect_error:", err?.message || err); } catch {}
+      try {
+        console.warn("[tool] socket connect_error:", err?.message || err);
+      } catch {}
     });
 
     // Forward any job event to UI subscribers.
@@ -239,7 +320,9 @@ class ToolEngine {
     this._joinedJobs.delete(id);
     try {
       this.socket?.emit("unsubscribe-job", id);
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }
 }
 

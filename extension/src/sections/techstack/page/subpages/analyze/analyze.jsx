@@ -28,7 +28,6 @@ const steps = [
   },
 ];
 
-
 function AnalyzeTechstack() {
   const [scanLock, setScanLock] = useState(null);
   const [toolStatus, setToolStatus] = useState("checking");
@@ -54,17 +53,25 @@ function AnalyzeTechstack() {
       try {
         const current = await getLock();
         setScanLock(current);
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
 
       try {
         off = subscribeLockChanges((newVal) => {
           setScanLock(newVal ?? null);
         });
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
     })();
 
     return () => {
-      try { off?.(); } catch { /* ignore */ }
+      try {
+        off?.();
+      } catch {
+        /* ignore */
+      }
     };
   }, []);
 
@@ -150,7 +157,9 @@ function AnalyzeTechstack() {
         toolReactController.unsubscribeJob(String(id)).catch(() => {});
       }
       subscribedJobIdsRef.current.clear();
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     setJobEvents([]);
     setOpenJobsDialog(false);
   };
@@ -163,7 +172,9 @@ function AnalyzeTechstack() {
           setContinueDisabled(false);
           break;
         case 1:
-          setContinueDisabled(!(step1ScanSelected && step1ScanList.length > 0 && !step1LoadingList));
+          setContinueDisabled(
+            !(step1ScanSelected && step1ScanList.length > 0 && !step1LoadingList)
+          );
           break;
         default:
           // step 2 (send) handled by button loading state
@@ -209,7 +220,9 @@ function AnalyzeTechstack() {
       setStep1ScanList(normalizedLocals);
       setStep1LoadingList(false);
     } catch (e) {
-      console.log(e?.message || "Error loading scnas from storage.", { variant: "error" });
+      console.log(e?.message || "Error loading scnas from storage.", {
+        variant: "error",
+      });
       setStep1LoadingList(false);
     }
   };
@@ -234,19 +247,27 @@ function AnalyzeTechstack() {
 
     setStep3LoadingSend(true);
     try {
-
       const res = await toolReactController.analyzeTechstack(step1ScanSelected.snap.results);
 
       if (res?.accepted) {
-        enqueueSnackbar("Scan accepted by backend. Waiting for results from the worker...", { variant: "success" });
+        enqueueSnackbar(
+          "Scan accepted by backend. Waiting for results from the worker...",
+          { variant: "success" }
+        );
         if (res?.jobId) {
           await subscribeJob(res.jobId);
         }
       } else {
-        enqueueSnackbar(res?.error || "The backend did not accept the scan.", { variant: "warning" });
+        enqueueSnackbar(
+          res?.error || "The backend did not accept the scan.",
+          { variant: "warning" }
+        );
       }
     } catch (e) {
-      enqueueSnackbar("Error while sending the scan (see console for details).", { variant: "error" });
+      enqueueSnackbar(
+        "Error while sending the scan (see console for details).",
+        { variant: "error" }
+      );
       console.log("Error sending techstack analyze:", e);
     } finally {
       setStep3LoadingSend(false);
@@ -261,7 +282,14 @@ function AnalyzeTechstack() {
       const id = String(e.jobId ?? e.data?.jobId ?? "");
       if (!id) continue;
       const prev =
-        map.get(id) || { jobId: id, queue: e.queue || "techstack", lastEvent: null, completed: false, failed: false, raw: [] };
+        map.get(id) || {
+          jobId: id,
+          queue: e.queue || "techstack",
+          lastEvent: null,
+          completed: false,
+          failed: false,
+          raw: [],
+        };
       prev.lastEvent = e.event || e.type || "event";
       prev.queue = e.queue || prev.queue || "techstack";
       prev.raw.push(e);
@@ -269,8 +297,58 @@ function AnalyzeTechstack() {
       if (e.event === "failed") prev.failed = true;
       map.set(id, prev);
     }
-    return Array.from(map.values()).sort((a, b) => String(a.jobId).localeCompare(String(b.jobId)));
+    return Array.from(map.values()).sort((a, b) =>
+      String(a.jobId).localeCompare(String(b.jobId))
+    );
   }, [jobEvents]);
+
+  // ---------------------- Hybrid job tracking (websocket + REST fallback) ----------------------
+  useEffect(() => {
+    if (!openJobsDialog) return;
+
+    let cancelled = false;
+
+    const pollJobStatuses = async () => {
+      const ids = Array.from(subscribedJobIdsRef.current || []);
+      if (ids.length === 0) return;
+
+      await Promise.all(
+        ids.map(async (id) => {
+          try {
+            const res = await toolReactController.getJobResult("techstack", id);
+            if (!res?.ok || !res.data) return;
+            const state = res.data.state;
+            const eventName =
+              state === "completed" || state === "failed" ? state : "update";
+
+            const syntheticEvent = {
+              event: eventName,
+              queue: "techstack",
+              jobId: id,
+              data: res.data,
+            };
+
+            setJobEvents((prev) => [...prev, syntheticEvent]);
+          } catch {
+            // best-effort
+          }
+        })
+      );
+    };
+
+    // First immediate poll, then periodic polling
+    pollJobStatuses().catch(() => {});
+
+    const interval = setInterval(() => {
+      if (cancelled) return;
+      pollJobStatuses().catch(() => {});
+    }, 3000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [openJobsDialog]);
 
   // ---------------------- Render ----------------------
   return (
@@ -374,7 +452,9 @@ function AnalyzeTechstack() {
                           jobSummaries.map((job, index) => (
                             <Paper key={index} className="jobsummaries-item">
                               <div className="item-div">
-                                <Brightness1Icon color={job.completed ? "success" : job.failed ? "error" : "warning"} />
+                                <Brightness1Icon
+                                  color={job.completed ? "success" : job.failed ? "error" : "warning"}
+                                />
                                 <Typography variant="body2">
                                   <strong>Queue:</strong> {job.queue}
                                 </Typography>
@@ -402,12 +482,12 @@ function AnalyzeTechstack() {
                                 )}
                               </div>
                             </Paper>
-                          ))) : 
-                          (
-                            <div className="jobsummaries-loading-div">
-                              <CircularProgress />
-                            </div>
-                          )}
+                          ))
+                        ) : (
+                          <div className="jobsummaries-loading-div">
+                            <CircularProgress />
+                          </div>
+                        )}
                       </DialogContent>
                       <DialogActions>
                         <Button variant="contained" onClick={handleReset}>

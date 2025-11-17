@@ -53,17 +53,25 @@ function SendOneTimeScanAnalyzer() {
       try {
         const current = await getLock();
         setScanLock(current);
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
 
       try {
         off = subscribeLockChanges((newVal) => {
           setScanLock(newVal ?? null);
         });
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
     })();
 
     return () => {
-      try { off?.(); } catch { /* ignore */ }
+      try {
+        off?.();
+      } catch {
+        /* ignore */
+      }
     };
   }, []);
 
@@ -149,7 +157,9 @@ function SendOneTimeScanAnalyzer() {
         toolReactController.unsubscribeJob(String(id)).catch(() => {});
       }
       subscribedJobIdsRef.current.clear();
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     setJobEvents([]);
     setOpenJobsDialog(false);
   };
@@ -162,7 +172,9 @@ function SendOneTimeScanAnalyzer() {
           setContinueDisabled(false);
           break;
         case 1:
-          setContinueDisabled(!(step1ScanSelected && step1ScanList.length > 0 && !step1LoadingList));
+          setContinueDisabled(
+            !(step1ScanSelected && step1ScanList.length > 0 && !step1LoadingList)
+          );
           break;
         default:
           // step 2 (send) handled by button loading state
@@ -206,7 +218,9 @@ function SendOneTimeScanAnalyzer() {
       setStep1ScanList(normalizedLocals);
       setStep1LoadingList(false);
     } catch (e) {
-      console.log(e?.message || "Error loading scans from storage.", { variant: "error" });
+      console.log(e?.message || "Error loading scans from storage.", {
+        variant: "error",
+      });
       setStep1LoadingList(false);
     }
   };
@@ -228,7 +242,7 @@ function SendOneTimeScanAnalyzer() {
 
   const sendScan = async () => {
     if (!step1ScanSelected?.snap) return;
-    
+
     setStep3LoadingSend(true);
     try {
       const { meta, results, html } = step1ScanSelected.snap;
@@ -245,15 +259,24 @@ function SendOneTimeScanAnalyzer() {
       });
 
       if (res?.accepted) {
-        enqueueSnackbar("Scan accepted by backend. Waiting for results from the worker...", { variant: "success" });
+        enqueueSnackbar(
+          "Scan accepted by backend. Waiting for results from the worker...",
+          { variant: "success" }
+        );
         if (res?.jobId) {
           await subscribeJob(res.jobId);
         }
       } else {
-        enqueueSnackbar(res?.error || "The backend did not accept the scan.", { variant: "warning" });
+        enqueueSnackbar(
+          res?.error || "The backend did not accept the scan.",
+          { variant: "warning" }
+        );
       }
     } catch (e) {
-      enqueueSnackbar("Error while sending the scan (see console for details).", { variant: "error" });
+      enqueueSnackbar(
+        "Error while sending the scan (see console for details).",
+        { variant: "error" }
+      );
       console.log("Error sending analyzer one-time scan:", e);
     } finally {
       setStep3LoadingSend(false);
@@ -268,7 +291,14 @@ function SendOneTimeScanAnalyzer() {
       const id = String(e.jobId ?? e.data?.jobId ?? "");
       if (!id) continue;
       const prev =
-        map.get(id) || { jobId: id, queue: e.queue || "analyzer", lastEvent: null, completed: false, failed: false, raw: [] };
+        map.get(id) || {
+          jobId: id,
+          queue: e.queue || "analyzer",
+          lastEvent: null,
+          completed: false,
+          failed: false,
+          raw: [],
+        };
       prev.lastEvent = e.event || e.type || "event";
       prev.queue = e.queue || prev.queue || "analyzer";
       prev.raw.push(e);
@@ -276,8 +306,62 @@ function SendOneTimeScanAnalyzer() {
       if (e.event === "failed") prev.failed = true;
       map.set(id, prev);
     }
-    return Array.from(map.values()).sort((a, b) => String(a.jobId).localeCompare(String(b.jobId)));
+    return Array.from(map.values()).sort((a, b) =>
+      String(a.jobId).localeCompare(String(b.jobId))
+    );
   }, [jobEvents]);
+
+  // ---------------------- Hybrid job tracking (websocket + REST fallback) ----------------------
+  useEffect(() => {
+    if (!openJobsDialog) return;
+
+    let cancelled = false;
+
+    /**
+     * Periodically fetch job status via REST to ensure completed jobs
+     * appear in the dialog even if websocket events were missed.
+     */
+    const pollJobStatuses = async () => {
+      const ids = Array.from(subscribedJobIdsRef.current || []);
+      if (ids.length === 0) return;
+
+      await Promise.all(
+        ids.map(async (id) => {
+          try {
+            const res = await toolReactController.getJobResult("analyzer", id);
+            if (!res?.ok || !res.data) return;
+            const state = res.data.state;
+            const eventName =
+              state === "completed" || state === "failed" ? state : "update";
+
+            const syntheticEvent = {
+              event: eventName,
+              queue: "analyzer",
+              jobId: id,
+              data: res.data,
+            };
+
+            setJobEvents((prev) => [...prev, syntheticEvent]);
+          } catch {
+            // best-effort: ignore errors and try again on next tick
+          }
+        })
+      );
+    };
+
+    // Immediate first poll, then periodic polling
+    pollJobStatuses().catch(() => {});
+
+    const interval = setInterval(() => {
+      if (cancelled) return;
+      pollJobStatuses().catch(() => {});
+    }, 3000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [openJobsDialog]);
 
   // ---------------------- Render ----------------------
   return (
@@ -381,7 +465,9 @@ function SendOneTimeScanAnalyzer() {
                           jobSummaries.map((job, index) => (
                             <Paper key={index} className="jobsummaries-item">
                               <div className="item-div">
-                                <Brightness1Icon color={job.completed ? "success" : job.failed ? "error" : "warning"} />
+                                <Brightness1Icon
+                                  color={job.completed ? "success" : job.failed ? "error" : "warning"}
+                                />
                                 <Typography variant="body2">
                                   <strong>Queue:</strong> {job.queue}
                                 </Typography>

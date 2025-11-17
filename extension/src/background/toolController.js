@@ -7,12 +7,16 @@ class ToolBackgroundController {
 
     // Forward health updates to all views
     this._unsub = this.engine.subscribe((status) => {
-      browser.runtime.sendMessage({ type: "tool_update", payload: status }).catch(() => {});
+      browser.runtime
+        .sendMessage({ type: "tool_update", payload: status })
+        .catch(() => {});
     });
 
     // Forward job events (from socket) to all views
     this._unsubJobs = this.engine.subscribeJobs((evt) => {
-      browser.runtime.sendMessage({ type: "tool_job_event", payload: evt }).catch(() => {});
+      browser.runtime
+        .sendMessage({ type: "tool_job_event", payload: evt })
+        .catch(() => {});
     });
 
     this.initListener();
@@ -22,9 +26,12 @@ class ToolBackgroundController {
     browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
       switch (message.type) {
         case "tool_getHealth": {
-          this.engine.checkHealth()
+          this.engine
+            .checkHealth()
             .then((data) => sendResponse(data))
-            .catch(() => sendResponse(this.engine.getCachedStatus?.() ?? this.engine.status));
+            .catch(() =>
+              sendResponse(this.engine.getCachedStatus?.() ?? this.engine.status)
+            );
           return true; // async
         }
         case "tool_startPolling": {
@@ -40,25 +47,34 @@ class ToolBackgroundController {
         }
 
         case "tool_ingestHttp": {
-          this.engine.ingestHttp(message.payload)
+          this.engine
+            .ingestHttp(message.payload)
             .then((data) => sendResponse(data))
-            .catch((err) => sendResponse({ accepted: false, error: String(err?.message || err) }));
+            .catch((err) =>
+              sendResponse({ accepted: false, error: String(err?.message || err) })
+            );
           return true; // async
         }
 
         /** Route for techstack analysis API */
         case "tool_analyzeTechstack": {
-          this.engine.analyzeTechstack(message.payload)
+          this.engine
+            .analyzeTechstack(message.payload)
             .then((data) => sendResponse(data))
-            .catch((err) => sendResponse({ accepted: false, error: String(err?.message || err) }));
+            .catch((err) =>
+              sendResponse({ accepted: false, error: String(err?.message || err) })
+            );
           return true; // async
         }
 
         /** Route for analyzer one-time scan API */
         case "tool_analyzeAnalyzerOneTimeScan": {
-          this.engine.analyzeOneTimeScan(message.payload)
+          this.engine
+            .analyzeOneTimeScan(message.payload)
             .then((data) => sendResponse(data))
-            .catch((err) => sendResponse({ accepted: false, error: String(err?.message || err) }));
+            .catch((err) =>
+              sendResponse({ accepted: false, error: String(err?.message || err) })
+            );
           return true; // async
         }
 
@@ -70,10 +86,13 @@ class ToolBackgroundController {
             return true;
           }
           // Ensure sockets are connected, then subscribe to the room
-          this.engine.ensureSocketConnected()
+          this.engine
+            .ensureSocketConnected()
             .then(() => this.engine.subscribeJob(jobId))
             .then(() => sendResponse({ ok: true, jobId }))
-            .catch((err) => sendResponse({ ok: false, error: String(err?.message || err) }));
+            .catch((err) =>
+              sendResponse({ ok: false, error: String(err?.message || err) })
+            );
           return true; // async
         }
         case "tool_unsubscribeJob": {
@@ -82,9 +101,32 @@ class ToolBackgroundController {
             sendResponse({ ok: false, error: "Missing jobId" });
             return true;
           }
-          this.engine.unsubscribeJob(jobId)
+          this.engine
+            .unsubscribeJob(jobId)
             .then(() => sendResponse({ ok: true, jobId }))
-            .catch((err) => sendResponse({ ok: false, error: String(err?.message || err) }));
+            .catch((err) =>
+              sendResponse({ ok: false, error: String(err?.message || err) })
+            );
+          return true; // async
+        }
+
+        /**
+         * Hybrid job-status lookup from UI.
+         * Uses REST /{queue}/results/:jobId as a fallback when websocket events are missing.
+         */
+        case "tool_getJobResult": {
+          const queue = message.queue;
+          const jobId = String(message.jobId || "");
+          if (!queue || !jobId) {
+            sendResponse({ ok: false, error: "Missing queue or jobId" });
+            return true;
+          }
+          this.engine
+            .fetchJobResult(queue, jobId)
+            .then((data) => sendResponse({ ok: true, queue, jobId, data }))
+            .catch((err) =>
+              sendResponse({ ok: false, error: String(err?.message || err) })
+            );
           return true; // async
         }
 

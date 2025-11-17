@@ -24,3 +24,7 @@ body {
   width: 100%;
   margin-top: 58px;
 }
+
+::-webkit-scrollbar {
+  display: none;
+}
