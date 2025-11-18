@@ -80,7 +80,11 @@ const workerHttpRequests = new Worker(
 );
 
 workerHttpRequests.on('completed', (job, result) => {
-  logHttp.info(`completed job=${job.name} id=${job.id}`, job.name === "http-ingest" ? { status: result.status, count: result.count } : { result });
+  logHttp.info(`completed job=${job.name} id=${job.id}`, job.name === "http-ingest" ? { status: result.status, count: result.count } : {
+    ok: result.result.ok, 
+    totalFindings: result.result.totalFindings, 
+    stats: result.result.stats
+  });
 });
 workerHttpRequests.on('failed', (job, err) => {
   logHttp.warn(`failed job=${job?.name} id=${job?.id}`, err?.message || err);
