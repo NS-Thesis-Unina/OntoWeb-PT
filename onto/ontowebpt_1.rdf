@@ -1,0 +1,1130 @@
+<?xml version="1.0"?>
+<rdf:RDF xmlns="http://localhost/onto/ontowebpt#"
+     xml:base="http://localhost/onto/ontowebpt"
+     xmlns:owl="http://www.w3.org/2002/07/owl#"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:xml="http://www.w3.org/XML/1998/namespace"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
+    <owl:Ontology rdf:about="http://localhost/onto/ontowebpt">
+        <owl:versionIRI rdf:resource="http://localhost/onto/ontowebpt/1.0.1"/>
+        <rdfs:comment>
+            HTTP ontology extended with resolver-based security findings for:
+            - Techstack analysis
+            - Static HTML/JS analysis
+            - HTTP traffic analysis.
+            Existing HTTP modeling is preserved; new concepts are added on top.
+        </rdfs:comment>
+    </owl:Ontology>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Datatypes
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.w3.org/2008/content#ContentAsBase64 -->
+
+    <rdfs:Datatype rdf:about="http://www.w3.org/2008/content#ContentAsBase64"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Object Properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#aboutVulnerabilityType -->
+
+    <owl:ObjectProperty rdf:about="http://localhost/onto/ontowebpt#aboutVulnerabilityType">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#Finding"/>
+        <rdfs:range rdf:resource="http://localhost/onto/ontowebpt#Vulnerabilities"/>
+        <rdfs:comment>Associates a Finding with an abstract vulnerability type.</rdfs:comment>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#detectedByResolver -->
+
+    <owl:ObjectProperty rdf:about="http://localhost/onto/ontowebpt#detectedByResolver">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#Finding"/>
+        <rdfs:range rdf:resource="http://localhost/onto/ontowebpt#Resolver"/>
+        <rdfs:comment>Links a Finding to the resolver (Analyzer, Techstack, HTTP) that detected it.</rdfs:comment>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#hasHttpFinding -->
+
+    <owl:ObjectProperty rdf:about="http://localhost/onto/ontowebpt#hasHttpFinding">
+        <owl:inverseOf rdf:resource="http://localhost/onto/ontowebpt#httpFindingOfRequest"/>
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#Request"/>
+        <rdfs:range rdf:resource="http://localhost/onto/ontowebpt#HttpFinding"/>
+        <rdfs:comment>Relates an HTTP request to HTTP findings detected on that request.</rdfs:comment>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#httpFindingOfRequest -->
+
+    <owl:ObjectProperty rdf:about="http://localhost/onto/ontowebpt#httpFindingOfRequest">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#HttpFinding"/>
+        <rdfs:range rdf:resource="http://localhost/onto/ontowebpt#Request"/>
+        <rdfs:comment>Inverse link: an HttpFinding belongs to a specific Request.</rdfs:comment>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#mthd -->
+
+    <owl:ObjectProperty rdf:about="http://localhost/onto/ontowebpt#mthd">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#Request"/>
+        <rdfs:range rdf:resource="http://localhost/onto/ontowebpt#Methods"/>
+        <rdfs:comment>Associates an HTTP request with its HTTP method (GET, POST, etc.).</rdfs:comment>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#param -->
+
+    <owl:ObjectProperty rdf:about="http://localhost/onto/ontowebpt#param">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#URI"/>
+        <rdfs:range rdf:resource="http://localhost/onto/ontowebpt#Parameter"/>
+        <rdfs:comment>Relates a URI to one of its parameters.</rdfs:comment>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#payHeader -->
+
+    <owl:ObjectProperty rdf:about="http://localhost/onto/ontowebpt#payHeader">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#Message"/>
+        <rdfs:range rdf:resource="http://localhost/onto/ontowebpt#PayloadHeaders"/>
+        <rdfs:comment>Links a generic HTTP message to its payload-related headers.</rdfs:comment>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#refersToCookie -->
+
+    <owl:ObjectProperty rdf:about="http://localhost/onto/ontowebpt#refersToCookie">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#CookieFinding"/>
+        <rdfs:range rdf:resource="http://localhost/onto/ontowebpt#Cookie"/>
+        <rdfs:comment>Links a cookie-related finding to the cookie it refers to.</rdfs:comment>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#refersToHeader -->
+
+    <owl:ObjectProperty rdf:about="http://localhost/onto/ontowebpt#refersToHeader">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#HeaderFinding"/>
+        <rdfs:range rdf:resource="http://localhost/onto/ontowebpt#MessageHeader"/>
+        <rdfs:comment>Links a header-related finding to the header it refers to.</rdfs:comment>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#relatedToHTTP -->
+
+    <owl:ObjectProperty rdf:about="http://localhost/onto/ontowebpt#relatedToHTTP">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#Finding"/>
+        <rdfs:range rdf:resource="http://localhost/onto/ontowebpt#HTTP"/>
+        <rdfs:comment>Relates a Finding to an HTTP concept (request, response, header, URI, etc.).</rdfs:comment>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#repHeader -->
+
+    <owl:ObjectProperty rdf:about="http://localhost/onto/ontowebpt#repHeader">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#Message"/>
+        <rdfs:range rdf:resource="http://localhost/onto/ontowebpt#RepresentationHeaders"/>
+        <rdfs:comment>Links a message to headers describing the representation (e.g. Content-Type).</rdfs:comment>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#reqHeader -->
+
+    <owl:ObjectProperty rdf:about="http://localhost/onto/ontowebpt#reqHeader">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#Request"/>
+        <rdfs:range rdf:resource="http://localhost/onto/ontowebpt#RequestHeader"/>
+        <rdfs:comment>Associates a request with its request-specific headers.</rdfs:comment>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#resHeader -->
+
+    <owl:ObjectProperty rdf:about="http://localhost/onto/ontowebpt#resHeader">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#Response"/>
+        <rdfs:range rdf:resource="http://localhost/onto/ontowebpt#ResponseHeader"/>
+        <rdfs:comment>Associates a response with its response-specific headers.</rdfs:comment>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#resp -->
+
+    <owl:ObjectProperty rdf:about="http://localhost/onto/ontowebpt#resp">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#Request"/>
+        <rdfs:range rdf:resource="http://localhost/onto/ontowebpt#Response"/>
+        <rdfs:comment>Relates a request to the corresponding response.</rdfs:comment>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#sc -->
+
+    <owl:ObjectProperty rdf:about="http://localhost/onto/ontowebpt#sc">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#Response"/>
+        <rdfs:range rdf:resource="http://localhost/onto/ontowebpt#StatusCodes"/>
+        <rdfs:comment>Links a response to its HTTP status code.</rdfs:comment>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#uriRequest -->
+
+    <owl:ObjectProperty rdf:about="http://localhost/onto/ontowebpt#uriRequest">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#Request"/>
+        <rdfs:range rdf:resource="http://localhost/onto/ontowebpt#URI"/>
+        <rdfs:comment>Associates an HTTP request with the URI it targets.</rdfs:comment>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Data properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#authority -->
+
+    <owl:DatatypeProperty rdf:about="http://localhost/onto/ontowebpt#authority">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#URI"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2000/01/rdf-schema#Literal"/>
+        <rdfs:comment>Authority component of a URI (e.g. example.com:443).</rdfs:comment>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#body -->
+
+    <owl:DatatypeProperty rdf:about="http://localhost/onto/ontowebpt#body">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#Message"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2008/content#ContentAsBase64"/>
+        <rdfs:comment>HTTP message body, encoded as base64 content.</rdfs:comment>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#codeSnippet -->
+
+    <owl:DatatypeProperty rdf:about="http://localhost/onto/ontowebpt#codeSnippet">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#AnalyzerFinding"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>Code snippet extracted around the location of the finding.</rdfs:comment>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#connectionAuthority -->
+
+    <owl:DatatypeProperty rdf:about="http://localhost/onto/ontowebpt#connectionAuthority">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#Connection"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2000/01/rdf-schema#Literal"/>
+        <rdfs:comment>Authority of the underlying connection (remote host/port).</rdfs:comment>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#contextIndex -->
+
+    <owl:DatatypeProperty rdf:about="http://localhost/onto/ontowebpt#contextIndex">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#AnalyzerFinding"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#int"/>
+        <rdfs:comment>Index of the relevant script, form or iframe in the original input arrays.</rdfs:comment>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#contextOrigin -->
+
+    <owl:DatatypeProperty rdf:about="http://localhost/onto/ontowebpt#contextOrigin">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#AnalyzerFinding"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>Origin of the code: markup, inline script, external script, etc.</rdfs:comment>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#contextSrc -->
+
+    <owl:DatatypeProperty rdf:about="http://localhost/onto/ontowebpt#contextSrc">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#AnalyzerFinding"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>Source URL associated with the context (e.g. script src, iframe src).</rdfs:comment>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#contextType -->
+
+    <owl:DatatypeProperty rdf:about="http://localhost/onto/ontowebpt#contextType">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#AnalyzerFinding"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>Context type of the analyzer finding (script, form, iframe, html, etc.).</rdfs:comment>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#cookieDomain -->
+
+    <owl:DatatypeProperty rdf:about="http://localhost/onto/ontowebpt#cookieDomain">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#Cookie"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>Domain attribute of a cookie.</rdfs:comment>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#cookieName -->
+
+    <owl:DatatypeProperty rdf:about="http://localhost/onto/ontowebpt#cookieName">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#Cookie"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>Name of a cookie.</rdfs:comment>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#cveId -->
+
+    <owl:DatatypeProperty rdf:about="http://localhost/onto/ontowebpt#cveId">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#CVEVulnerability"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>CVE identifier associated with a concrete vulnerability.</rdfs:comment>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#cvssScore -->
+
+    <owl:DatatypeProperty rdf:about="http://localhost/onto/ontowebpt#cvssScore">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#CVEVulnerability"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#float"/>
+        <rdfs:comment>CVSS base score of a CVE vulnerability.</rdfs:comment>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#cvssSeverity -->
+
+    <owl:DatatypeProperty rdf:about="http://localhost/onto/ontowebpt#cvssSeverity">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#CVEVulnerability"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>CVSS base severity name of a CVE vulnerability.</rdfs:comment>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#fieldName -->
+
+    <owl:DatatypeProperty rdf:about="http://localhost/onto/ontowebpt#fieldName">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#MessageHeader"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>HTTP header field name.</rdfs:comment>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#fieldValue -->
+
+    <owl:DatatypeProperty rdf:about="http://localhost/onto/ontowebpt#fieldValue">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#MessageHeader"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2000/01/rdf-schema#Literal"/>
+        <rdfs:comment>HTTP header field value.</rdfs:comment>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#findingCategory -->
+
+    <owl:DatatypeProperty rdf:about="http://localhost/onto/ontowebpt#findingCategory">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#Finding"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>Logical category of the finding (e.g. DOM XSS, Injection, Transport Security).</rdfs:comment>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#findingDescription -->
+
+    <owl:DatatypeProperty rdf:about="http://localhost/onto/ontowebpt#findingDescription">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#Finding"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>Textual description of the finding.</rdfs:comment>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#findingRuleId -->
+
+    <owl:DatatypeProperty rdf:about="http://localhost/onto/ontowebpt#findingRuleId">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#Finding"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>Identifier of the rule that generated this finding.</rdfs:comment>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#formAction -->
+
+    <owl:DatatypeProperty rdf:about="http://localhost/onto/ontowebpt#formAction">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#AnalyzerFinding"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>Form action URL associated with the finding.</rdfs:comment>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#formMethod -->
+
+    <owl:DatatypeProperty rdf:about="http://localhost/onto/ontowebpt#formMethod">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#AnalyzerFinding"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>HTTP method used by the form related to the finding.</rdfs:comment>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#fragment -->
+
+    <owl:DatatypeProperty rdf:about="http://localhost/onto/ontowebpt#fragment">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#URI"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>Fragment part of a URI.</rdfs:comment>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#httpMethod -->
+
+    <owl:DatatypeProperty rdf:about="http://localhost/onto/ontowebpt#httpMethod">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#HttpFinding"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>HTTP method of the request associated with the finding.</rdfs:comment>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#httpVersion -->
+
+    <owl:DatatypeProperty rdf:about="http://localhost/onto/ontowebpt#httpVersion">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#Message"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2000/01/rdf-schema#Literal"/>
+        <rdfs:comment>HTTP protocol version (e.g. HTTP/1.1, HTTP/2).</rdfs:comment>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#id -->
+
+    <owl:DatatypeProperty rdf:about="http://localhost/onto/ontowebpt#id">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#Request"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>Identifier of an HTTP Request.</rdfs:comment>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#methodName -->
+
+    <owl:DatatypeProperty rdf:about="http://localhost/onto/ontowebpt#methodName">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#Methods"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>Literal name of an HTTP method.</rdfs:comment>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#nameParameter -->
+
+    <owl:DatatypeProperty rdf:about="http://localhost/onto/ontowebpt#nameParameter">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#Parameter"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>Name of a URI parameter.</rdfs:comment>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#owaspCategory -->
+
+    <owl:DatatypeProperty rdf:about="http://localhost/onto/ontowebpt#owaspCategory">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#Finding"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>OWASP Top 10 category associated with this finding.</rdfs:comment>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#path -->
+
+    <owl:DatatypeProperty rdf:about="http://localhost/onto/ontowebpt#path">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#URI"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>Path component of a URI.</rdfs:comment>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#query -->
+
+    <owl:DatatypeProperty rdf:about="http://localhost/onto/ontowebpt#query">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#URI"/>
+        <rdfs:range rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral"/>
+        <rdfs:comment>Query component of a URI, represented as XML literal.</rdfs:comment>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#reasonPhrase -->
+
+    <owl:DatatypeProperty rdf:about="http://localhost/onto/ontowebpt#reasonPhrase">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#StatusCodes"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>Reason phrase corresponding to an HTTP status code.</rdfs:comment>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#remediation -->
+
+    <owl:DatatypeProperty rdf:about="http://localhost/onto/ontowebpt#remediation">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#Finding"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>Suggested mitigation or remediation for this finding.</rdfs:comment>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#requestUrl -->
+
+    <owl:DatatypeProperty rdf:about="http://localhost/onto/ontowebpt#requestUrl">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#HttpFinding"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>Full URL of the HTTP request associated with the finding.</rdfs:comment>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#responseStatus -->
+
+    <owl:DatatypeProperty rdf:about="http://localhost/onto/ontowebpt#responseStatus">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#HttpFinding"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#int"/>
+        <rdfs:comment>HTTP response status code associated with the finding.</rdfs:comment>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#scheme -->
+
+    <owl:DatatypeProperty rdf:about="http://localhost/onto/ontowebpt#scheme">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#URI"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>Scheme component of a URI (e.g. http, https).</rdfs:comment>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#severity -->
+
+    <owl:DatatypeProperty rdf:about="http://localhost/onto/ontowebpt#severity">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#Finding"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>Severity level of a finding (e.g. high, medium, low, info).</rdfs:comment>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#sinkName -->
+
+    <owl:DatatypeProperty rdf:about="http://localhost/onto/ontowebpt#sinkName">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#Finding"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>Name of the sink expression reached by tainted data (if applicable).</rdfs:comment>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#sourceFile -->
+
+    <owl:DatatypeProperty rdf:about="http://localhost/onto/ontowebpt#sourceFile">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#Finding"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>File, script or document where the finding is located.</rdfs:comment>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#sourceLocation -->
+
+    <owl:DatatypeProperty rdf:about="http://localhost/onto/ontowebpt#sourceLocation">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#Finding"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>Location of the finding within the source (e.g. line/column range).</rdfs:comment>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#sourceName -->
+
+    <owl:DatatypeProperty rdf:about="http://localhost/onto/ontowebpt#sourceName">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#Finding"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>Name of the tainted source expression (if applicable).</rdfs:comment>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#statusCodeNumber -->
+
+    <owl:DatatypeProperty rdf:about="http://localhost/onto/ontowebpt#statusCodeNumber">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#StatusCodes"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#int"/>
+        <rdfs:comment>Numeric HTTP status code.</rdfs:comment>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#uri -->
+
+    <owl:DatatypeProperty rdf:about="http://localhost/onto/ontowebpt#uri">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#URI"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>Complete URI string representation.</rdfs:comment>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#valueParameter -->
+
+    <owl:DatatypeProperty rdf:about="http://localhost/onto/ontowebpt#valueParameter">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#Parameter"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2000/01/rdf-schema#Literal"/>
+        <rdfs:comment>Value of a URI parameter.</rdfs:comment>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.w3.org/2002/07/owl#topDataProperty -->
+
+    <rdf:Description rdf:about="http://www.w3.org/2002/07/owl#topDataProperty">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#URI"/>
+    </rdf:Description>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Classes
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#AnalyzerFinding -->
+
+    <owl:Class rdf:about="http://localhost/onto/ontowebpt#AnalyzerFinding">
+        <rdfs:subClassOf rdf:resource="http://localhost/onto/ontowebpt#Finding"/>
+        <rdfs:comment>Finding detected by the AnalyzerResolver on HTML/JS content.</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#AnalyzerResolver -->
+
+    <owl:Class rdf:about="http://localhost/onto/ontowebpt#AnalyzerResolver">
+        <rdfs:subClassOf rdf:resource="http://localhost/onto/ontowebpt#Resolver"/>
+        <rdfs:comment>Resolver that performs static analysis on HTML/JavaScript content.</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#CVEVulnerability -->
+
+    <owl:Class rdf:about="http://localhost/onto/ontowebpt#CVEVulnerability">
+        <rdfs:subClassOf rdf:resource="http://localhost/onto/ontowebpt#Vulnerabilities"/>
+        <rdfs:comment>Concrete vulnerability identified by a CVE id and CVSS score.</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#Connection -->
+
+    <owl:Class rdf:about="http://localhost/onto/ontowebpt#Connection">
+        <rdfs:subClassOf rdf:resource="http://localhost/onto/ontowebpt#HTTP"/>
+        <rdfs:comment>Represents an underlying HTTP connection (work in progress).</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#Cookie -->
+
+    <owl:Class rdf:about="http://localhost/onto/ontowebpt#Cookie">
+        <rdfs:subClassOf rdf:resource="http://localhost/onto/ontowebpt#HTTP"/>
+        <rdfs:comment>Represents a cookie observed in HTTP traffic.</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#CookieFinding -->
+
+    <owl:Class rdf:about="http://localhost/onto/ontowebpt#CookieFinding">
+        <rdfs:subClassOf rdf:resource="http://localhost/onto/ontowebpt#TechstackFinding"/>
+        <rdfs:comment>Finding specifically related to cookie configuration.</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#DOM-based_XSS -->
+
+    <owl:Class rdf:about="http://localhost/onto/ontowebpt#DOM-based_XSS">
+        <rdfs:subClassOf rdf:resource="http://localhost/onto/ontowebpt#XSS"/>
+        <rdfs:comment>Represents DOM-based cross-site scripting vulnerabilities.</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#Finding -->
+
+    <owl:Class rdf:about="http://localhost/onto/ontowebpt#Finding">
+        <rdfs:comment>Generic security finding produced by a resolver.</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#Goals -->
+
+    <owl:Class rdf:about="http://localhost/onto/ontowebpt#Goals">
+        <rdfs:comment>Generic goals or objectives (placeholder class).</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#HTML -->
+
+    <owl:Class rdf:about="http://localhost/onto/ontowebpt#HTML">
+        <rdfs:comment>Represents HTML content associated with HTTP messages.</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#HTTP -->
+
+    <owl:Class rdf:about="http://localhost/onto/ontowebpt#HTTP">
+        <rdfs:comment>Top-level class for HTTP-related entities (messages, headers, URIs, etc.).</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#HeaderFinding -->
+
+    <owl:Class rdf:about="http://localhost/onto/ontowebpt#HeaderFinding">
+        <rdfs:subClassOf rdf:resource="http://localhost/onto/ontowebpt#TechstackFinding"/>
+        <rdfs:comment>Finding specifically related to HTTP security headers.</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#HeaderType -->
+
+    <owl:Class rdf:about="http://localhost/onto/ontowebpt#HeaderType">
+        <rdfs:subClassOf rdf:resource="http://localhost/onto/ontowebpt#HTTP"/>
+        <rdfs:comment>Abstract type for HTTP header classifications.</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#HttpFinding -->
+
+    <owl:Class rdf:about="http://localhost/onto/ontowebpt#HttpFinding">
+        <rdfs:subClassOf rdf:resource="http://localhost/onto/ontowebpt#Finding"/>
+        <rdfs:comment>Finding detected by the HttpResolver on HTTP requests/responses.</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#HttpResolver -->
+
+    <owl:Class rdf:about="http://localhost/onto/ontowebpt#HttpResolver">
+        <rdfs:subClassOf rdf:resource="http://localhost/onto/ontowebpt#Resolver"/>
+        <rdfs:comment>Resolver that analyzes HTTP traffic to detect potential vulnerabilities.</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#Message -->
+
+    <owl:Class rdf:about="http://localhost/onto/ontowebpt#Message">
+        <rdfs:subClassOf rdf:resource="http://localhost/onto/ontowebpt#HTTP"/>
+        <rdfs:comment>Generic HTTP message, base class for Request and Response.</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#MessageHeader -->
+
+    <owl:Class rdf:about="http://localhost/onto/ontowebpt#MessageHeader">
+        <rdfs:subClassOf rdf:resource="http://localhost/onto/ontowebpt#HTTP"/>
+        <rdfs:comment>Generic HTTP message header.</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#Methods -->
+
+    <owl:Class rdf:about="http://localhost/onto/ontowebpt#Methods">
+        <rdfs:subClassOf rdf:resource="http://localhost/onto/ontowebpt#HTTP"/>
+        <rdfs:comment>HTTP methods such as GET, POST, PUT, etc.</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#OpenRedirect -->
+
+    <owl:Class rdf:about="http://localhost/onto/ontowebpt#OpenRedirect">
+        <rdfs:subClassOf rdf:resource="http://localhost/onto/ontowebpt#Vulnerabilities"/>
+        <rdfs:comment>Open redirect vulnerabilities in HTTP flows.</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#Parameter -->
+
+    <owl:Class rdf:about="http://localhost/onto/ontowebpt#Parameter">
+        <rdfs:subClassOf rdf:resource="http://localhost/onto/ontowebpt#HTTP"/>
+        <rdfs:comment>Represents a parameter in an HTTP URI.</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#PathTraversal -->
+
+    <owl:Class rdf:about="http://localhost/onto/ontowebpt#PathTraversal">
+        <rdfs:subClassOf rdf:resource="http://localhost/onto/ontowebpt#Vulnerabilities"/>
+        <rdfs:comment>Path traversal vulnerabilities (e.g. ../../ in paths or parameters).</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#PayloadHeaders -->
+
+    <owl:Class rdf:about="http://localhost/onto/ontowebpt#PayloadHeaders">
+        <rdfs:subClassOf rdf:resource="http://localhost/onto/ontowebpt#MessageHeader"/>
+        <rdfs:comment>Headers related to the payload representation and transfer.</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#Reflected_XSS -->
+
+    <owl:Class rdf:about="http://localhost/onto/ontowebpt#Reflected_XSS">
+        <rdfs:subClassOf rdf:resource="http://localhost/onto/ontowebpt#XSS"/>
+        <rdfs:comment>Represents reflected cross-site scripting vulnerabilities.</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#RepresentationHeaders -->
+
+    <owl:Class rdf:about="http://localhost/onto/ontowebpt#RepresentationHeaders">
+        <rdfs:subClassOf rdf:resource="http://localhost/onto/ontowebpt#MessageHeader"/>
+        <rdfs:comment>Headers that describe the representation of a resource.</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#Request -->
+
+    <owl:Class rdf:about="http://localhost/onto/ontowebpt#Request">
+        <rdfs:subClassOf rdf:resource="http://localhost/onto/ontowebpt#Message"/>
+        <owl:disjointWith rdf:resource="http://localhost/onto/ontowebpt#Response"/>
+        <rdfs:comment>HTTP request message.</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#RequestHeader -->
+
+    <owl:Class rdf:about="http://localhost/onto/ontowebpt#RequestHeader">
+        <rdfs:subClassOf rdf:resource="http://localhost/onto/ontowebpt#MessageHeader"/>
+        <rdfs:comment>Headers specific to HTTP requests.</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#Resolver -->
+
+    <owl:Class rdf:about="http://localhost/onto/ontowebpt#Resolver">
+        <rdfs:comment>Abstract resolver that analyzes HTTP-related data and produces findings.</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#Response -->
+
+    <owl:Class rdf:about="http://localhost/onto/ontowebpt#Response">
+        <rdfs:subClassOf rdf:resource="http://localhost/onto/ontowebpt#Message"/>
+        <rdfs:comment>HTTP response message.</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#ResponseHeader -->
+
+    <owl:Class rdf:about="http://localhost/onto/ontowebpt#ResponseHeader">
+        <rdfs:subClassOf rdf:resource="http://localhost/onto/ontowebpt#MessageHeader"/>
+        <rdfs:comment>Headers specific to HTTP responses.</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#SQLi -->
+
+    <owl:Class rdf:about="http://localhost/onto/ontowebpt#SQLi">
+        <rdfs:subClassOf rdf:resource="http://localhost/onto/ontowebpt#Vulnerabilities"/>
+        <rdfs:comment>SQL injection vulnerabilities.</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#SoftwareFinding -->
+
+    <owl:Class rdf:about="http://localhost/onto/ontowebpt#SoftwareFinding">
+        <rdfs:subClassOf rdf:resource="http://localhost/onto/ontowebpt#TechstackFinding"/>
+        <rdfs:comment>Finding related to a specific software component or WAF.</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#StatusCodes -->
+
+    <owl:Class rdf:about="http://localhost/onto/ontowebpt#StatusCodes">
+        <rdfs:subClassOf rdf:resource="http://localhost/onto/ontowebpt#HTTP"/>
+        <rdfs:comment>HTTP status codes (2xx, 3xx, 4xx, 5xx).</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#Stored_XSS -->
+
+    <owl:Class rdf:about="http://localhost/onto/ontowebpt#Stored_XSS">
+        <rdfs:subClassOf rdf:resource="http://localhost/onto/ontowebpt#XSS"/>
+        <rdfs:comment>Represents stored cross-site scripting vulnerabilities.</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#TechstackFinding -->
+
+    <owl:Class rdf:about="http://localhost/onto/ontowebpt#TechstackFinding">
+        <rdfs:subClassOf rdf:resource="http://localhost/onto/ontowebpt#Finding"/>
+        <rdfs:comment>Finding detected by the TechstackResolver (headers, cookies, technologies).</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#TechstackResolver -->
+
+    <owl:Class rdf:about="http://localhost/onto/ontowebpt#TechstackResolver">
+        <rdfs:subClassOf rdf:resource="http://localhost/onto/ontowebpt#Resolver"/>
+        <rdfs:comment>Resolver that analyzes the technology stack, WAF, headers and cookies.</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#URI -->
+
+    <owl:Class rdf:about="http://localhost/onto/ontowebpt#URI">
+        <rdfs:subClassOf rdf:resource="http://localhost/onto/ontowebpt#HTTP"/>
+        <rdfs:comment>Represents the URI targeted by HTTP requests.</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#Vulnerabilities -->
+
+    <owl:Class rdf:about="http://localhost/onto/ontowebpt#Vulnerabilities">
+        <rdfs:comment>Abstract root for all vulnerability categories.</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#XSS -->
+
+    <owl:Class rdf:about="http://localhost/onto/ontowebpt#XSS">
+        <rdfs:subClassOf rdf:resource="http://localhost/onto/ontowebpt#Vulnerabilities"/>
+        <rdfs:comment>Cross-site scripting vulnerabilities.</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Individuals
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#AnalyzerResolverInstance -->
+
+    <owl:NamedIndividual rdf:about="http://localhost/onto/ontowebpt#AnalyzerResolverInstance">
+        <rdf:type rdf:resource="http://localhost/onto/ontowebpt#AnalyzerResolver"/>
+        <rdfs:comment>Instance representing the static Analyzer resolver engine.</rdfs:comment>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#CONNECT -->
+
+    <owl:NamedIndividual rdf:about="http://localhost/onto/ontowebpt#CONNECT">
+        <rdf:type rdf:resource="http://localhost/onto/ontowebpt#Methods"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#DELETE -->
+
+    <owl:NamedIndividual rdf:about="http://localhost/onto/ontowebpt#DELETE">
+        <rdf:type rdf:resource="http://localhost/onto/ontowebpt#Methods"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#GET -->
+
+    <owl:NamedIndividual rdf:about="http://localhost/onto/ontowebpt#GET">
+        <rdf:type rdf:resource="http://localhost/onto/ontowebpt#Methods"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#HEAD -->
+
+    <owl:NamedIndividual rdf:about="http://localhost/onto/ontowebpt#HEAD">
+        <rdf:type rdf:resource="http://localhost/onto/ontowebpt#Methods"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#HttpResolverInstance -->
+
+    <owl:NamedIndividual rdf:about="http://localhost/onto/ontowebpt#HttpResolverInstance">
+        <rdf:type rdf:resource="http://localhost/onto/ontowebpt#HttpResolver"/>
+        <rdfs:comment>Instance representing the HTTP traffic resolver engine.</rdfs:comment>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#OPTIONS -->
+
+    <owl:NamedIndividual rdf:about="http://localhost/onto/ontowebpt#OPTIONS">
+        <rdf:type rdf:resource="http://localhost/onto/ontowebpt#Methods"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#PATCH -->
+
+    <owl:NamedIndividual rdf:about="http://localhost/onto/ontowebpt#PATCH">
+        <rdf:type rdf:resource="http://localhost/onto/ontowebpt#Methods"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#POST -->
+
+    <owl:NamedIndividual rdf:about="http://localhost/onto/ontowebpt#POST">
+        <rdf:type rdf:resource="http://localhost/onto/ontowebpt#Methods"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#PUT -->
+
+    <owl:NamedIndividual rdf:about="http://localhost/onto/ontowebpt#PUT">
+        <rdf:type rdf:resource="http://localhost/onto/ontowebpt#Methods"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#TRACE -->
+
+    <owl:NamedIndividual rdf:about="http://localhost/onto/ontowebpt#TRACE">
+        <rdf:type rdf:resource="http://localhost/onto/ontowebpt#Methods"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://localhost/onto/ontowebpt#TechstackResolverInstance -->
+
+    <owl:NamedIndividual rdf:about="http://localhost/onto/ontowebpt#TechstackResolverInstance">
+        <rdf:type rdf:resource="http://localhost/onto/ontowebpt#TechstackResolver"/>
+        <rdfs:comment>Instance representing the Techstack resolver engine.</rdfs:comment>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // General axioms
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    <rdf:Description>
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#AllDisjointClasses"/>
+        <owl:members rdf:parseType="Collection">
+            <rdf:Description rdf:about="http://localhost/onto/ontowebpt#PayloadHeaders"/>
+            <rdf:Description rdf:about="http://localhost/onto/ontowebpt#RepresentationHeaders"/>
+            <rdf:Description rdf:about="http://localhost/onto/ontowebpt#RequestHeader"/>
+            <rdf:Description rdf:about="http://localhost/onto/ontowebpt#ResponseHeader"/>
+        </owl:members>
+    </rdf:Description>
+</rdf:RDF>
+
+
+
+<!-- Generated by the OWL API (version 4.5.29.2024-05-13T12:11:03Z) https://github.com/owlcs/owlapi -->
+
