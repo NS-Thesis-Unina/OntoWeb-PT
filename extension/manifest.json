@@ -24,11 +24,7 @@
   },
   "web_accessible_resources": [
     {
-      "resources": [
-        "content_script/*",
-        "content_script/*/*",
-        "content_script/*/*/*"
-      ],
+      "resources": ["content_script/*", "content_script/*/*", "content_script/*/*/*"],
       "matches": ["<all_urls>"]
     }
   ],
@@ -46,8 +42,5 @@
     "declarativeNetRequest",
     "declarativeNetRequestWithHostAccess"
   ],
-  "host_permissions": [
-    "<all_urls>",
-    "*://*/*"
-  ]
+  "host_permissions": ["<all_urls>", "*://*/*"]
 }

@@ -16,37 +16,37 @@
  * This router is the entry point for the entire UI navigation flow.
  */
 
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes } from 'react-router-dom';
 
-import App from "./app";
+import App from './app';
 
 // Analyzer pages
-import Analyzer from "./sections/analyzer/page/analyzer";
-import AnalyzeAnalyzer from "./sections/analyzer/page/subpages/analyze/analyze";
-import OneTimeScanAnalyzer from "./sections/analyzer/page/subpages/oneTimeScan/oneTimeScan";
-import RuntimeScanAnalyzer from "./sections/analyzer/page/subpages/runtimeScan/runtimeScan";
-import SendOneTimeScanAnalyzer from "./sections/analyzer/page/subpages/analyze/subpages/oneTimeScan/oneTimeScan";
-import SendRuntimeScanAnalyzer from "./sections/analyzer/page/subpages/analyze/subpages/runtimeScan/runtimeScan";
+import Analyzer from './sections/analyzer/page/analyzer';
+import AnalyzeAnalyzer from './sections/analyzer/page/subpages/analyze/analyze';
+import OneTimeScanAnalyzer from './sections/analyzer/page/subpages/oneTimeScan/oneTimeScan';
+import RuntimeScanAnalyzer from './sections/analyzer/page/subpages/runtimeScan/runtimeScan';
+import SendOneTimeScanAnalyzer from './sections/analyzer/page/subpages/analyze/subpages/oneTimeScan/oneTimeScan';
+import SendRuntimeScanAnalyzer from './sections/analyzer/page/subpages/analyze/subpages/runtimeScan/runtimeScan';
 
 // Analyzer archive pages
-import ArchiveAnalyzer from "./sections/analyzer/page/subpages/archive/archive";
-import OneTimeScanArchiveAnalyzer from "./sections/analyzer/page/subpages/archive/subpages/oneTimeScan/oneTimeScan";
-import RuntimeScanArchiveAnalyzer from "./sections/analyzer/page/subpages/archive/subpages/runtimeScan/runtimeScan";
+import ArchiveAnalyzer from './sections/analyzer/page/subpages/archive/archive';
+import OneTimeScanArchiveAnalyzer from './sections/analyzer/page/subpages/archive/subpages/oneTimeScan/oneTimeScan';
+import RuntimeScanArchiveAnalyzer from './sections/analyzer/page/subpages/archive/subpages/runtimeScan/runtimeScan';
 
 // TechStack pages
-import TechStack from "./sections/techstack/page/techstack";
-import ScanTechStack from "./sections/techstack/page/subpages/scan/scan";
-import AnalyzeTechstack from "./sections/techstack/page/subpages/analyze/analyze";
-import ArchiveTechStack from "./sections/techstack/page/subpages/archive/archive";
+import TechStack from './sections/techstack/page/techstack';
+import ScanTechStack from './sections/techstack/page/subpages/scan/scan';
+import AnalyzeTechstack from './sections/techstack/page/subpages/analyze/analyze';
+import ArchiveTechStack from './sections/techstack/page/subpages/archive/archive';
 
 // Interceptor pages
-import Interceptor from "./sections/interceptor/page/interceptor";
-import RuntimeScanInterceptor from "./sections/interceptor/page/subpages/runtimeScan/runtimeScan";
-import SendToOntologyInterceptor from "./sections/interceptor/page/subpages/sendToOntology/sendToOntology";
-import ArchiveInterceptor from "./sections/interceptor/page/subpages/archive/archive";
+import Interceptor from './sections/interceptor/page/interceptor';
+import RuntimeScanInterceptor from './sections/interceptor/page/subpages/runtimeScan/runtimeScan';
+import SendToOntologyInterceptor from './sections/interceptor/page/subpages/sendToOntology/sendToOntology';
+import ArchiveInterceptor from './sections/interceptor/page/subpages/archive/archive';
 
 // Home page
-import Home from "./sections/home/home";
+import Home from './sections/home/home';
 
 /**
  * Router Component

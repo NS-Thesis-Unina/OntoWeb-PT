@@ -1,35 +1,93 @@
-import { io } from "socket.io-client";
+import { io } from 'socket.io-client';
 
+/**
+ * **ToolEngine**
+ *
+ * Architectural Role:
+ *   React UI
+ *     → ToolReactController
+ *       → background (ToolBackgroundController)
+ *         → **ToolEngine** (this file)
+ *           → Node.js Tool Server (REST + WebSocket)
+ *
+ * Responsibilities:
+ *   - Perform ALL communication with the external Node.js Tool server
+ *   - Handle REST requests:
+ *        • /health
+ *        • /http-requests/ingest-http
+ *        • /techstack/analyze
+ *        • /analyzer/analyze
+ *        • /{queue}/results/:jobId
+ *   - Manage the WebSocket (Socket.io) connection
+ *   - Notify health subscribers and job event subscribers
+ *   - Manage job room subscriptions (subscribe-job, unsubscribe-job)
+ *   - Handle polling timers for health status
+ *
+ * Notes:
+ *   - This is a **background-only engine**, never used directly by React.
+ *   - Heavy logic (fetching, socket mgmt) is placed here.
+ *   - BackgroundController simply delegates operations.
+ */
 class ToolEngine {
   constructor() {
-    this.serverUrl = `http://${import.meta.env.EXTENSION_PUBLIC_SERVER_HOST}` || "http://localhost";
+    // Base server URL from extension env variables
+    this.serverUrl = `http://${import.meta.env.EXTENSION_PUBLIC_SERVER_HOST}` || 'http://localhost';
+
+    // Cached last-known health state
     this.status = {
       ok: false,
-      components: { server: "down", redis: "down", graphdb: "down" },
+      components: { server: 'down', redis: 'down', graphdb: 'down' },
     };
+
+    // Subscribers for:
+    //   - health updates
+    //   - job-lifecycle events (completed/failed)
     this.subscribers = new Set();
     this.jobSubscribers = new Set();
+
+    // Socket.io client
     this.socket = null;
     this._socketInitStarted = false;
+
+    // Track subscribed jobs for automatic rejoin after reconnect
     this._joinedJobs = new Set();
 
+    // Polling timer ID
     this._pollTimer = null;
   }
 
-  // ----------------- Health subscribers -----------------
+  // ============================================================================
+  //                            Health Subscription
+  // ============================================================================
+
+  /** Register a subscriber for health updates. */
   subscribe(callback) {
     this.subscribers.add(callback);
     return () => this.subscribers.delete(callback);
   }
+
+  /** Notify all health subscribers. */
   _notifyAll(status) {
-    for (const cb of this.subscribers) cb(status);
+    for (const cb of this.subscribers) {
+      try {
+        cb(status);
+      } catch {
+        /* ignore subscriber errors */
+      }
+    }
   }
 
-  // ----------------- Job event subscribers -----------------
+  // ============================================================================
+  //                         Job Event Subscription
+  // ============================================================================
+
+  /** Register a subscriber for job events (completed/failed). */
   subscribeJobs(callback) {
     this.jobSubscribers.add(callback);
     return () => this.jobSubscribers.delete(callback);
   }
+
+  /** Notify all job-event subscribers. */
   _notifyJob(evt) {
     for (const cb of this.jobSubscribers) {
       try {
@@ -40,23 +98,33 @@ class ToolEngine {
     }
   }
 
+  // ============================================================================
+  //                           Health Check (REST)
+  // ============================================================================
+
+  /** Return whatever state we have cached. */
   getCachedStatus() {
     return this.status;
   }
 
+  /**
+   * Perform GET /health.
+   * Updates cached status and notifies subscribers.
+   */
   async checkHealth() {
     try {
-      const res = await fetch(`${this.serverUrl}/health`, { method: "GET" });
-      if (!res.ok) throw new Error("Health check failed");
-      const data = await res.json();
+      const res = await fetch(`${this.serverUrl}/health`);
+      if (!res.ok) throw new Error('Health check failed');
 
+      const data = await res.json();
       this.status = data;
       this._notifyAll(data);
       return data;
-    } catch (err) {
+    } catch {
+      // Server unreachable fallback
       const down = {
         ok: false,
-        components: { server: "down", redis: "down", graphdb: "down" },
+        components: { server: 'down', redis: 'down', graphdb: 'down' },
       };
       this.status = down;
       this._notifyAll(down);
@@ -64,12 +132,22 @@ class ToolEngine {
     }
   }
 
+  // ============================================================================
+  //                             Health Polling
+  // ============================================================================
+
+  /**
+   * Start polling the /health endpoint periodically.
+   */
   startPolling(intervalMs = 15000) {
     if (this._pollTimer) return;
+
+    // Immediately run one check, then schedule interval
     this.checkHealth();
     this._pollTimer = setInterval(() => this.checkHealth(), intervalMs);
   }
 
+  /** Stop polling entirely. */
   stopPolling() {
     if (this._pollTimer) {
       clearInterval(this._pollTimer);
@@ -77,251 +155,253 @@ class ToolEngine {
     }
   }
 
+  // ============================================================================
+  //           REST Operations — HTTP ingest / Analyzer / TechStack
+  // ============================================================================
+
+  /**
+   * POST /http-requests/ingest-http
+   * Used by Interceptor to push HTTP payloads to the tool server.
+   */
   async ingestHttp(payload) {
-    if (payload == null) throw new Error("Missing payload");
+    if (payload == null) throw new Error('Missing payload');
 
     const ctrl = new AbortController();
-    const t = setTimeout(
-      () => ctrl.abort(),
-      Number(import.meta.env.EXTENSION_PUBLIC_REQUESTS_ABORT_MS || 30000)
-    );
+    const timeout = Number(import.meta.env.EXTENSION_PUBLIC_REQUESTS_ABORT_MS || 30000);
+    const timeoutId = setTimeout(() => ctrl.abort(), timeout);
 
     try {
       const res = await fetch(`${this.serverUrl}/http-requests/ingest-http`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
         signal: ctrl.signal,
       });
 
-      if (!res.ok) {
-        const text = await res.text().catch(() => "");
-        throw new Error(`ingest-http failed (${res.status}) ${text}`);
-      }
+      if (!res.ok) throw new Error(`ingest-http failed (${res.status})`);
 
-      const data = await res.json();
-      return data;
+      return await res.json();
     } finally {
-      clearTimeout(t);
-    }
-  }
-
-  /** Post a techstack snapshot to /techstack/analyze (enqueue a BullMQ job). */
-  async analyzeTechstack(payload) {
-    if (payload == null) throw new Error("Missing payload");
-
-    const ctrl = new AbortController();
-    const t = setTimeout(
-      () => ctrl.abort(),
-      Number(import.meta.env.EXTENSION_PUBLIC_REQUESTS_ABORT_MS || 30000)
-    );
-
-    try {
-      const res = await fetch(`${this.serverUrl}/techstack/analyze`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-        signal: ctrl.signal,
-      });
-
-      if (!res.ok) {
-        const text = await res.text().catch(() => "");
-        throw new Error(`techstack/analyze failed (${res.status}) ${text}`);
-      }
-
-      const data = await res.json();
-      return data;
-    } finally {
-      clearTimeout(t);
-    }
-  }
-
-  /** Post a one-time analyzer scan to /analyzer/analyze (enqueue a BullMQ job). */
-  async analyzeOneTimeScan(payload) {
-    if (payload == null) throw new Error("Missing payload");
-
-    const ctrl = new AbortController();
-    const t = setTimeout(
-      () => ctrl.abort(),
-      Number(import.meta.env.EXTENSION_PUBLIC_REQUESTS_ABORT_MS || 30000)
-    );
-
-    try {
-      const res = await fetch(`${this.serverUrl}/analyzer/analyze`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-        signal: ctrl.signal,
-      });
-
-      if (!res.ok) {
-        const text = await res.text().catch(() => "");
-        throw new Error(`analyzer/analyze failed (${res.status}) ${text}`);
-      }
-
-      const data = await res.json();
-      return data;
-    } finally {
-      clearTimeout(t);
+      clearTimeout(timeoutId);
     }
   }
 
   /**
-   * Hybrid job-status lookup via REST.
-   * This is used as a fallback when websocket events are missed.
-   * It maps a logical queue name to the corresponding /{queue}/results/:jobId route.
+   * POST /techstack/analyze
+   */
+  async analyzeTechstack(payload) {
+    if (payload == null) throw new Error('Missing payload');
+
+    const ctrl = new AbortController();
+    const timeout = Number(import.meta.env.EXTENSION_PUBLIC_REQUESTS_ABORT_MS || 30000);
+    const timeoutId = setTimeout(() => ctrl.abort(), timeout);
+
+    try {
+      const res = await fetch(`${this.serverUrl}/techstack/analyze`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        signal: ctrl.signal,
+      });
+
+      if (!res.ok) throw new Error(`techstack/analyze failed (${res.status})`);
+
+      return await res.json();
+    } finally {
+      clearTimeout(timeoutId);
+    }
+  }
+
+  /**
+   * POST /analyzer/analyze
+   * For HTML+JS one-time scan of Analyzer tool.
+   */
+  async analyzeOneTimeScan(payload) {
+    if (payload == null) throw new Error('Missing payload');
+
+    const ctrl = new AbortController();
+    const timeout = Number(import.meta.env.EXTENSION_PUBLIC_REQUESTS_ABORT_MS || 30000);
+    const timeoutId = setTimeout(() => ctrl.abort(), timeout);
+
+    try {
+      const res = await fetch(`${this.serverUrl}/analyzer/analyze`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        signal: ctrl.signal,
+      });
+
+      if (!res.ok) throw new Error(`analyzer/analyze failed (${res.status})`);
+
+      return await res.json();
+    } finally {
+      clearTimeout(timeoutId);
+    }
+  }
+
+  // ============================================================================
+  //                          REST Fallback Job Lookup
+  // ============================================================================
+
+  /**
+   * GET /{queue}/results/:jobId
+   * REST fallback in case WS events were missed.
    */
   async fetchJobResult(queue, jobId) {
-    const q = String(queue || "").toLowerCase();
-    const id = encodeURIComponent(String(jobId || ""));
-    if (!id) throw new Error("Missing jobId");
+    const q = String(queue).toLowerCase();
+    const id = encodeURIComponent(String(jobId));
+    if (!id) throw new Error('Missing jobId');
 
+    // Determine correct endpoint path
     let path;
     switch (q) {
-      case "http":
-        // Note: http requests routes are mounted under /http-requests
-        path = "/http-requests/results";
+      case 'http':
+        path = '/http-requests/results';
         break;
-      case "analyzer":
-        path = "/analyzer/results";
+      case 'analyzer':
+        path = '/analyzer/results';
         break;
-      case "techstack":
-        path = "/techstack/results";
+      case 'techstack':
+        path = '/techstack/results';
         break;
       default:
         throw new Error(`Unsupported queue: ${queue}`);
     }
 
     const ctrl = new AbortController();
-    const t = setTimeout(
-      () => ctrl.abort(),
-      Number(import.meta.env.EXTENSION_PUBLIC_REQUESTS_ABORT_MS || 30000)
-    );
+    const timeout = Number(import.meta.env.EXTENSION_PUBLIC_REQUESTS_ABORT_MS || 30000);
+    const timeoutId = setTimeout(() => ctrl.abort(), timeout);
 
     try {
       const res = await fetch(`${this.serverUrl}${path}/${id}`, {
-        method: "GET",
+        method: 'GET',
         signal: ctrl.signal,
       });
 
-      if (!res.ok) {
-        const text = await res.text().catch(() => "");
-        throw new Error(`job results failed (${res.status}) ${text}`);
-      }
+      if (!res.ok) throw new Error(`job results failed (${res.status})`);
 
-      const data = await res.json();
-      return data;
+      return await res.json();
     } finally {
-      clearTimeout(t);
+      clearTimeout(timeoutId);
     }
   }
 
+  // ============================================================================
+  //                     Socket.io (WebSocket) Handling
+  // ============================================================================
+
   /**
-   * Ensure a socket connection exists (lazy connect).
-   * Safe to call multiple times.
+   * Ensure socket.io has been initialized and is connected.
+   * Lazy initialization: created only when needed.
    */
   async ensureSocketConnected() {
-    if (this.socket && this.socket.connected) return;
+    if (this.socket?.connected) return;
+
     if (!this._socketInitStarted) {
       this._socketInitStarted = true;
       this._connectSocket();
     }
 
-    // Wait until connected or timeout (best-effort)
+    // Wait for connection or time out safely
     await new Promise((resolve) => {
-      const done = () => resolve();
-      if (this.socket?.connected) return done();
+      if (this.socket?.connected) return resolve();
+
       const onConnect = () => {
-        this.socket?.off("connect", onConnect);
-        done();
+        this.socket.off('connect', onConnect);
+        resolve();
       };
+
       try {
-        this.socket?.on("connect", onConnect);
-      } catch {
-        /* ignore */
-      }
-      setTimeout(
-        done,
-        Number(import.meta.env.EXTENSION_PUBLIC_ENSURE_SOCKET_CONNECTED_TIMEOUT || 1500)
-      ); // do not block forever
+        this.socket.on('connect', onConnect);
+      } catch {}
+
+      const timeout = Number(
+        import.meta.env.EXTENSION_PUBLIC_ENSURE_SOCKET_CONNECTED_TIMEOUT || 1500
+      );
+      setTimeout(resolve, timeout);
     });
   }
 
   /**
-   * Internal connect routine: sets up event listeners and reconnection handling.
+   * Initialize socket.io client and event listeners.
    */
   _connectSocket() {
     this.socket = io(this.serverUrl, {
-      transports: ["websocket"],
+      transports: ['websocket'],
       withCredentials: false,
       timeout: Number(import.meta.env.EXTENSION_PUBLIC_CONNECT_SOCKET_TIMEOUT || 5000),
     });
 
-    this.socket.on("connect", () => {
+    // On connect: rejoin all subscribed job rooms
+    this.socket.on('connect', () => {
       try {
-        console.info("[tool] socket connected", this.socket.id);
+        console.info('[tool] socket connected', this.socket.id);
       } catch {}
+
       for (const jobId of this._joinedJobs) {
         try {
-          this.socket.emit("subscribe-job", jobId);
+          this.socket.emit('subscribe-job', jobId);
         } catch {}
       }
     });
 
-    this.socket.on("disconnect", (reason) => {
+    this.socket.on('disconnect', (reason) => {
       try {
-        console.info("[tool] socket disconnected:", reason);
+        console.info('[tool] socket disconnected:', reason);
       } catch {}
     });
 
-    this.socket.on("connect_error", (err) => {
+    this.socket.on('connect_error', (err) => {
       try {
-        console.warn("[tool] socket connect_error:", err?.message || err);
+        console.warn('[tool] socket connect_error:', err?.message);
       } catch {}
     });
 
-    // Forward any job event to UI subscribers.
-    // Server is expected to emit payloads like:
-    //   { event: 'completed'|'failed', queue: 'http'|'sparql'|'techstack'|'analyzer', jobId, ... }
-    this.socket.on("completed", (payload) => {
-      const evt = { event: "completed", ...payload };
-      this._notifyJob(evt);
+    // Forward job completion events
+    this.socket.on('completed', (payload) => {
+      this._notifyJob({ event: 'completed', ...payload });
     });
-    this.socket.on("failed", (payload) => {
-      const evt = { event: "failed", ...payload };
-      this._notifyJob(evt);
+
+    // Forward job failure events
+    this.socket.on('failed', (payload) => {
+      this._notifyJob({ event: 'failed', ...payload });
     });
   }
 
+  // ============================================================================
+  //                           Job Room Management
+  // ============================================================================
+
   /**
-   * Join a job room to receive 'completed'/'failed' events.
-   * @param {string} jobId
+   * Subscribe this engine to jobId events via socket.io room.
    */
   async subscribeJob(jobId) {
-    const id = String(jobId || "");
-    if (!id) throw new Error("Missing jobId");
+    const id = String(jobId);
+    if (!id) throw new Error('Missing jobId');
+
     await this.ensureSocketConnected();
     this._joinedJobs.add(id);
+
     try {
-      this.socket?.emit("subscribe-job", id);
-    } catch (e) {
-      // If emit fails for any reason, keep the id so we can try again on next connect
-      throw e;
+      this.socket.emit('subscribe-job', id);
+    } catch (err) {
+      throw err;
     }
   }
 
   /**
-   * Leave a previously joined job room.
-   * @param {string} jobId
+   * Unsubscribe from job room.
    */
   async unsubscribeJob(jobId) {
-    const id = String(jobId || "");
-    if (!id) throw new Error("Missing jobId");
+    const id = String(jobId);
+    if (!id) throw new Error('Missing jobId');
+
     this._joinedJobs.delete(id);
+
     try {
-      this.socket?.emit("unsubscribe-job", id);
+      this.socket.emit('unsubscribe-job', id);
     } catch {
-      /* ignore */
+      /* ignore socket failures */
     }
   }
 }

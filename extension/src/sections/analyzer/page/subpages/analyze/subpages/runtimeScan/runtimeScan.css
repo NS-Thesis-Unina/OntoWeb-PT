@@ -1,0 +1,101 @@
+.sendanalyzerrts-div {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+  width: 100%;
+}
+
+.sendanalyzerrts-div .description {
+  display: flex;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.sendanalyzerrts-div .alert-block {
+  width: 100%;
+  margin: 5px;
+}
+
+.sendanalyzerrts-div .content-box {
+  width: 95%;
+}
+
+.sendanalyzerrts-div .step-full {
+  width: 100%;
+}
+
+.sendanalyzerrts-div .full-list {
+  width: 100%;
+}
+
+.sendanalyzerrts-div .centered-loading {
+  display: flex;
+  justify-content: center;
+  padding: 16px;
+}
+
+.sendanalyzerrts-div .empty-box {
+  padding: 16px;
+}
+
+.sendanalyzerrts-div .label-bold {
+  margin-right: 8px;
+  font-weight: 700;
+}
+
+.sendanalyzerrts-div .label-bold-sm {
+  margin-right: 4px;
+  font-weight: 700;
+}
+
+.sendanalyzerrts-div .row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.sendanalyzerrts-div .row-align-start {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+}
+
+.sendanalyzerrts-div .text-wrap-flex {
+  white-space: normal;
+  word-break: break-word;
+  flex: 1;
+}
+
+.sendanalyzerrts-div .actions {
+  margin-bottom: 16px;
+}
+
+.sendanalyzerrts-div .btn {
+  margin-top: 8px;
+  margin-right: 8px;
+}
+
+.jobsummaries-description {
+  margin-bottom: 10px !important;
+}
+
+.jobsummaries-item {
+  padding: 5px;
+  margin-bottom: 5px !important;
+}
+
+.jobsummaries-item .item-div {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  align-items: center;
+  gap: 10px;
+}
+
+.jobsummaries-loading-div {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}

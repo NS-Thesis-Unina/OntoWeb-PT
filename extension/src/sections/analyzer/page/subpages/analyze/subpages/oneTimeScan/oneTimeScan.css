@@ -40,34 +40,6 @@
   padding: 16px;
 }
 
-.sendanalyzerots-div .label-bold {
-  margin-right: 8px;
-  font-weight: 700;
-}
-
-.sendanalyzerots-div .label-bold-sm {
-  margin-right: 4px;
-  font-weight: 700;
-}
-
-.sendanalyzerots-div .row {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-}
-
-.sendanalyzerots-div .row-align-start {
-  display: flex;
-  flex-direction: row;
-  align-items: flex-start;
-}
-
-.sendanalyzerots-div .text-wrap-flex {
-  white-space: normal;
-  word-break: break-word;
-  flex: 1;
-}
-
 .sendanalyzerots-div .actions {
   margin-bottom: 16px;
 }
@@ -75,10 +47,6 @@
 .sendanalyzerots-div .btn {
   margin-top: 8px;
   margin-right: 8px;
-}
-
-.sendanalyzerots-div .completion-box {
-  padding: 24px;
 }
 
 .jobsummaries-description {

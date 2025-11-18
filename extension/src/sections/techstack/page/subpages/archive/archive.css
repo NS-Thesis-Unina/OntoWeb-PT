@@ -11,15 +11,6 @@
   padding-inline-start: 20px;
 }
 
-.archivetechstack-div .archivetechstack-archive {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  padding: 10px;
-  padding-inline: 16px;
-  margin-bottom: 10px;
-  margin-top: 10px;
-}
 .archivetechstack-div .title {
   padding: 5px;
   display: flex;

@@ -1,14 +1,14 @@
 .collapsible {
-  margin-bottom: 8px !important; 
-  border-radius: 10px !important; 
+  margin-bottom: 8px !important;
+  border-radius: 10px !important;
   width: 100% !important;
 }
 
 .collapsible-title {
   font-weight: bold !important;
-  white-space: normal;    
+  white-space: normal;
   overflow-wrap: anywhere;
-  word-break: break-word; 
+  word-break: break-word;
 }
 
 .collapsible-details {

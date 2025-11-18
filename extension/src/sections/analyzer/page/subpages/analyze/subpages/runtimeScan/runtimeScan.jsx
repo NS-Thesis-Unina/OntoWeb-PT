@@ -1,70 +1,109 @@
-import { Alert, Box, Button, Checkbox, CircularProgress, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Paper, Stack, Step, StepContent, StepLabel, Stepper, Typography, Zoom, Dialog, DialogTitle, DialogContent, DialogActions } from "@mui/material";
-import "./runtimeScan.css";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { formatWhen } from "../../../../../../../libs/formatting";
-import toolReactController from "../../../../../../../toolController";
-import { getLock, subscribeLockChanges } from "../../../../../../../scanLock";
-import { enqueueSnackbar } from "notistack";
-import Brightness1Icon from "@mui/icons-material/Brightness1";
-import analyzerReactController from "../../../../../analyzerController";
-import OneTimeScanResults from "../../../components/oneTimeScanResults/oneTimeScanResults";
-import Collapsible from "../../../../../../../components/collapsible/collapsible";
+import './runtimeScan.css';
+import {
+  Alert,
+  Box,
+  Button,
+  Checkbox,
+  CircularProgress,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Paper,
+  Stack,
+  Step,
+  StepContent,
+  StepLabel,
+  Stepper,
+  Typography,
+  Zoom,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+} from '@mui/material';
+import './runtimeScan.css';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { formatWhen } from '../../../../../../../libs/formatting';
+import toolReactController from '../../../../../../../toolController';
+import { getLock, subscribeLockChanges } from '../../../../../../../scanLock';
+import { enqueueSnackbar } from 'notistack';
+import Brightness1Icon from '@mui/icons-material/Brightness1';
+import analyzerReactController from '../../../../../analyzerController';
+import OneTimeScanResults from '../../../components/oneTimeScanResults/oneTimeScanResults';
+import Collapsible from '../../../../../../../components/collapsible/collapsible';
 
+/**
+ * Steps definition for the vertical stepper UI component.
+ * Each step describes a stage of the page-selection → snapshot-selection → job-submission workflow.
+ */
 const steps = [
   {
-    label: "Analyze runtime scan pages with the ontology",
+    label: 'Analyze runtime scan pages with the ontology',
     description: `Follow the steps to submit a page snapshot, taken from an analyzer runtime scan, to the backend.
     The backend will run a resolver that maps detected HTML elements and scripts to the ontology
     and attempts to identify potential vulnerabilities.`,
   },
   {
-    label: "Select a runtime scan",
+    label: 'Select a runtime scan',
     description: `From the analyzer runtime scans saved in local storage, choose the run you want to use
     as the source for the analysis.`,
   },
   {
-    label: "Select a crawled page",
+    label: 'Select a crawled page',
     description: `From the selected runtime scan, choose the crawled page (URL) whose snapshot
     you want to analyze with the ontology.`,
   },
   {
-    label: "Select a page snapshot",
+    label: 'Select a page snapshot',
     description: `From the available snapshots for the chosen page, select the specific snapshot
     you want to review and send to the analyzer.`,
   },
   {
-    label: "Review the snapshot and submit to the tool",
+    label: 'Review the snapshot and submit to the tool',
     description: `Preview the selected snapshot, verify its details, and then submit it to the tool
     to start the ontology-based analysis and vulnerability detection.`,
   },
 ];
 
+/**
+ * **SendRuntimeScanAnalyzer**
+ *
+ * Architectural Role:
+ *   Analyzer → Analyze → Runtime Scan → Submit Snapshot to Backend
+ *
+ * Purpose:
+ *   Enables the user to:
+ *     1. Select a **runtime scan run**
+ *     2. Select a **URL** crawled during that run
+ *     3. Select a specific **HTML snapshot** for that page
+ *     4. Review the snapshot (Head/Body/Stats)
+ *     5. Submit it to the Analyzer backend (Redis/BullMQ job)
+ *
+ * Responsibilities:
+ *   • Prevent submission while the backend tool is offline
+ *   • Prevent submission while another scan is globally locked
+ *   • Load runtime scan data from storage
+ *   • Subscribe/unsubscribe to backend jobs
+ *   • Display job status in a dialog (websocket + REST hybrid tracking)
+ *   • Provide a guided, step-by-step UX with disabled transitions
+ *
+ * Data Flow:
+ *   localStorage runtime scans → UI selections → backend job → websocket events
+ *
+ * UX Notes:
+ *   • The “Continue” button remains disabled until all required selections are made
+ *   • Job results appear in a dedicated dialog once submission begins
+ *   • Backend status is actively monitored (websocket + polling fallback)
+ */
 function SendRuntimeScanAnalyzer() {
+  /* -------------------------------------------------------------------------- */
+  /* Global Scan Lock (prevents concurrency across components)                  */
+  /* -------------------------------------------------------------------------- */
+
   const [scanLock, setScanLock] = useState(null);
 
-  const [toolStatus, setToolStatus] = useState("checking");
-
-  const [activeStep, setActiveStep] = useState(0);
-  const [continueDisabled, setContinueDisabled] = useState(false);
-
-  const [step1ScanSelected, setStep1ScanSelected] = useState(null);
-  const [step1ScanList, setStep1ScanList] = useState([]);
-  const [step1LoadingList, setStep1LoadingList] = useState(true);
-
-  const [step2WebSiteList, setStep2WebSiteList] = useState([]);
-  const [step2WebSiteSelected, setStep2WebSiteSelected] = useState(null);
-  const [step2LoadingList, setStep2LoadingList] = useState(true);
-
-  const [step3WebSiteScanList, setStep3WebSiteScanList] = useState([]);
-  const [step3WebSiteScanSelected, setStep3WebSiteScanSelected] = useState(null);
-  const [step3LoadingList, setStep3LoadingList] = useState(true);
-
-  const [step4LoadingSendRequests, setStep4LoadingSendRequests] = useState(false);
-  const [step4JobEvents, setStep4JobEvents] = useState([]);
-  const subscribedJobIdsRef = useRef(new Set());
-  const [openJobsDialog, setOpenJobsDialog] = useState(false);
-
-  //Scan Lock
   useEffect(() => {
     let off = null;
 
@@ -94,11 +133,16 @@ function SendRuntimeScanAnalyzer() {
     };
   }, []);
 
-  //Tool Status
+  /* -------------------------------------------------------------------------- */
+  /* Backend Tool Status (online/offline)                                       */
+  /* -------------------------------------------------------------------------- */
+
+  const [toolStatus, setToolStatus] = useState('checking');
+
   const computeStatus = (payload) =>
-    payload?.ok && Object.values(payload.components ?? {}).every((c) => c === "up")
-      ? "tool_on"
-      : "tool_off";
+    payload?.ok && Object.values(payload.components ?? {}).every((c) => c === 'up')
+      ? 'tool_on'
+      : 'tool_off';
 
   useEffect(() => {
     toolReactController.startPolling(5000);
@@ -113,7 +157,7 @@ function SendRuntimeScanAnalyzer() {
     toolReactController
       .getHealth()
       .then((data) => setToolStatus(computeStatus(data)))
-      .catch(() => setToolStatus("tool_off"));
+      .catch(() => setToolStatus('tool_off'));
 
     return () => {
       off?.();
@@ -121,56 +165,83 @@ function SendRuntimeScanAnalyzer() {
     };
   }, []);
 
-  //Stepper
+  /* -------------------------------------------------------------------------- */
+  /* Stepper State Management                                                   */
+  /* -------------------------------------------------------------------------- */
+
+  const [activeStep, setActiveStep] = useState(0);
+  const [continueDisabled, setContinueDisabled] = useState(false);
+
+  /* Step 1: Choose a runtime scan run */
+  const [step1ScanSelected, setStep1ScanSelected] = useState(null);
+  const [step1ScanList, setStep1ScanList] = useState([]);
+  const [step1LoadingList, setStep1LoadingList] = useState(true);
+
+  /* Step 2: Choose a crawled page (URL) */
+  const [step2WebSiteList, setStep2WebSiteList] = useState([]);
+  const [step2WebSiteSelected, setStep2WebSiteSelected] = useState(null);
+  const [step2LoadingList, setStep2LoadingList] = useState(true);
+
+  /* Step 3: Choose a specific snapshot for that URL */
+  const [step3WebSiteScanList, setStep3WebSiteScanList] = useState([]);
+  const [step3WebSiteScanSelected, setStep3WebSiteScanSelected] = useState(null);
+  const [step3LoadingList, setStep3LoadingList] = useState(true);
+
+  /* Step 4: Submitting snapshot & job events */
+  const [step4LoadingSendRequests, setStep4LoadingSendRequests] = useState(false);
+  const [step4JobEvents, setStep4JobEvents] = useState([]);
+
+  /* Track backend job subscriptions */
+  const subscribedJobIdsRef = useRef(new Set());
+  const [openJobsDialog, setOpenJobsDialog] = useState(false);
+
+  /* -------------------------------------------------------------------------- */
+  /* Stepper Navigation Logic                                                   */
+  /* -------------------------------------------------------------------------- */
+
   const handleNext = () => {
     switch (activeStep) {
-      case 0: {
+      case 0:
         loadScansFromLocalStorage();
         break;
-      }
-      case 1: {
+
+      case 1:
         renderWebSiteList();
         break;
-      }
-      case 2: {
+
+      case 2:
         renderWebSiteScanList();
         break;
-      }
-      case 4: {
+
+      case 4:
         sendRequests();
         break;
-      }
-      default: {
-        //ignore
-      }
+
+      default:
+      // ignore
     }
-    setActiveStep((prevActiveStep) => {
-      if (prevActiveStep !== 4) {
-        return prevActiveStep + 1;
-      } else {
-        return prevActiveStep;
-      }
-    });
+
+    setActiveStep((prev) => (prev !== 4 ? prev + 1 : prev));
   };
 
   const handleBack = () => {
     switch (activeStep) {
-      case 1: {
+      case 1:
         setStep1ScanList([]);
         setStep1ScanSelected(null);
         break;
-      }
-      case 2: {
+
+      case 2:
         setStep2WebSiteList([]);
         setStep2WebSiteSelected(null);
         break;
-      }
-      case 3: {
+
+      case 3:
         setStep3WebSiteScanList([]);
         setStep3WebSiteScanSelected(null);
         break;
-      }
-      case 4: {
+
+      case 4:
         setStep3WebSiteScanSelected(null);
         try {
           for (const id of subscribedJobIdsRef.current) {
@@ -181,14 +252,18 @@ function SendRuntimeScanAnalyzer() {
           /* ignore */
         }
         break;
-      }
-      default: {
-        //ignore
-      }
+
+      default:
+      // ignore
     }
-    setActiveStep((prevActiveStep) => prevActiveStep - 1);
+
+    setActiveStep((prev) => prev - 1);
   };
 
+  /**
+   * Reset the full stepper process, clearing selections
+   * and removing job subscriptions.
+   */
   const handleReset = () => {
     setStep1ScanList([]);
     setStep1ScanSelected(null);
@@ -196,6 +271,7 @@ function SendRuntimeScanAnalyzer() {
     setStep2WebSiteSelected(null);
     setContinueDisabled(false);
     setStep4JobEvents([]);
+
     try {
       for (const id of subscribedJobIdsRef.current) {
         toolReactController.unsubscribeJob(String(id)).catch(() => {});
@@ -204,52 +280,44 @@ function SendRuntimeScanAnalyzer() {
     } catch {
       /* ignore */
     }
+
     setOpenJobsDialog(false);
     setActiveStep(0);
   };
 
+  /* -------------------------------------------------------------------------- */
+  /* Stepper Continue Button Enabling Rules                                    */
+  /* -------------------------------------------------------------------------- */
+
   useEffect(() => {
-    if (toolStatus === "tool_on" && !scanLock) {
+    if (toolStatus === 'tool_on' && !scanLock) {
       switch (activeStep) {
-        case 0: {
+        case 0:
           setContinueDisabled(false);
           break;
-        }
-        case 1: {
-          if (step1LoadingList || !step1ScanSelected || step1ScanList.length === 0) {
-            setContinueDisabled(true);
-          } else {
-            setContinueDisabled(false);
-          }
+
+        case 1:
+          setContinueDisabled(step1LoadingList || !step1ScanSelected || step1ScanList.length === 0);
           break;
-        }
-        case 2: {
-          if (step2LoadingList || !step2WebSiteSelected || step2WebSiteList.length === 0) {
-            setContinueDisabled(true);
-          } else {
-            setContinueDisabled(false);
-          }
+
+        case 2:
+          setContinueDisabled(
+            step2LoadingList || !step2WebSiteSelected || step2WebSiteList.length === 0
+          );
           break;
-        }
-        case 3: {
-          if (step3LoadingList || !step3WebSiteScanSelected || step3WebSiteScanList.length === 0) {
-            setContinueDisabled(true);
-          } else {
-            setContinueDisabled(false);
-          }
+
+        case 3:
+          setContinueDisabled(
+            step3LoadingList || !step3WebSiteScanSelected || step3WebSiteScanList.length === 0
+          );
           break;
-        }
-        case 4: {
-          if (!step3WebSiteScanSelected || step4LoadingSendRequests) {
-            setContinueDisabled(true);
-          } else {
-            setContinueDisabled(false);
-          }
+
+        case 4:
+          setContinueDisabled(!step3WebSiteScanSelected || step4LoadingSendRequests);
           break;
-        }
-        default: {
-          //ignore
-        }
+
+        default:
+        // ignore
       }
     } else {
       setContinueDisabled(true);
@@ -270,25 +338,31 @@ function SendRuntimeScanAnalyzer() {
     scanLock,
   ]);
 
-  //Step 1 - Scan List
+  /* -------------------------------------------------------------------------- */
+  /* Step 1 - Load Runtime Scans from Local Storage                             */
+  /* -------------------------------------------------------------------------- */
+
   const handleToggle = (value) => () => {
     setStep1ScanSelected(value);
   };
 
   const loadScansFromLocalStorage = useCallback(async () => {
     setStep1LoadingList(true);
+
     try {
       const list = await analyzerReactController.getAllRuntimeResults();
       setStep1ScanList(Array.isArray(list) ? list : []);
-
-      setStep1LoadingList(false);
     } catch (e) {
-      console.log(e?.message || "Error loading runs from storage.", { variant: "error" });
+      console.log(e?.message || 'Error loading runs from storage.', { variant: 'error' });
+    } finally {
       setStep1LoadingList(false);
     }
   }, []);
 
-  //Step 2
+  /* -------------------------------------------------------------------------- */
+  /* Step 2 - Select a Website (URL) from the selected run                      */
+  /* -------------------------------------------------------------------------- */
+
   const handleToggleWebSite = (value) => () => {
     setStep2WebSiteSelected(value);
   };
@@ -298,7 +372,10 @@ function SendRuntimeScanAnalyzer() {
     setStep2LoadingList(false);
   };
 
-  //Step 3
+  /* -------------------------------------------------------------------------- */
+  /* Step 3 - Select a Page Snapshot for that URL                               */
+  /* -------------------------------------------------------------------------- */
+
   const handleToggleWebSiteScan = (value) => () => {
     setStep3WebSiteScanSelected(value);
   };
@@ -309,26 +386,35 @@ function SendRuntimeScanAnalyzer() {
     setStep3LoadingList(false);
   };
 
-  //Step 4
+  /* -------------------------------------------------------------------------- */
+  /* Step 4 - Submit Snapshot to Backend                                        */
+  /* -------------------------------------------------------------------------- */
 
   const subscribeJob = useCallback(async (jobId) => {
     const id = String(jobId);
     if (subscribedJobIdsRef.current.has(id)) return;
+
     subscribedJobIdsRef.current.add(id);
+
     try {
       const r = await toolReactController.subscribeJob(id);
       if (!r?.ok) {
-        console.warn("subscribeJob failed", r);
+        console.warn('subscribeJob failed', r);
       }
     } catch (e) {
-      console.warn("subscribeJob error", e);
+      console.warn('subscribeJob error', e);
     }
   }, []);
 
+  /**
+   * Send the selected snapshot (html + metadata) to the backend.
+   * Creates a background job; backend emits websocket events.
+   */
   const sendRequests = async () => {
     if (!step3WebSiteScanSelected) return;
 
     setStep4LoadingSendRequests(true);
+
     try {
       const { meta, results, html } = step3WebSiteScanSelected;
 
@@ -344,58 +430,66 @@ function SendRuntimeScanAnalyzer() {
       });
 
       if (res?.accepted) {
-        enqueueSnackbar(
-          "Scan accepted by backend. Waiting for results from the worker...",
-          { variant: "success" }
-        );
+        enqueueSnackbar('Scan accepted by backend. Waiting for results from the worker...', {
+          variant: 'success',
+        });
+
         if (res?.jobId) {
           await subscribeJob(res.jobId);
         }
       } else {
-        enqueueSnackbar(
-          res?.error || "The backend did not accept the scan.",
-          { variant: "warning" }
-        );
+        enqueueSnackbar(res?.error || 'The backend did not accept the scan.', {
+          variant: 'warning',
+        });
       }
     } catch (e) {
-      enqueueSnackbar(
-        "Error while sending the scan (see console for details).",
-        { variant: "error" }
-      );
-      console.log("Error sending analyzer one-time scan:", e);
+      enqueueSnackbar('Error while sending the scan (see console for details).', {
+        variant: 'error',
+      });
+      console.log('Error sending analyzer one-time scan:', e);
     } finally {
       setStep4LoadingSendRequests(false);
       setOpenJobsDialog(true);
     }
   };
 
+  /* -------------------------------------------------------------------------- */
+  /* Job Summary Aggregation (UI-friendly job state representation)             */
+  /* -------------------------------------------------------------------------- */
+
   const jobSummaries = useMemo(() => {
     const map = new Map();
+
     for (const e of step4JobEvents) {
-      const id = String(e.jobId ?? e.data?.jobId ?? "");
+      const id = String(e.jobId ?? e.data?.jobId ?? '');
       if (!id) continue;
-      const prev =
-        map.get(id) || {
-          jobId: id,
-          queue: e.queue || "analyzer",
-          lastEvent: null,
-          completed: false,
-          failed: false,
-          raw: [],
-        };
-      prev.lastEvent = e.event || e.type || "event";
-      prev.queue = e.queue || prev.queue || "analyzer";
+
+      const prev = map.get(id) || {
+        jobId: id,
+        queue: e.queue || 'analyzer',
+        lastEvent: null,
+        completed: false,
+        failed: false,
+        raw: [],
+      };
+
+      prev.lastEvent = e.event || e.type || 'event';
+      prev.queue = e.queue || prev.queue || 'analyzer';
       prev.raw.push(e);
-      if (e.event === "completed") prev.completed = true;
-      if (e.event === "failed") prev.failed = true;
+
+      if (e.event === 'completed') prev.completed = true;
+      if (e.event === 'failed') prev.failed = true;
+
       map.set(id, prev);
     }
-    return Array.from(map.values()).sort((a, b) =>
-      String(a.jobId).localeCompare(String(b.jobId))
-    );
+
+    return Array.from(map.values()).sort((a, b) => String(a.jobId).localeCompare(String(b.jobId)));
   }, [step4JobEvents]);
 
-  // ---------------------- Hybrid job tracking (websocket + REST fallback) ----------------------
+  /* -------------------------------------------------------------------------- */
+  /* Hybrid Job Tracking: WebSocket + REST Polling Fallback                     */
+  /* -------------------------------------------------------------------------- */
+
   useEffect(() => {
     if (!openJobsDialog) return;
 
@@ -408,15 +502,15 @@ function SendRuntimeScanAnalyzer() {
       await Promise.all(
         ids.map(async (id) => {
           try {
-            const res = await toolReactController.getJobResult("analyzer", id);
+            const res = await toolReactController.getJobResult('analyzer', id);
             if (!res?.ok || !res.data) return;
+
             const state = res.data.state;
-            const eventName =
-              state === "completed" || state === "failed" ? state : "update";
+            const eventName = state === 'completed' || state === 'failed' ? state : 'update';
 
             const syntheticEvent = {
               event: eventName,
-              queue: "analyzer",
+              queue: 'analyzer',
               jobId: id,
               data: res.data,
             };
@@ -429,7 +523,7 @@ function SendRuntimeScanAnalyzer() {
       );
     };
 
-    // First immediate poll, then periodic polling
+    // Initial request
     pollJobStatuses().catch(() => {});
 
     const interval = setInterval(() => {
@@ -443,9 +537,17 @@ function SendRuntimeScanAnalyzer() {
     };
   }, [openJobsDialog]);
 
+  /* -------------------------------------------------------------------------- */
+  /* Main Render                                                                */
+  /* -------------------------------------------------------------------------- */
+
   return (
-    <div className="sendinterceptor-div">
-      {toolStatus === "tool_off" && (
+    <div className="sendanalyzerrts-div">
+      {/* ---------------------------------------------------------------------- */}
+      {/* Critical Warnings: Backend Offline / Scan Lock Active                 */}
+      {/* ---------------------------------------------------------------------- */}
+
+      {toolStatus === 'tool_off' && (
         <Alert variant="filled" severity="warning" className="alert-block">
           <Typography>The backend tool must be running to use this feature.</Typography>
         </Alert>
@@ -455,22 +557,30 @@ function SendRuntimeScanAnalyzer() {
         <Alert variant="filled" severity="warning" className="alert-block">
           <Typography>
             A scan is currently running in another component:
-            {scanLock.label ? `: “${scanLock.label}”` : ""}.
+            {scanLock.label ? `: “${scanLock.label}”` : ''}.
             <br />
             Please finish or stop the scan before proceeding.
           </Typography>
         </Alert>
       )}
 
+      {/* ---------------------------------------------------------------------- */}
+      {/* Feature Description                                                    */}
+      {/* ---------------------------------------------------------------------- */}
+
       <Paper className="description">
         <Zoom in={true}>
           <Typography variant="body2">
-            <strong>Analyzer Runtime Scan</strong> submits a page snapshot taken from a saved runtime scan
-            (HTML, scripts, forms, iframes) to your backend analyzer. The backend enqueues a background job
-            (BullMQ via Redis) and emits status events over WebSockets.
+            <strong>Analyzer Runtime Scan</strong> submits a page snapshot taken from a saved
+            runtime scan (HTML, scripts, forms, iframes) to your backend analyzer. The backend
+            enqueues a background job (BullMQ via Redis) and emits status events over WebSockets.
           </Typography>
         </Zoom>
       </Paper>
+
+      {/* ---------------------------------------------------------------------- */}
+      {/* Stepper UI                                                             */}
+      {/* ---------------------------------------------------------------------- */}
 
       <Box className="content-box">
         <Stepper activeStep={activeStep} orientation="vertical">
@@ -485,8 +595,13 @@ function SendRuntimeScanAnalyzer() {
               >
                 {step.label}
               </StepLabel>
+
               <StepContent>
                 <Typography>{step.description}</Typography>
+
+                {/* ----------------------------------------- */}
+                {/* STEP 1 - Select runtime scan              */}
+                {/* ----------------------------------------- */}
                 {activeStep === 1 && (
                   <List className="full-list">
                     {step1LoadingList && (
@@ -509,11 +624,7 @@ function SendRuntimeScanAnalyzer() {
                         const labelId = `checkbox-list-label-${value.startedAt}`;
                         return (
                           <ListItem key={value.startedAt} disablePadding divider>
-                            <ListItemButton
-                              role={undefined}
-                              onClick={handleToggle(value)}
-                              dense
-                            >
+                            <ListItemButton role={undefined} onClick={handleToggle(value)} dense>
                               <ListItemIcon>
                                 <Checkbox
                                   edge="start"
@@ -524,7 +635,11 @@ function SendRuntimeScanAnalyzer() {
                               </ListItemIcon>
                               <ListItemText
                                 id={labelId}
-                                primary={`Started: ${formatWhen(value.run.startedAt)} | Stopped: ${formatWhen(value.run.stoppedAt)} | Pages: ${value.run.pagesCount} | Scans: ${value.run.totalScans}`}
+                                primary={`Started: ${formatWhen(
+                                  value.run.startedAt
+                                )} | Stopped: ${formatWhen(value.run.stoppedAt)} | Pages: ${
+                                  value.run.pagesCount
+                                } | Scans: ${value.run.totalScans}`}
                               />
                             </ListItemButton>
                           </ListItem>
@@ -532,6 +647,10 @@ function SendRuntimeScanAnalyzer() {
                       })}
                   </List>
                 )}
+
+                {/* ----------------------------------------- */}
+                {/* STEP 2 - Select crawled page (URL)        */}
+                {/* ----------------------------------------- */}
                 {activeStep === 2 && (
                   <List className="full-list">
                     {step2LoadingList && (
@@ -550,34 +669,42 @@ function SendRuntimeScanAnalyzer() {
 
                     {!step2LoadingList &&
                       step2WebSiteList.length > 0 &&
-                      step2WebSiteList.map((value) => {
-                        return (
-                          <ListItem key={value[0]} disablePadding divider>
-                            <ListItemButton role={undefined} onClick={handleToggleWebSite(value)} dense>
-                              <ListItemIcon>
-                                <Checkbox
-                                  edge="start"
-                                  checked={step2WebSiteSelected === value}
-                                  tabIndex={-1}
-                                  disableRipple
-                                />
-                              </ListItemIcon>
-                              <Stack>
-                                <Stack className="row-align-start">
-                                  <Typography className="label-bold">Page:</Typography>
-                                  <Typography className="text-wrap-flex">{value[0]}</Typography>
-                                </Stack>
-                                <Stack className="row">
-                                  <Typography className="label-bold-sm">Scans:</Typography>
-                                  <Typography>{value[1].length}</Typography>
-                                </Stack>
+                      step2WebSiteList.map((value) => (
+                        <ListItem key={value[0]} disablePadding divider>
+                          <ListItemButton
+                            role={undefined}
+                            onClick={handleToggleWebSite(value)}
+                            dense
+                          >
+                            <ListItemIcon>
+                              <Checkbox
+                                edge="start"
+                                checked={step2WebSiteSelected === value}
+                                tabIndex={-1}
+                                disableRipple
+                              />
+                            </ListItemIcon>
+
+                            <Stack>
+                              <Stack className="row-align-start">
+                                <Typography className="label-bold">Page:</Typography>
+                                <Typography className="text-wrap-flex">{value[0]}</Typography>
                               </Stack>
-                            </ListItemButton>
-                          </ListItem>
-                        );
-                      })}
+
+                              <Stack className="row">
+                                <Typography className="label-bold-sm">Scans:</Typography>
+                                <Typography>{value[1].length}</Typography>
+                              </Stack>
+                            </Stack>
+                          </ListItemButton>
+                        </ListItem>
+                      ))}
                   </List>
                 )}
+
+                {/* ----------------------------------------- */}
+                {/* STEP 3 - Select snapshot for that URL     */}
+                {/* ----------------------------------------- */}
                 {activeStep === 3 && (
                   <List className="full-list">
                     {step3LoadingList && (
@@ -596,58 +723,79 @@ function SendRuntimeScanAnalyzer() {
 
                     {!step3LoadingList &&
                       step3WebSiteScanList.length > 0 &&
-                      step3WebSiteScanList.map((value, index) => {
-                        return (
-                          <ListItem key={index} disablePadding divider>
-                            <ListItemButton role={undefined} onClick={handleToggleWebSiteScan(value)} dense>
-                              <ListItemIcon>
-                                <Checkbox
-                                  edge="start"
-                                  checked={step3WebSiteScanSelected === value}
-                                  tabIndex={-1}
-                                  disableRipple
-                                />
-                              </ListItemIcon>
-                              <Collapsible
-                                defaultOpen={false}
-                                title={`Page: ${value.meta.url} | TabID: ${value.meta.tabId}`}
-                              >
-                                <OneTimeScanResults key={index} results={value} titleDisabled />
-                              </Collapsible>
-                            </ListItemButton>
-                          </ListItem>
-                        );
-                      })}
+                      step3WebSiteScanList.map((value, index) => (
+                        <ListItem key={index} disablePadding divider>
+                          <ListItemButton
+                            role={undefined}
+                            onClick={handleToggleWebSiteScan(value)}
+                            dense
+                          >
+                            <ListItemIcon>
+                              <Checkbox
+                                edge="start"
+                                checked={step3WebSiteScanSelected === value}
+                                tabIndex={-1}
+                                disableRipple
+                              />
+                            </ListItemIcon>
+
+                            <Collapsible
+                              defaultOpen={false}
+                              title={`Page: ${value.meta.url} | TabID: ${value.meta.tabId}`}
+                            >
+                              <OneTimeScanResults key={index} results={value} titleDisabled />
+                            </Collapsible>
+                          </ListItemButton>
+                        </ListItem>
+                      ))}
                   </List>
                 )}
+
+                {/* ----------------------------------------- */}
+                {/* STEP 4 - Review & Submit Snapshot         */}
+                {/* ----------------------------------------- */}
                 {activeStep === 4 && step3WebSiteScanSelected && (
                   <>
                     <OneTimeScanResults results={step3WebSiteScanSelected} titleDisabled />
+
+                    {/* ------------------------------------- */}
+                    {/* Job Summaries Dialog                  */}
+                    {/* ------------------------------------- */}
                     <Dialog open={openJobsDialog} fullWidth>
                       <DialogTitle>Job Summaries</DialogTitle>
+
                       <DialogContent>
                         <Typography variant="body2" className="jobsummaries-description">
-                          This dialog displays background jobs processed via BullMQ and Redis.
-                          Each job shows its ID and completion status.
+                          This dialog displays background jobs processed via BullMQ and Redis. Each
+                          job shows its ID and completion status.
                         </Typography>
+
                         {jobSummaries.length > 0 ? (
                           jobSummaries.map((job, index) => (
                             <Paper key={index} className="jobsummaries-item">
                               <div className="item-div">
                                 <Brightness1Icon
-                                  color={job.completed ? "success" : job.failed ? "error" : "warning"}
+                                  color={
+                                    job.completed ? 'success' : job.failed ? 'error' : 'warning'
+                                  }
                                 />
+
                                 <Typography variant="body2">
                                   <strong>Queue:</strong> {job.queue}
                                 </Typography>
+
                                 <strong>|</strong>
+
                                 <Typography variant="body2">
                                   <strong>JobId:</strong> {job.jobId}
                                 </Typography>
+
                                 <strong>|</strong>
+
                                 <Typography variant="body2">
-                                  <strong>Completed:</strong> {job.completed ? "true" : "false"}
+                                  <strong>Completed:</strong> {job.completed ? 'true' : 'false'}
                                 </Typography>
+
                                 {job.failed && (
                                   <>
                                     <strong>|</strong>
@@ -665,6 +813,7 @@ function SendRuntimeScanAnalyzer() {
                           </div>
                         )}
                       </DialogContent>
+
                       <DialogActions>
                         <Button variant="contained" onClick={handleReset}>
                           OK
@@ -673,6 +822,10 @@ function SendRuntimeScanAnalyzer() {
                     </Dialog>
                   </>
                 )}
+
+                {/* ----------------------------------------- */}
+                {/* Step Navigation Buttons                   */}
+                {/* ----------------------------------------- */}
                 <Box className="actions">
                   <Button
                     variant="contained"
@@ -681,10 +834,15 @@ function SendRuntimeScanAnalyzer() {
                     disabled={continueDisabled}
                     loading={activeStep === 4 && step4LoadingSendRequests}
                   >
-                    {index === steps.length - 1 ? "Send Scan" : "Continue"}
+                    {index === steps.length - 1 ? 'Send Scan' : 'Continue'}
                   </Button>
+
                   <Button
-                    disabled={index === 0 || (activeStep === 4 && step4LoadingSendRequests) || toolStatus === "tool_off"}
+                    disabled={
+                      index === 0 ||
+                      (activeStep === 4 && step4LoadingSendRequests) ||
+                      toolStatus === 'tool_off'
+                    }
                     onClick={handleBack}
                     className="btn"
                   >

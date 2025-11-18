@@ -40,34 +40,6 @@
   padding: 16px;
 }
 
-.sendtechstack-div .label-bold {
-  margin-right: 8px;
-  font-weight: 700;
-}
-
-.sendtechstack-div .label-bold-sm {
-  margin-right: 4px;
-  font-weight: 700;
-}
-
-.sendtechstack-div .row {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-}
-
-.sendtechstack-div .row-align-start {
-  display: flex;
-  flex-direction: row;
-  align-items: flex-start;
-}
-
-.sendtechstack-div .text-wrap-flex {
-  white-space: normal;
-  word-break: break-word;
-  flex: 1;
-}
-
 .sendtechstack-div .actions {
   margin-bottom: 16px;
 }
@@ -75,10 +47,6 @@
 .sendtechstack-div .btn {
   margin-top: 8px;
   margin-right: 8px;
-}
-
-.sendtechstack-div .completion-box {
-  padding: 24px;
 }
 
 .jobsummaries-description {

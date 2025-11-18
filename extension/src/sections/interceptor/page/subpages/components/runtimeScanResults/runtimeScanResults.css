@@ -23,14 +23,6 @@
   margin-bottom: 5px;
 }
 
-.irt-scanresults .sr-mt10 {
-  margin-top: 10px;
-}
-
-.irt-scanresults .sr-mb10 {
-  margin-bottom: 10px;
-}
-
 .irt-scanresults .rts-status-paper {
   padding: 10px;
   margin: 0px;
@@ -45,8 +37,4 @@
 
 .irt-scanresults .rts-status-paper .grid-newline-items {
   margin-top: 5px;
-}
-
-.irt-scanresults  .rts-status-paper .grid-newline {
-  margin-top: 10px;
 }

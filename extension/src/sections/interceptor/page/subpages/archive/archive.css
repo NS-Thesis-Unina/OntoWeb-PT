@@ -1,0 +1,36 @@
+.archiveinterceptor-div {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+  width: 100%;
+}
+
+.archiveinterceptor-div .description {
+  display: flex;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.archiveinterceptor-div .ul {
+  padding-inline-start: 20px;
+}
+
+.archiveinterceptor-div .title {
+  padding: 5px;
+  display: flex;
+  width: 100%;
+  flex-direction: row;
+  align-items: center;
+}
+
+.archiveinterceptor-div .aots-options {
+  display: flex;
+  margin-left: auto;
+}
+
+.archiveinterceptor-div .divider {
+  width: 99%;
+  margin-bottom: 10px;
+}
