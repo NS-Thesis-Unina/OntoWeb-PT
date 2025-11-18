@@ -516,11 +516,21 @@ function SendRuntimeScanAnalyzer() {
             };
 
             setStep4JobEvents((prev) => [...prev, syntheticEvent]);
+
+            if (state === 'completed' || state === 'failed') {
+              subscribedJobIdsRef.current.delete(id);
+            }
           } catch {
             // best-effort
           }
         })
       );
+
+      if (subscribedJobIdsRef.current.size === 0) {
+        cancelled = true;
+        clearInterval(interval);
+        return;
+      }
     };
 
     // Initial request

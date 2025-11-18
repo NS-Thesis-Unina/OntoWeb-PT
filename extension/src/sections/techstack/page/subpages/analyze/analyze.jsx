@@ -457,9 +457,19 @@ function AnalyzeTechstack() {
             };
 
             setJobEvents((prev) => [...prev, syntheticEvent]);
+
+            if (state === 'completed' || state === 'failed') {
+              subscribedJobIdsRef.current.delete(id);
+            }
           } catch {}
         })
       );
+
+      if (subscribedJobIdsRef.current.size === 0) {
+        cancelled = true;
+        clearInterval(interval);
+        return;
+      }
     };
 
     // Immediate poll + periodic poll

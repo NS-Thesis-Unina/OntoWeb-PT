@@ -421,6 +421,10 @@ function SendOneTimeScanAnalyzer() {
             };
 
             setJobEvents((prev) => [...prev, evt]);
+
+            if (state === 'completed' || state === 'failed') {
+              subscribedJobIdsRef.current.delete(id);
+            }
           } catch {}
         })
       );
