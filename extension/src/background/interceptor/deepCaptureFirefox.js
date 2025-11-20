@@ -1,6 +1,17 @@
 const isFirefoxLike =
   typeof browser !== 'undefined' && !!browser.webRequest && !!browser.webRequest.filterResponseData;
 
+// Helper: merge header array into a plain object { name: value }
+function headersArrayToObject(arr) {
+  const out = {};
+  if (!Array.isArray(arr)) return out;
+  for (const h of arr) {
+    if (!h || !h.name) continue;
+    out[String(h.name)] = String(h.value ?? '');
+  }
+  return out;
+}
+
 /**
  * **DeepCaptureFirefox**
  *
@@ -11,14 +22,16 @@ const isFirefoxLike =
  *
  * Responsibilities:
  *   - Capture HTTP(S) requests/responses using Firefox WebRequest API
+ *   - Capture full request headers via onBeforeSendHeaders
  *   - Extract request bodies (formData, raw)
  *   - Intercept response bodies using filterResponseData
  *   - Reconstruct full binary/text responses
  *   - Forward completed entries to InterceptorEngine via onEntry callback
  *
  * Notes:
- *   - Firefox architecture is different from Chrome's DevTools Protocol.
- *   - filterResponseData allows streaming interception of response bodies.
+ *   - Firefox architecture is different from Chrome's DevTools Protocol
+ *   - webRequest exposes raw on-wire headers (no CORS filtering)
+ *   - filterResponseData allows streaming interception of response bodies
  */
 class DeepCaptureFirefox {
   constructor(onEntry) {
@@ -44,6 +57,7 @@ class DeepCaptureFirefox {
     if (!isFirefoxLike) return;
 
     // --------------------------- Request Start ---------------------------
+    // Captures URL, method, timing, tab/frame info and request body.
     const onBeforeRequest = (details) => {
       try {
         if (!this._isHttp(details.url)) return;
@@ -62,6 +76,9 @@ class DeepCaptureFirefox {
         // Extract request body (formData or raw bytes)
         if (details.requestBody) {
           try {
+            const meta = this.reqMap.get(details.requestId);
+            if (!meta) return;
+
             if (details.requestBody.formData) {
               const pairs = [];
               for (const k of Object.keys(details.requestBody.formData)) {
@@ -69,21 +86,43 @@ class DeepCaptureFirefox {
                   pairs.push(`${k}=${v}`);
                 }
               }
-              this.reqMap.get(details.requestId).requestBody = pairs.join('&');
+              meta.requestBody = pairs.join('&');
             } else if (details.requestBody.raw && details.requestBody.raw.length) {
               const raw = details.requestBody.raw[0];
               if (raw?.bytes) {
                 const arr = new Uint8Array(raw.bytes);
                 const text = new TextDecoder().decode(arr);
-                this.reqMap.get(details.requestId).requestBody = text;
+                meta.requestBody = text;
               }
             }
-          } catch {}
+
+            this.reqMap.set(details.requestId, meta);
+          } catch {
+            // ignore body decode errors
+          }
         }
-      } catch {}
+      } catch {
+        // ignore unexpected errors
+      }
+    };
+
+    // ----------------------- Request Headers (full set) -----------------------
+    // Captures raw request headers as they are sent on the wire.
+    const onBeforeSendHeaders = (details) => {
+      try {
+        if (!this._isHttp(details.url)) return;
+        const meta = this.reqMap.get(details.requestId);
+        if (!meta) return;
+
+        meta.requestHeaders = headersArrayToObject(details.requestHeaders || []);
+        this.reqMap.set(details.requestId, meta);
+      } catch {
+        // ignore header parsing errors
+      }
     };
 
     // ------------------------ Response Streaming ------------------------
+    // Uses filterResponseData to stream and reconstruct the response body.
     const onHeadersReceived = (details) => {
       try {
         if (!this._isHttp(details.url)) return;
@@ -95,10 +134,14 @@ class DeepCaptureFirefox {
           filter.ondata = (event) => {
             try {
               chunks.push(event.data);
-            } catch {}
+            } catch {
+              // ignore accumulate errors
+            }
             try {
               filter.write(event.data);
-            } catch {}
+            } catch {
+              // ignore write errors
+            }
           };
 
           // Finalize body on stop
@@ -136,7 +179,7 @@ class DeepCaptureFirefox {
                 } catch {
                   body = null;
                 }
-              } else {
+              } else if (merged.length) {
                 // Encode binary to base64
                 let binary = '';
                 for (let i = 0; i < merged.length; i++) {
@@ -149,12 +192,7 @@ class DeepCaptureFirefox {
               // Build request metadata
               const reqMeta = this.reqMap.get(details.requestId) || {};
 
-              const headersObj = {};
-              try {
-                for (const h of details.responseHeaders || []) {
-                  headersObj[String(h.name)] = String(h.value);
-                }
-              } catch {}
+              const headersObj = headersArrayToObject(details.responseHeaders || []);
 
               // Construct entry
               const entry = {
@@ -181,17 +219,23 @@ class DeepCaptureFirefox {
                   bodyEncoding,
                   bodySize: merged.length,
                   truncated: false,
+                  servedFromCache: !!details.fromCache,
                 },
               };
 
               try {
                 this.onEntry(entry, reqMeta.tabId ?? null, reqMeta.documentUrl || null);
-              } catch {}
+              } catch {
+                // ignore consumer errors
+              }
             } catch {
+              // ignore reconstruction errors
             } finally {
               try {
                 filter.disconnect();
-              } catch {}
+              } catch {
+                // ignore disconnect errors
+              }
               this.reqMap.delete(details.requestId);
             }
           };
@@ -199,26 +243,30 @@ class DeepCaptureFirefox {
           filter.onerror = () => {
             try {
               filter.disconnect();
-            } catch {}
+            } catch {
+              // ignore disconnect errors
+            }
             this.reqMap.delete(details.requestId);
           };
         }
-      } catch {}
+      } catch {
+        // ignore unexpected errors
+      }
     };
 
     // ------------------------- Response Without Body ------------------------
+    // Fallback path: if filterResponseData didn't produce an entry,
+    // emit a body-less entry on completion.
     const onCompleted = (details) => {
       try {
         if (!this._isHttp(details.url)) return;
 
+        // If streaming path already handled this request, skip.
+        if (!this.reqMap.has(details.requestId)) return;
+
         const reqMeta = this.reqMap.get(details.requestId) || {};
 
-        const headersObj = {};
-        try {
-          for (const h of details.responseHeaders || []) {
-            headersObj[String(h.name)] = String(h.value);
-          }
-        } catch {}
+        const headersObj = headersArrayToObject(details.responseHeaders || []);
 
         const entry = {
           meta: {
@@ -250,32 +298,51 @@ class DeepCaptureFirefox {
 
         try {
           this.onEntry(entry, reqMeta.tabId ?? null, reqMeta.documentUrl || null);
-        } catch {}
+        } catch {
+          // ignore consumer errors
+        }
         this.reqMap.delete(details.requestId);
-      } catch {}
+      } catch {
+        // ignore unexpected errors
+      }
     };
 
     // ----------------------------- Listener Registration -----------------------------
     const filter = { urls: ['<all_urls>'] };
 
     try {
+      // Body + basic metadata
       browser.webRequest.onBeforeRequest.addListener(onBeforeRequest, filter, ['requestBody']);
+
+      // Full request headers (similar role to Chrome's requestWillBeSentExtraInfo)
+      browser.webRequest.onBeforeSendHeaders.addListener(onBeforeSendHeaders, filter, [
+        'requestHeaders',
+      ]);
+
+      // Response headers + streaming body
       browser.webRequest.onHeadersReceived.addListener(onHeadersReceived, filter, [
         'responseHeaders',
       ]);
+
+      // Completion fallback (no streaming / body)
       browser.webRequest.onCompleted.addListener(onCompleted, filter, ['responseHeaders']);
 
       // Error → treat like completed (best effort)
       browser.webRequest.onErrorOccurred?.addListener((d) => {
         try {
           onCompleted(d);
-        } catch {}
+        } catch {
+          // ignore
+        }
       }, filter);
 
       this._listeners.push({ ev: browser.webRequest.onBeforeRequest, fn: onBeforeRequest });
+      this._listeners.push({ ev: browser.webRequest.onBeforeSendHeaders, fn: onBeforeSendHeaders });
       this._listeners.push({ ev: browser.webRequest.onHeadersReceived, fn: onHeadersReceived });
       this._listeners.push({ ev: browser.webRequest.onCompleted, fn: onCompleted });
-    } catch {}
+    } catch {
+      // ignore listener registration errors
+    }
   }
 
   // ============================================================================
@@ -286,7 +353,11 @@ class DeepCaptureFirefox {
     if (!isFirefoxLike) return;
     try {
       this.reqMap.clear();
-    } catch {}
+      // Note: listeners are left attached for the lifetime of the extension,
+      // mirroring the original behavior.
+    } catch {
+      // ignore
+    }
   }
 }
 
