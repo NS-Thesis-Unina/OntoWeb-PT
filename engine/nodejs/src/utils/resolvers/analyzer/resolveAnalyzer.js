@@ -1,8 +1,32 @@
+// src/resolvers/analyzer/resolveAnalyzer.js
 const { sastEngine } = require('../analyzer/sast/sastEngine');
 const { makeLogger } = require('../../logs/logger');
 const log = makeLogger('resolver:analyzer');
 
+/**
+ * Resolver per l'Analyzer (SAST).
+ *
+ * Input:
+ *  - url:        URL completo della pagina analizzata
+ *  - scripts:    [{ code?: string, src?: string }, ...]
+ *  - html:       stringa HTML completa
+ *  - mainDomain: dominio principale (fallback se manca url)
+ *  - forms:      array di form strutturati
+ *  - iframes:    array di iframe strutturati
+ *  - includeSnippets: se true, include estratti di codice/HTML nei findings
+ *
+ * Output:
+ *  {
+ *    ok: true|false,
+ *    pageUrl: string,
+ *    totalFindings: number,
+ *    stats: { high, medium, low },
+ *    summary: { scripts, forms, iframes, html },
+ *    findings: [ ... ]
+ *  }
+ */
 async function resolveAnalyzer({
+  url = '',
   scripts = [],
   html = '',
   mainDomain = null,
@@ -12,10 +36,14 @@ async function resolveAnalyzer({
 }) {
   try {
     const engine = new sastEngine({ includeSnippets });
+
+    // pageUrl servirà per collegare HTML / Request / Finding nell'ontologia
+    const pageUrl = url || mainDomain || '';
+
     const findings = await engine.scanCode(
       scripts,
       html,
-      mainDomain || '',
+      pageUrl,
       forms,
       iframes
     );
@@ -35,6 +63,7 @@ async function resolveAnalyzer({
     }
 
     log.info('Analyzer completed', {
+      pageUrl,
       findings: findings.length,
       high: stats.high,
       medium: stats.medium,
@@ -45,6 +74,7 @@ async function resolveAnalyzer({
 
     return {
       ok: true,
+      pageUrl,
       totalFindings: findings.length,
       stats,
       summary,

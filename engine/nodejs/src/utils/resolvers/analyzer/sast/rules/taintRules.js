@@ -1,3 +1,4 @@
+// src/analyzer/sast/rules/taintRules.js
 const { ancestor, base } = require('acorn-walk');
 
 function matchesPath(node, segments) {
@@ -16,7 +17,6 @@ function matchesPath(node, segments) {
   return idx < 0;
 }
 
-
 // @ts-ignore
 function hasIdentifier(node, name) {
   let found = false;
@@ -31,7 +31,6 @@ function hasIdentifier(node, name) {
   );
   return found;
 }
-
 
 // @ts-ignore
 function containsWrapperSourceCall(node, wrapperSources) {
@@ -51,7 +50,6 @@ function containsWrapperSourceCall(node, wrapperSources) {
   return found;
 }
 
-
 function containsTainted(node, taintedVars) {
   if (!node) return false;
   let found = false;
@@ -66,7 +64,6 @@ function containsTainted(node, taintedVars) {
   );
   return found;
 }
-
 
 // @ts-ignore
 function getFirstTaintedInfo(node, taintedVars) {
@@ -85,7 +82,6 @@ function getFirstTaintedInfo(node, taintedVars) {
   );
   return found;
 }
-
 
 function nodeToString(node) {
   if (!node) return '';
@@ -125,7 +121,6 @@ function isSanitized(node, sanitizers) {
   return cleaned;
 }
 
-
 const allLocPaths = [
   ['location'],
   ['location', 'href'],
@@ -153,7 +148,10 @@ function isDirectSource(node) {
   if (!node) return false;
   const docProps = ['cookie', 'URL', 'baseURI', 'referrer'];
   for (const prop of docProps) {
-    if (matchesPath(node, ['document', prop]) || matchesPath(node, ['window', 'document', prop])) {
+    if (
+      matchesPath(node, ['document', prop]) ||
+      matchesPath(node, ['window', 'document', prop])
+    ) {
       return true;
     }
   }
@@ -165,11 +163,12 @@ function isDirectSource(node) {
   return false;
 }
 
-
 const Taint = {
   id: 'taint-flow',
   description: 'Detect flow of untrusted input into dangerous sinks without sanitization.',
   severity: 'high',
+  category: 'Data Flow / Taint Analysis',
+  owasp: 'A03:2021 – Injection',
 
   sinks: [
     (n) =>
@@ -222,6 +221,9 @@ const Taint = {
     const issues = [];
     const taintedVars = new Map();
 
+    // ----------------------------------------------------------
+    // 1° passaggio: assignment, propaga taint e registra sink
+    // ----------------------------------------------------------
 
     ancestor(
       ast,
@@ -234,20 +236,38 @@ const Taint = {
           const tainted = isDirectSource(right) || containsTainted(right, taintedVars);
 
           if (isSink && tainted && !isSanitized(right, Taint.sanitizers)) {
+            const taintedInfo = getFirstTaintedInfo(right, taintedVars) || {};
+            // @ts-ignore
+            const sinkFile = left.sourceFile || meta.file;
+            const sinkLoc = left.loc;
+            const sourceFile =
+            // @ts-ignore
+              taintedInfo.file || right.sourceFile || sinkFile || meta.file;
+            const sourceLoc = taintedInfo.loc || right.loc;
+
             issues.push({
               ruleId: Taint.id,
               description: Taint.description,
               severity: Taint.severity,
+              category: Taint.category,
+              owasp: Taint.owasp,
               type: 'AssignmentExpression',
               sourceName: nodeToString(right),
               sinkName: nodeToString(left),
               location: node.loc,
-              // @ts-ignore
-              file: left.sourceFile || meta.file,
+              file: sinkFile,
+              sourceFile,
+              sourceLoc,
+              sinkFile,
+              sinkLoc,
             });
           }
 
-          if (left.type === 'Identifier' && (isDirectSource(right) || containsTainted(right, taintedVars))) {
+          // Propagazione delle variabili tainted
+          if (
+            left.type === 'Identifier' &&
+            (isDirectSource(right) || containsTainted(right, taintedVars))
+          ) {
             taintedVars.set(left.name, {
               loc: left.loc,
               // @ts-ignore
@@ -259,26 +279,44 @@ const Taint = {
       base
     );
 
+    // ----------------------------------------------------------
+    // 2° passaggio: call expression verso sinks
+    // ----------------------------------------------------------
     ancestor(
       ast,
       {
         CallExpression(node) {
           const isSink = Taint.sinks.some((fn) => fn(node));
           if (!isSink) return;
+
           const arg = node.arguments?.[0];
           const tainted = isDirectSource(arg) || containsTainted(arg, taintedVars);
 
           if (tainted && !isSanitized(arg, Taint.sanitizers)) {
+            const taintedInfo = getFirstTaintedInfo(arg, taintedVars) || {};
+            // @ts-ignore
+            const sinkFile = node.callee.sourceFile || meta.file;
+            const sinkLoc = node.loc;
+            const sourceFile =
+            // @ts-ignore
+              taintedInfo.file || arg?.sourceFile || sinkFile || meta.file;
+            const sourceLoc = taintedInfo.loc || arg?.loc;
+
             issues.push({
               ruleId: Taint.id,
               description: Taint.description,
               severity: Taint.severity,
+              category: Taint.category,
+              owasp: Taint.owasp,
               type: 'CallExpression',
               sourceName: nodeToString(arg),
               sinkName: nodeToString(node.callee),
               location: node.loc,
-              // @ts-ignore
-              file: node.callee.sourceFile || meta.file,
+              file: sinkFile,
+              sourceFile,
+              sourceLoc,
+              sinkFile,
+              sinkLoc,
             });
           }
         },

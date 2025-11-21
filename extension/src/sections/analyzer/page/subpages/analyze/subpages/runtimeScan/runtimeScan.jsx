@@ -376,8 +376,8 @@ function SendRuntimeScanAnalyzer() {
   /* Step 3 - Select a Page Snapshot for that URL                               */
   /* -------------------------------------------------------------------------- */
 
-  const handleToggleWebSiteScan = (value) => () => {
-    setStep3WebSiteScanSelected(value);
+  const handleToggleWebSiteScan = (index) => () => {
+    setStep3WebSiteScanSelected(step3WebSiteScanList[index]);
   };
 
   const renderWebSiteScanList = () => {
@@ -737,7 +737,7 @@ function SendRuntimeScanAnalyzer() {
                         <ListItem key={index} disablePadding divider>
                           <ListItemButton
                             role={undefined}
-                            onClick={handleToggleWebSiteScan(value)}
+                            onClick={handleToggleWebSiteScan(index)}
                             dense
                           >
                             <ListItemIcon>
@@ -751,7 +751,7 @@ function SendRuntimeScanAnalyzer() {
 
                             <Collapsible
                               defaultOpen={false}
-                              title={`Page: ${value.meta.url} | TabID: ${value.meta.tabId}`}
+                              title={`Navigation ${index+1}`}
                             >
                               <OneTimeScanResults key={index} results={value} titleDisabled />
                             </Collapsible>

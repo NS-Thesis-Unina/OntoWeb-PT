@@ -17,6 +17,31 @@ const NVD_API_KEY = process.env.NVD_API_KEY || null;
 // In-memory list of timestamps for recent NVD calls
 let nvdCallTimestamps = [];
 
+// Severity normalization and ordering (for ontology compatibility)
+const SEVERITY_ORDER = {
+  CRITICAL: 4,
+  HIGH: 3,
+  MEDIUM: 2,
+  LOW: 1,
+  INFO: 0,
+  UNKNOWN: 0,
+};
+
+function normalizeSeverity(severity) {
+  if (!severity) return 'UNKNOWN';
+  const s = String(severity).toUpperCase();
+  if (s === 'CRITICAL' || s === 'HIGH' || s === 'MEDIUM' || s === 'LOW' || s === 'INFO') {
+    return s;
+  }
+  return 'UNKNOWN';
+}
+
+function worstSeverity(current, candidate) {
+  const cur = normalizeSeverity(current);
+  const cand = normalizeSeverity(candidate);
+  return SEVERITY_ORDER[cand] > SEVERITY_ORDER[cur] ? cand : cur;
+}
+
 // Simple sleep helper
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -28,9 +53,7 @@ async function rateLimitedGet(url, config = {}) {
   const limit = NVD_API_KEY ? NVD_LIMIT_WITH_KEY : NVD_LIMIT_NO_KEY;
 
   // Drop timestamps that are outside the current window
-  nvdCallTimestamps = nvdCallTimestamps.filter(
-    (t) => now - t < NVD_WINDOW_MS
-  );
+  nvdCallTimestamps = nvdCallTimestamps.filter((t) => now - t < NVD_WINDOW_MS);
 
   if (nvdCallTimestamps.length >= limit) {
     const oldest = nvdCallTimestamps[0];
@@ -85,7 +108,7 @@ async function lookupNvd(product, version = '') {
         const cvssV2 = metrics.cvssMetricV2?.[0]?.cvssData;
         const cvss = cvssV3 || cvssV2 || {};
         const score = cvss.baseScore || null;
-        const severity = cvss.baseSeverity || 'UNKNOWN';
+        const severity = normalizeSeverity(cvss.baseSeverity || 'UNKNOWN');
 
         cves.push({ id, severity, score });
 
@@ -107,7 +130,9 @@ async function lookupNvd(product, version = '') {
       if (status === 429 && attempt < maxRetries) {
         const backoffMs = 2000 * (attempt + 1);
         log.warn(
-          `lookup 429 for ${product} ${version}, retrying in ${backoffMs}ms (attempt ${attempt + 1}/${maxRetries})`
+          `lookup 429 for ${product} ${version}, retrying in ${backoffMs}ms (attempt ${
+            attempt + 1
+          }/${maxRetries})`
         );
         await sleep(backoffMs);
         attempt += 1;
@@ -127,14 +152,18 @@ function classifyHeaders(headers = []) {
   const results = [];
 
   for (const h of headers) {
-    const name = (h.header || '').toLowerCase();
-    let risk = 'LOW';
-    let remediation = '';
+    const name = String(h.header || '').toLowerCase();
+    let risk = 'INFO';
+    let remediation = 'Review header policy manually';
+    let category = 'HeaderSecurity';
+    let rule = 'generic_header_observation';
 
     switch (name) {
       case 'hsts':
       case 'strict-transport-security':
         risk = 'HIGH';
+        category = 'TransportSecurity';
+        rule = 'missing_hsts';
         remediation =
           "Add header: Strict-Transport-Security: max-age=31536000; includeSubDomains";
         break;
@@ -142,37 +171,51 @@ function classifyHeaders(headers = []) {
       case 'content-security-policy':
       case 'csp':
         risk = 'HIGH';
+        category = 'ContentSecurityPolicy';
+        rule = 'missing_csp';
         remediation =
           "Add a strict CSP policy, e.g.: Content-Security-Policy: default-src 'self';";
         break;
 
       case 'x-frame-options':
         risk = 'MEDIUM';
+        category = 'ClickjackingProtection';
+        rule = 'deprecated_x_frame_options';
         remediation =
           "Replace with Content-Security-Policy: frame-ancestors 'none' (X-Frame-Options is deprecated)";
         break;
 
       case 'x-content-type-options':
         risk = 'MEDIUM';
+        category = 'MimeSniffingProtection';
+        rule = 'missing_x_content_type_options';
         remediation =
-          "Add header: X-Content-Type-Options: nosniff to prevent MIME-type sniffing";
+          'Add header: X-Content-Type-Options: nosniff to prevent MIME-type sniffing';
         break;
 
       case 'x-xss-protection':
         risk = 'LOW';
-        remediation = 'Header obsolete: remove or replace with proper CSP configuration';
+        category = 'LegacyXSSFilter';
+        rule = 'deprecated_x_xss_protection';
+        remediation =
+          'Header obsolete: remove or replace with proper CSP configuration';
         break;
 
       default:
-        risk = 'INFO';
-        remediation = 'Review header policy manually';
+        // keep defaults above
+        break;
     }
+
+    const severity = normalizeSeverity(risk);
 
     results.push({
       header: h.header,
       description: h.description || '',
       urls: h.urls || [],
       risk,
+      severity,
+      category,
+      rule,
       remediation,
     });
   }
@@ -180,51 +223,49 @@ function classifyHeaders(headers = []) {
   return results;
 }
 
-async function analyzeWaf(wafList = []) {
+async function analyzeWaf(wafList = [], collectFinding) {
   const analyzed = [];
+  const hasCollector = typeof collectFinding === 'function';
+
   for (const w of wafList) {
     const name = String(w.name || '').trim();
     if (!name) continue;
+
     const nvd = await lookupNvd(name);
+    const hasKnownCVE = nvd.cve.length > 0;
+
     analyzed.push({
       name,
-      hasKnownCVE: nvd.cve.length > 0,
+      hasKnownCVE,
       cve: nvd.cve,
       cpe: nvd.cpe,
     });
+
+    if (hasKnownCVE && hasCollector) {
+      for (const cve of nvd.cve) {
+        const severity = normalizeSeverity(cve.severity);
+        collectFinding({
+          id: `waf:${name}:${cve.id}`,
+          source: 'techstack',
+          kind: 'WafCVE',
+          rule: 'nvd_cve_match',
+          severity,
+          score: typeof cve.score === 'number' ? cve.score : null,
+          category: 'WafVulnerability',
+          message: `WAF ${name} has known vulnerability ${cve.id} (${severity}${
+            cve.score != null ? ', score ' + cve.score : ''
+          }).`,
+          evidence: {
+            type: 'WAF',
+            name,
+            cpe: nvd.cpe,
+          },
+        });
+      }
+    }
   }
+
   return analyzed;
-}
-
-async function resolveTechstack({ technologies = [], waf = [], secureHeaders = [], cookies = [] }) {
-  log.info(`Techstack resolver start (${technologies.length} technologies)`);
-
-  const analyzedTech = [];
-  for (const t of technologies) {
-    const name = String(t.name || '').trim();
-    const version = String(t.version || '').trim();
-    if (!name) continue;
-    const nvd = await lookupNvd(name, version);
-    analyzedTech.push({
-      name,
-      version: version || null,
-      cve: nvd.cve,
-      cpe: nvd.cpe,
-      hasKnownCVE: nvd.cve.length > 0,
-    });
-  }
-
-  const analyzedWaf = await analyzeWaf(waf);
-  const headerFindings = classifyHeaders(secureHeaders);
-  const cookieFindings = analyzeCookies(cookies);
-
-  return {
-    analyzedAt: new Date().toISOString(),
-    technologies: analyzedTech,
-    waf: analyzedWaf,
-    secureHeaders: headerFindings,
-    cookies: cookieFindings,
-  };
 }
 
 function analyzeCookies(cookies = [], mainDomain = '') {
@@ -233,76 +274,298 @@ function analyzeCookies(cookies = [], mainDomain = '') {
 
   for (const c of cookies) {
     const issues = [];
+    let cookieWorstSeverity = 'INFO';
 
-    if (!c.secure)
-      issues.push({
+    // NOTE: if "secure" / "httpOnly" / "sameSite" are missing in the input,
+    // they are treated as false/undefined (conservative from a security POV).
+
+    if (!c.secure) {
+      const issue = {
         rule: 'missing_secure',
         risk: 'HIGH',
+        severity: 'HIGH',
         category: 'SessionHijacking',
         description: 'Cookie not marked as Secure — can be sent over HTTP.',
         remediation: 'Set Secure flag.',
-      });
+      };
+      issues.push(issue);
+      cookieWorstSeverity = worstSeverity(cookieWorstSeverity, issue.severity);
+    }
 
-    if (!c.httpOnly)
-      issues.push({
+    if (!c.httpOnly) {
+      const issue = {
         rule: 'missing_httponly',
         risk: 'HIGH',
+        severity: 'HIGH',
         category: 'XSSDataTheft',
         description: 'Cookie accessible from JavaScript.',
         remediation: 'Set HttpOnly flag.',
-      });
+      };
+      issues.push(issue);
+      cookieWorstSeverity = worstSeverity(cookieWorstSeverity, issue.severity);
+    }
 
-    if (!c.sameSite)
-      issues.push({
+    if (!c.sameSite) {
+      const issue = {
         rule: 'missing_samesite',
         risk: 'MEDIUM',
+        severity: 'MEDIUM',
         category: 'CSRF',
         description: 'Cookie lacks SameSite protection.',
         remediation: 'Set SameSite=Lax or Strict.',
-      });
+      };
+      issues.push(issue);
+      cookieWorstSeverity = worstSeverity(cookieWorstSeverity, issue.severity);
+    }
 
-    if (c.sameSite === 'None' && !c.secure)
-      issues.push({
+    if (c.sameSite === 'None' && !c.secure) {
+      const issue = {
         rule: 'invalid_samesite_none',
         risk: 'HIGH',
+        severity: 'HIGH',
         category: 'CSRFSessionLeak',
         description: 'SameSite=None without Secure is insecure.',
         remediation: 'Always set Secure with SameSite=None.',
-      });
+      };
+      issues.push(issue);
+      cookieWorstSeverity = worstSeverity(cookieWorstSeverity, issue.severity);
+    }
 
-    if (c.expirationDate && c.expirationDate - now > 31536000)
-      issues.push({
+    if (c.expirationDate && c.expirationDate - now > 31536000) {
+      const issue = {
         rule: 'long_expiry',
         risk: 'LOW',
+        severity: 'LOW',
         category: 'PrivacyPersistence',
         description: 'Cookie persists for over 1 year.',
         remediation: 'Shorten cookie lifetime.',
-      });
+      };
+      issues.push(issue);
+      cookieWorstSeverity = worstSeverity(cookieWorstSeverity, issue.severity);
+    }
 
-    if (mainDomain && c.domain && !c.domain.includes(mainDomain))
-      issues.push({
+    if (mainDomain && c.domain && !c.domain.includes(mainDomain)) {
+      const issue = {
         rule: 'third_party_cookie',
         risk: 'LOW',
+        severity: 'LOW',
         category: 'ThirdPartyTracking',
         description: `Cookie from third-party domain ${c.domain}.`,
         remediation: 'Check necessity and GDPR compliance.',
-      });
+      };
+      issues.push(issue);
+      cookieWorstSeverity = worstSeverity(cookieWorstSeverity, issue.severity);
+    }
 
-    if (/session|token|id/i.test(c.name) && (!c.secure || !c.httpOnly))
-      issues.push({
+    if (/session|token|id/i.test(c.name) && (!c.secure || !c.httpOnly)) {
+      const issue = {
         rule: 'unprotected_session_cookie',
         risk: 'HIGH',
+        severity: 'HIGH',
         category: 'SessionExposure',
         description: `Sensitive cookie (${c.name}) lacks proper flags.`,
         remediation: 'Ensure both Secure and HttpOnly are set.',
-      });
+      };
+      issues.push(issue);
+      cookieWorstSeverity = worstSeverity(cookieWorstSeverity, issue.severity);
+    }
 
     if (issues.length > 0) {
-      findings.push({ name: c.name, domain: c.domain, issues });
+      findings.push({
+        name: c.name,
+        domain: c.domain || null,
+        path: c.path || null,
+        secure: !!c.secure,
+        httpOnly: !!c.httpOnly,
+        sameSite: c.sameSite || null,
+        expirationDate: c.expirationDate || null,
+        worstSeverity: normalizeSeverity(cookieWorstSeverity),
+        issues,
+      });
     }
   }
 
   return findings;
+}
+
+async function resolveTechstack({
+  technologies = [],
+  waf = [],
+  secureHeaders = [],
+  cookies = [],
+  mainDomain = '',
+}) {
+  log.info(
+    `Techstack resolver start (technologies=${technologies.length}, waf=${waf.length}, headers=${secureHeaders.length}, cookies=${cookies.length})`
+  );
+
+  const analyzedAt = new Date().toISOString();
+
+  // Global findings list (aligned with ontology's Finding / Evidence model)
+  const findings = [];
+  const stats = {
+    bySeverity: {},
+    byCategory: {},
+    byKind: {},
+  };
+  let totalFindings = 0;
+
+  function pushFinding(f) {
+    findings.push(f);
+    totalFindings += 1;
+
+    const severity = normalizeSeverity(f.severity);
+    stats.bySeverity[severity] = (stats.bySeverity[severity] || 0) + 1;
+
+    if (f.category) {
+      stats.byCategory[f.category] = (stats.byCategory[f.category] || 0) + 1;
+    }
+    if (f.kind) {
+      stats.byKind[f.kind] = (stats.byKind[f.kind] || 0) + 1;
+    }
+  }
+
+  // === Technologies → NVD → Findings ===
+  const analyzedTech = [];
+  for (const t of technologies) {
+    const name = String(t.name || '').trim();
+    const version = t.version != null ? String(t.version).trim() : '';
+
+    if (!name) continue;
+
+    const nvd = await lookupNvd(name, version);
+    const hasKnownCVE = nvd.cve.length > 0;
+
+    analyzedTech.push({
+      name,
+      version: version || null,
+      cve: nvd.cve,
+      cpe: nvd.cpe,
+      hasKnownCVE,
+    });
+
+    if (hasKnownCVE) {
+      for (const cve of nvd.cve) {
+        const severity = normalizeSeverity(cve.severity);
+        pushFinding({
+          id: `tech:${name}:${version || 'unknown'}:${cve.id}`,
+          source: 'techstack',
+          kind: 'TechnologyCVE',
+          rule: 'nvd_cve_match',
+          severity,
+          score: typeof cve.score === 'number' ? cve.score : null,
+          category: 'TechnologyVulnerability',
+          message: `Technology ${name}${
+            version ? ' ' + version : ''
+          } has known vulnerability ${cve.id} (${severity}${
+            cve.score != null ? ', score ' + cve.score : ''
+          }).`,
+          evidence: {
+            type: 'Technology',
+            name,
+            version: version || null,
+            cpe: nvd.cpe,
+          },
+        });
+      }
+    }
+  }
+
+  // === WAF analysis → NVD → Findings ===
+  const analyzedWaf = await analyzeWaf(waf, pushFinding);
+
+  // === Header classification → Findings ===
+  const headerFindings = classifyHeaders(secureHeaders);
+  for (const hf of headerFindings) {
+    const severity = normalizeSeverity(hf.severity || hf.risk);
+    pushFinding({
+      id: `header:${String(hf.header || '').toLowerCase()}:${hf.rule || 'generic'}`,
+      source: 'techstack',
+      kind: 'HeaderIssue',
+      rule: hf.rule || null,
+      severity,
+      category: hf.category || 'HeaderSecurity',
+      message: hf.description || `Header ${hf.header} has a security recommendation.`,
+      evidence: {
+        type: 'Header',
+        header: hf.header,
+        urls: hf.urls || [],
+      },
+      remediation: hf.remediation || null,
+    });
+  }
+
+  // === Cookie analysis → Findings ===
+  const cookieFindings = analyzeCookies(cookies, mainDomain);
+  for (const cf of cookieFindings) {
+    for (const issue of cf.issues) {
+      const severity = normalizeSeverity(issue.severity || issue.risk);
+      pushFinding({
+        id: `cookie:${cf.domain || 'unknown'}:${cf.name}:${issue.rule}`,
+        source: 'techstack',
+        kind: 'CookieIssue',
+        rule: issue.rule,
+        severity,
+        category: issue.category || 'CookieSecurity',
+        message:
+          issue.description ||
+          `Cookie ${cf.name} has issue ${issue.rule}.`,
+        evidence: {
+          type: 'Cookie',
+          name: cf.name,
+          domain: cf.domain,
+          path: cf.path || null,
+          flags: {
+            secure: cf.secure,
+            httpOnly: cf.httpOnly,
+            sameSite: cf.sameSite,
+          },
+          expirationDate: cf.expirationDate || null,
+        },
+        remediation: issue.remediation || null,
+      });
+    }
+  }
+
+  const summary = {
+    totalTechnologies: analyzedTech.length,
+    technologiesWithKnownCVE: analyzedTech.filter((t) => t.hasKnownCVE).length,
+    totalWaf: analyzedWaf.length,
+    wafWithKnownCVE: analyzedWaf.filter((w) => w.hasKnownCVE).length,
+    totalHeaderFindings: headerFindings.length,
+    totalCookieFindings: cookieFindings.reduce(
+      (acc, cf) => acc + cf.issues.length,
+      0
+    ),
+    totalFindings,
+  };
+
+  const result = {
+    ok: true,
+    resolver: {
+      id: 'resolver:techstack',
+      type: 'TechstackResolver',
+      version: '1.0.0',
+      ontologyVersion: '1.1.0',
+    },
+    analyzedAt,
+    summary,
+    stats,
+    findings,
+    // These fields are kept for backwards compatibility and also
+    // serve as Evidence aggregates that can be mapped in RDF.
+    technologies: analyzedTech,
+    waf: analyzedWaf,
+    secureHeaders: headerFindings,
+    cookies: cookieFindings,
+  };
+
+  log.info('Techstack resolver completed', {
+    totalFindings: result.summary.totalFindings,
+    stats: result.stats,
+  });
+
+  return result;
 }
 
 module.exports = { resolveTechstack };

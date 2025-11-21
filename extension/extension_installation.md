@@ -152,13 +152,13 @@ service_worker.js
 Search for the following string:
 
 ```js
-['responseHeaders', 'extraHeaders'];
+["responseHeaders", "extraHeaders"];
 ```
 
 and replace it with:
 
 ```js
-['responseHeaders'];
+["responseHeaders"];
 ```
 
 Save the file after the modification.
