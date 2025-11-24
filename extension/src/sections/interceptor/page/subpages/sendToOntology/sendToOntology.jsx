@@ -491,7 +491,7 @@ function SendToOntologyInterceptor() {
       const payloads = makeBatchPayloads(
         step4ConfirmRequestsSelected,
         { graph: 'http://example.com/graphs/http-requests' },
-        { maxBytes: 2 * 1024 * 1024, safetyMargin: 600 * 1024 }
+        { maxBytes: 10 * 1024 * 1024, safetyMargin: 600 * 1024 }
       );
 
       let ok = 0;

@@ -4,8 +4,24 @@
 /** @typedef {import('../_types/http/types').HttpHeader} HttpHeader */
 /** @typedef {import('../_types/http/types').HeaderClassification} HeaderClassification */
 
-const payloadReq = new Set(['content-type','content-length','content-encoding','content-language','content-location','content-md5','content-range']);
-const representationReq = new Set(['accept','accept-language','accept-encoding','accept-charset','accept-datetime']);
+const payloadReq = new Set([
+  'content-type',
+  'content-length',
+  'content-encoding',
+  'content-language',
+  'content-location',
+  'content-md5',
+  'content-range',
+]);
+
+const representationReq = new Set([
+  'accept',
+  'accept-language',
+  'accept-encoding',
+  'accept-charset',
+  'accept-datetime',
+]);
+
 /**
  * Classify and normalize **HTTP request** headers into ontology-aware categories.
  *
@@ -18,6 +34,9 @@ const representationReq = new Set(['accept','accept-language','accept-encoding',
  *      `content-location`, `content-md5`, `content-range`
  * - **RepresentationHeaders** (linked with `ex:repHeader`): negotiation / representation preferences
  *   → `accept`, `accept-language`, `accept-encoding`, `accept-charset`, `accept-datetime`
+ * - **Cookie** (linked with `ex:reqHeader`): the `Cookie` request header, modeled as
+ *   a dedicated subclass of `RequestHeader` in the ontology
+ *   → `cookie`
  * - **RequestHeader** (linked with `ex:reqHeader`): any other request header
  *
  * @param {string} [name=''] Raw header name (any case).
@@ -32,13 +51,29 @@ const representationReq = new Set(['accept','accept-language','accept-encoding',
  * // { cls: 'RepresentationHeaders', prop: 'repHeader' }
  *
  * @example
+ * classifyRequestHeader('Cookie');
+ * // { cls: 'Cookie', prop: 'reqHeader' }
+ *
+ * @example
  * classifyRequestHeader('X-Request-ID');
  * // { cls: 'RequestHeader', prop: 'reqHeader' }
  */
 function classifyRequestHeader(name = '') {
   const n = String(name).toLowerCase();
-  if (payloadReq.has(n))        return { cls: 'PayloadHeaders',        prop: 'payHeader' };
-  if (representationReq.has(n)) return { cls: 'RepresentationHeaders', prop: 'repHeader' };
+
+  // Ontology v1.0.1: "Cookie" has its own class (ex:Cookie) as a subclass of RequestHeader.
+  // We keep the link via ex:reqHeader to stay consistent with the domain/range.
+  if (n === 'cookie') {
+    // @ts-ignore
+    return { cls: 'Cookie', prop: 'reqHeader' };
+  }
+
+  if (payloadReq.has(n)) {
+    return { cls: 'PayloadHeaders', prop: 'payHeader' };
+  }
+  if (representationReq.has(n)) {
+    return { cls: 'RepresentationHeaders', prop: 'repHeader' };
+  }
   return { cls: 'RequestHeader', prop: 'reqHeader' };
 }
 
@@ -54,6 +89,9 @@ function classifyRequestHeader(name = '') {
  *      `content-location`, `content-md5`, `content-range`
  * - **RepresentationHeaders** (linked with `ex:repHeader`): validators / cache / negotiation
  *   → `vary`, `accept-ranges`, `etag`, `last-modified`, `cache-control`, `expires`
+ * - **Set-Cookie** (linked with `ex:resHeader`): the `Set-Cookie` response header, modeled as
+ *   a dedicated subclass of `ResponseHeader` in the ontology
+ *   → `set-cookie`
  * - **ResponseHeader** (linked with `ex:resHeader`): any other response header
  *
  * @param {string} [name=''] - Raw header name (any case).
@@ -68,15 +106,48 @@ function classifyRequestHeader(name = '') {
  * // { cls: 'RepresentationHeaders', prop: 'repHeader' }
  *
  * @example
+ * classifyResponseHeader('Set-Cookie');
+ * // { cls: 'Set-Cookie', prop: 'resHeader' }
+ *
+ * @example
  * classifyResponseHeader('X-Trace-Id');
  * // { cls: 'ResponseHeader', prop: 'resHeader' }
  */
 function classifyResponseHeader(name = '') {
   const n = String(name).toLowerCase();
-  const payload = new Set(['content-type','content-length','content-encoding','content-language','content-location','content-md5','content-range']);
-  const representation = new Set(['vary','accept-ranges','etag','last-modified','cache-control','expires']);
-  if (payload.has(n))        return { cls: 'PayloadHeaders',        prop: 'payHeader' };
-  if (representation.has(n)) return { cls: 'RepresentationHeaders', prop: 'repHeader' };
+
+  // Ontology v1.0.1: "Set-Cookie" has its own class (ex:Set-Cookie)
+  // as a subclass of ResponseHeader. We still link via ex:resHeader.
+  if (n === 'set-cookie') {
+    // @ts-ignore
+    return { cls: 'Set-Cookie', prop: 'resHeader' };
+  }
+
+  const payload = new Set([
+    'content-type',
+    'content-length',
+    'content-encoding',
+    'content-language',
+    'content-location',
+    'content-md5',
+    'content-range',
+  ]);
+
+  const representation = new Set([
+    'vary',
+    'accept-ranges',
+    'etag',
+    'last-modified',
+    'cache-control',
+    'expires',
+  ]);
+
+  if (payload.has(n)) {
+    return { cls: 'PayloadHeaders', prop: 'payHeader' };
+  }
+  if (representation.has(n)) {
+    return { cls: 'RepresentationHeaders', prop: 'repHeader' };
+  }
   return { cls: 'ResponseHeader', prop: 'resHeader' };
 }
 
