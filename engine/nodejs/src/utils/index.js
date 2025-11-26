@@ -13,6 +13,7 @@ module.exports = {
 
   // IRI helpers
   ...require('./iri/http'),
+  ...require('./iri/finding'),
 
   // HTTP ontology helpers
   ...require('./http/headers'),
@@ -28,6 +29,11 @@ module.exports = {
     buildSelectRequests: require('./http/builders/selectRequests'),
     buildSelectRequestsPaged: require('./http/builders/selectPaged'),
     bindingsToRequestsJson: require('./http/bindings/toJson'),
+  },
+
+  // Finding / vulnerability builders
+  findingBuilders: {
+    buildInsertFromFindingsArray: require('./finding/builders/insertBatch'),
   },
 
   // Monitors

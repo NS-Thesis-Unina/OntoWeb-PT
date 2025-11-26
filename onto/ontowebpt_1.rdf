@@ -153,7 +153,17 @@
         <rdfs:range rdf:resource="http://localhost/onto/ontowebpt#HTTP"/>
         <rdfs:comment>Relates a Finding to an HTTP concept (request, response, header, URI, etc.).</rdfs:comment>
     </owl:ObjectProperty>
+
+
     
+    <!-- http://localhost/onto/ontowebpt#relatedToHTML -->
+    
+    <owl:ObjectProperty rdf:about="http://localhost/onto/ontowebpt#relatedToHTML">
+        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#Scan"/>
+        <rdfs:range rdf:resource="http://localhost/onto/ontowebpt#HTML"/>
+        <rdfs:comment>Relates an Analyzer finding to a specific HTML node (Tag/Field).</rdfs:comment>
+    </owl:ObjectProperty>
+
 
 
     <!-- http://localhost/onto/ontowebpt#repHeader -->
@@ -608,9 +618,16 @@
     <!-- http://localhost/onto/ontowebpt#sourceLocation -->
 
     <owl:DatatypeProperty rdf:about="http://localhost/onto/ontowebpt#sourceLocation">
-        <rdfs:domain rdf:resource="http://localhost/onto/ontowebpt#Scan"/>
+        <rdfs:domain>
+            <owl:Class>
+                <owl:unionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="http://localhost/onto/ontowebpt#Scan"/>
+                    <rdf:Description rdf:about="http://localhost/onto/ontowebpt#HTML"/>
+                </owl:unionOf>
+            </owl:Class>
+        </rdfs:domain>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:comment>Location of the finding within the source (e.g. line/column range).</rdfs:comment>
+        <rdfs:comment>Location of the finding within the source (e.g. line/column range or outer HTML snippet).</rdfs:comment>
     </owl:DatatypeProperty>
     
 
