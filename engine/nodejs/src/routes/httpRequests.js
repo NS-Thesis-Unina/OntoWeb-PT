@@ -235,7 +235,6 @@ router.get(
  */
 router.get(
   '/finding/list',
-  celebrate({ [Segments.QUERY]: listQuerySchema }, celebrateOptions),
   async (req, res) => {
     try {
       const { limit = '100', offset = '0' } = req.query;

@@ -4,12 +4,7 @@ const { EX, G_FINDINGS } = require('../../../constants');
 const { escapeStr } = require('../../../strings/escape');
 const { normalizeFindingIri } = require('../helpers/normalizeFindingIri');
 
-/**
- * Parameters accepted by {@link buildSelectHttpFindingById}.
- *
- * @typedef {Object} HttpFindingByIdParams
- * @property {string} id - Full IRI/URN of the HttpScan finding (e.g. "urn:finding:...").
- */
+/** @typedef {import('../../../_types/finding/builders/http/types').HttpFindingByIdParams} HttpFindingByIdParams */
 
 /**
  * Build a SPARQL SELECT query that returns all relevant details for a single
@@ -29,11 +24,6 @@ const { normalizeFindingIri } = require('../helpers/normalizeFindingIri');
  *  - ?requestUrl         → ex:requestUrl
  *  - ?responseStatus     → ex:responseStatus
  *  - ?relatedHttp        → ex:relatedToHTTP (HTTP-related entities: Request, URI, headers, etc.)
- *
- * NOTE:
- *  - The query is intentionally focused on Scan/HttpScan properties and generic
- *    links to HTTP entities. If in the future you want full expansion of the
- *    related Request/Response/headers, you can extend this builder.
  *
  * @param {HttpFindingByIdParams} params - Builder parameters.
  * @returns {string} A SPARQL SELECT query ready to be executed on GraphDB.

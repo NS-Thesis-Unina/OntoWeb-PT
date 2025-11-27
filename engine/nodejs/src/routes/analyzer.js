@@ -6,6 +6,13 @@ const { celebrate, Segments } = require('celebrate');
 const { queueAnalyzer } = require('../queue');
 const {
   makeLogger,
+  findingBuilders: {
+    buildSelectAnalyzerFindingsPaged,
+    bindingsToAnalyzerFindingsList,
+    buildSelectAnalyzerFindingById,
+    bindingsToAnalyzerFindingDetail,
+  },
+  graphdb: { runSelect },
   validators: {
     analyzer: { analyzerBodySchema, jobIdParamSchema },
     celebrateOptions,
@@ -92,7 +99,94 @@ router.get(
   }
 );
 
-// /finding/list ti da tutta la lista di urn dei finding inerenti ad AnalyzerResolverIstance dell'ontologia
-// /finding/:id ti da i dettagli di uno specifico finding ottenuto dall'urn. Utilizzare il normilize in builders/helpers. Inoltre ti deve dare anche tutto l'htmlRef.
+/**
+ * Paginated list of AnalyzerScan findings detected by AnalyzerResolverInstance.
+ * Returns only finding IDs (no details).
+ *
+ * GET /analyzer/finding/list
+ */
+router.get(
+  '/finding/list',
+  async (req, res) => {
+    try {
+      const { limit = '100', offset = '0' } = req.query;
+
+      const lim = Number.parseInt(String(limit), 10) || 100;
+      const off = Number.parseInt(String(offset), 10) || 0;
+
+      const sparql = buildSelectAnalyzerFindingsPaged({ limit: lim, offset: off });
+      const data = await runSelect(sparql);
+      const bindings = data.results?.bindings || [];
+
+      const { items, total } = bindingsToAnalyzerFindingsList(bindings);
+
+      const hasNext = off + lim < total;
+      const hasPrev = off > 0;
+      const nextOffset = hasNext ? off + lim : null;
+      const prevOffset = hasPrev ? Math.max(0, off - lim) : null;
+
+      log.info('analyzer findings list ok', {
+        count: items.length,
+        total,
+        limit: lim,
+        offset: off,
+      });
+
+      res.json({
+        items,
+        page: {
+          limit: lim,
+          offset: off,
+          total,
+          hasNext,
+          hasPrev,
+          nextOffset,
+          prevOffset,
+        },
+      });
+    } catch (err) {
+      log.error('analyzer findings list GraphDB query failed', err?.message || err);
+      res.status(502).json({
+        error: 'GraphDB query failed',
+        detail: String(err?.message || err),
+      });
+    }
+  }
+);
+
+/**
+ * Get detailed information for a single AnalyzerScan finding by id.
+ * Aggregates scalar fields, context and full HTML reference (root + nested tags).
+ *
+ * GET /analyzer/finding/:id
+ */
+router.get(
+  '/finding/:id',
+  async (req, res) => {
+    try {
+      const { id } = req.params; // raw id from URL (URN)
+
+      const sparql = buildSelectAnalyzerFindingById({ id });
+      const data = await runSelect(sparql);
+      const bindings = data.results?.bindings || [];
+
+      const detail = bindingsToAnalyzerFindingDetail(bindings);
+
+      if (!detail) {
+        log.info('analyzer finding detail: not found', { id });
+        return res.status(404).json({ error: 'Not found', id });
+      }
+
+      log.info('analyzer finding detail ok', { id });
+      res.json(detail);
+    } catch (err) {
+      log.error('analyzer finding detail GraphDB query failed', err?.message || err);
+      res.status(502).json({
+        error: 'GraphDB query failed',
+        detail: String(err?.message || err),
+      });
+    }
+  }
+);
 
 module.exports = router;

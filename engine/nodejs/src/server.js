@@ -24,7 +24,7 @@ const {
 
 const sparqlRoutes = require('./routes/sparql');
 const httpRequestRoutes = require('./routes/httpRequests');
-const techStackRoutes = require('./routes/techStack');
+const techStackRoutes = require('./routes/techstack');
 const analyzerRoutes = require('./routes/analyzer');
 
 const { connection } = require('./queue');

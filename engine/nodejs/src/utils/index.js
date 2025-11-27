@@ -34,10 +34,24 @@ module.exports = {
   // Finding / vulnerability builders
   findingBuilders: {
     buildInsertFromFindingsArray: require('./finding/builders/insertBatch'),
+
+    // HTTP findings
     buildSelectHttpFindingsPaged: require('./finding/builders/http/selectHttpFindingsPaged'),
     bindingsToHttpFindingsList: require('./finding/bindings/http/httpFindingsList'),
     buildSelectHttpFindingById: require('./finding/builders/http/selectHttpFindingById'),
     bindingsToHttpFindingDetail: require('./finding/bindings/http/httpFindingDetail'),
+
+    // Analyzer findings
+    buildSelectAnalyzerFindingsPaged: require('./finding/builders/analyzer/selectAnalyzerFindingsPaged'),
+    bindingsToAnalyzerFindingsList: require('./finding/bindings/analyzer/analyzerFindingsList'),
+    buildSelectAnalyzerFindingById: require('./finding/builders/analyzer/selectAnalyzerFindingById'),
+    bindingsToAnalyzerFindingDetail: require('./finding/bindings/analyzer/analyzerFindingDetail'),
+
+    // Techstack findings
+    buildSelectTechstackFindingsPaged: require('./finding/builders/techstack/selectTechstackFindingsPaged'),
+    bindingsToTechstackFindingsList: require('./finding/bindings/techstack/techstackFindingsList'),
+    buildSelectTechstackFindingById: require('./finding/builders/techstack/selectTechstackFindingById'),
+    bindingsToTechstackFindingDetail: require('./finding/bindings/techstack/techstackFindingDetail'),
   },
 
   // Monitors

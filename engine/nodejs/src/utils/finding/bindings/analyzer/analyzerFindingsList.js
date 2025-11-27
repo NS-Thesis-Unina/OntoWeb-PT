@@ -2,7 +2,7 @@
 
 /** @typedef {import('../../../_types/graphdb/types').SparqlBindingCell} SparqlBindingCell */
 /** @typedef {import('../../../_types/finding/bindings/types').SparqlBindingRow} SparqlBindingRow */
-/** @typedef {import('../../../_types/finding/bindings/http/types').HttpFindingsList} HttpFindingsList */
+/** @typedef {import('../../../_types/finding/bindings/analyzer/types').AnalyzerFindingsList} AnalyzerFindingsList */
 
 /**
  * Transform SPARQL JSON bindings into a list of finding IDs and a total count.
@@ -14,9 +14,9 @@
  * When the page is empty, GraphDB will still return one row with only ?total bound.
  *
  * @param {SparqlBindingRow[]} bindings - SPARQL JSON `results.bindings` array.
- * @returns {HttpFindingsList} Normalized list with `{ items, total }`.
+ * @returns {AnalyzerFindingsList} Normalized list with `{ items, total }`.
  */
-function bindingsToHttpFindingsList(bindings) {
+function bindingsToAnalyzerFindingsList(bindings) {
   /** @type {string[]} */
   const items = [];
   let total = 0;
@@ -41,4 +41,4 @@ function bindingsToHttpFindingsList(bindings) {
   return { items, total };
 }
 
-module.exports = bindingsToHttpFindingsList;
+module.exports = bindingsToAnalyzerFindingsList;

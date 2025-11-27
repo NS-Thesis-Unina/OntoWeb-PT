@@ -1,30 +1,8 @@
 // @ts-check
 
 /** @typedef {import('../../../_types/graphdb/types').SparqlBindingCell} SparqlBindingCell */
-
-/**
- * A single SPARQL binding row as returned by GraphDB for SELECT queries.
- * Keys are variable names, values are SPARQL binding cells.
- *
- * @typedef {Record<string, SparqlBindingCell>} SparqlBindingRow
- */
-
-/**
- * Detailed HttpScan finding JSON shape.
- *
- * @typedef {Object} HttpFindingDetail
- * @property {string} id
- * @property {string} [resolver]
- * @property {string} [vulnerabilityType]
- * @property {string} [severity]
- * @property {string} [findingCategory]
- * @property {string} [owaspCategory]
- * @property {string} [ruleId]
- * @property {string} [description]
- * @property {string} [remediation]
- * @property {{ method?: string, url?: string, status?: number }} [http]
- * @property {string[]} [relatedHttp]
- */
+/** @typedef {import('../../../_types/finding/bindings/types').SparqlBindingRow} SparqlBindingRow */
+/** @typedef {import('../../../_types/finding/bindings/http/types').HttpFindingDetail} HttpFindingDetail */
 
 /**
  * Extract raw value from a SPARQL binding cell.
@@ -70,18 +48,18 @@ function bindingsToHttpFindingDetail(bindings) {
       result.id = id;
     }
 
-    const resolver     = valueOf(row.resolver);
-    const vulnType     = valueOf(row.vulnType);
-    const severity     = valueOf(row.severity);
-    const category     = valueOf(row.findingCategory);
-    const owasp        = valueOf(row.owaspCategory);
-    const ruleId       = valueOf(row.ruleId);
-    const description  = valueOf(row.description);
-    const remediation  = valueOf(row.remediation);
-    const httpMethod   = valueOf(row.httpMethod);
-    const requestUrl   = valueOf(row.requestUrl);
+    const resolver       = valueOf(row.resolver);
+    const vulnType       = valueOf(row.vulnType);
+    const severity       = valueOf(row.severity);
+    const category       = valueOf(row.findingCategory);
+    const owasp          = valueOf(row.owaspCategory);
+    const ruleId         = valueOf(row.ruleId);
+    const description    = valueOf(row.description);
+    const remediation    = valueOf(row.remediation);
+    const httpMethod     = valueOf(row.httpMethod);
+    const requestUrl     = valueOf(row.requestUrl);
     const responseStatus = valueOf(row.responseStatus);
-    const relatedHttp  = valueOf(row.relatedHttp);
+    const relatedHttp    = valueOf(row.relatedHttp);
 
     if (resolver && !result.resolver) result.resolver = resolver;
     if (vulnType && !result.vulnerabilityType) result.vulnerabilityType = vulnType;
