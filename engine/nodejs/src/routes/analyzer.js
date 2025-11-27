@@ -13,8 +13,13 @@ const {
     bindingsToAnalyzerFindingDetail,
   },
   graphdb: { runSelect },
-  validators: {
-    analyzer: { analyzerBodySchema, jobIdParamSchema },
+    validators: {
+    analyzer: {
+      analyzerBodySchema,
+      jobIdParamSchema,
+      analyzerFindingsListQuerySchema,
+      analyzerFindingIdParamSchema,
+    },
     celebrateOptions,
   },
 } = require('../utils');
@@ -107,6 +112,10 @@ router.get(
  */
 router.get(
   '/finding/list',
+  celebrate(
+  { [Segments.QUERY]: analyzerFindingsListQuerySchema },
+  celebrateOptions
+  ),
   async (req, res) => {
     try {
       const { limit = '100', offset = '0' } = req.query;
@@ -162,6 +171,10 @@ router.get(
  */
 router.get(
   '/finding/:id',
+  celebrate(
+    { [Segments.PARAMS]: analyzerFindingIdParamSchema },
+    celebrateOptions
+  ),
   async (req, res) => {
     try {
       const { id } = req.params; // raw id from URL (URN)

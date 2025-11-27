@@ -24,6 +24,8 @@ const {
       listQuerySchema,
       idParamSchema,
       jobIdParamSchema,
+      httpFindingsListQuerySchema,
+      httpFindingIdParamSchema,
     },
     celebrateOptions,
   },
@@ -235,6 +237,10 @@ router.get(
  */
 router.get(
   '/finding/list',
+  celebrate(
+    { [Segments.QUERY]: httpFindingsListQuerySchema },
+    celebrateOptions
+  ),
   async (req, res) => {
     try {
       const { limit = '100', offset = '0' } = req.query;
@@ -290,6 +296,10 @@ router.get(
  */
 router.get(
   '/finding/:id',
+  celebrate(
+    { [Segments.PARAMS]: httpFindingIdParamSchema },
+    celebrateOptions
+  ),
   async (req, res) => {
     try {
       const { id } = req.params; // raw id from URL

@@ -2,7 +2,7 @@
 /**
  * Techstack validators (Celebrate/Joi)
  * ------------------------------------
- * Schemas used by /routes/techStack.js.
+ * Schemas used by /routes/techstack.js.
  * Relaxed to accommodate real-world payloads (waf.version, cookies.value, raw, storage, non-standard URLs).
  */
 
@@ -77,7 +77,28 @@ const jobIdParamSchema = Joi.object({
   jobId: Joi.string().required(),
 }).unknown(false);
 
+/**
+ * Query schema for GET /techstack/finding/list
+ * Only pagination (limit/offset).
+ * @type {JoiObjectSchema}
+ */
+const techstackFindingsListQuerySchema = Joi.object({
+  limit: Joi.number().integer().min(0).max(1000).default(100),
+  offset: Joi.number().integer().min(0).max(1_000_000).default(0),
+}).unknown(false);
+
+/**
+ * Params schema for GET /techstack/finding/:id
+ * Accepts any non-empty string as finding id (URN or IRI).
+ * @type {JoiObjectSchema}
+ */
+const techstackFindingIdParamSchema = Joi.object({
+  id: Joi.string().required(),
+}).unknown(false);
+
 module.exports = {
   techstackBodySchema,
   jobIdParamSchema,
+  techstackFindingsListQuerySchema,
+  techstackFindingIdParamSchema,
 };

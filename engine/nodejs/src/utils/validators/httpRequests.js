@@ -157,12 +157,30 @@ const idParamSchema = Joi.object({
 }).unknown(false);
 
 /**
- * Params schema for GET /analyzer/results/:jobId
- * Matches the style used in other validators (techstack/jobId).
+ * Params schema for GET /http-requests/results/:jobId
  * @type {JoiObjectSchema}
  */
 const jobIdParamSchema = Joi.object({
   jobId: Joi.string().required(),
+}).unknown(false);
+
+/**
+ * Query schema for GET /http-requests/finding/list
+ * Only pagination (limit/offset).
+ * @type {JoiSchema}
+ */
+const httpFindingsListQuerySchema = Joi.object({
+  limit: Joi.number().integer().min(0).max(1000).default(100),
+  offset: Joi.number().integer().min(0).max(1_000_000).default(0),
+}).unknown(false);
+
+/**
+ * Params schema for GET /http-requests/finding/:id
+ * Reuse the same id shape as for requests.
+ * @type {JoiSchema}
+ */
+const httpFindingIdParamSchema = Joi.object({
+  id: idSchema.required(),
 }).unknown(false);
 
 module.exports = {
@@ -170,4 +188,7 @@ module.exports = {
   listQuerySchema,
   idParamSchema,
   jobIdParamSchema,
+
+  httpFindingsListQuerySchema,
+  httpFindingIdParamSchema,
 };
