@@ -1,29 +1,46 @@
-// src/resolvers/analyzer/resolveAnalyzer.js
+// @ts-check
+
 const { sastEngine } = require('../analyzer/sast/sastEngine');
 const { makeLogger } = require('../../logs/logger');
 const log = makeLogger('resolver:analyzer');
 
+/** @typedef {import('../../_types/resolvers/analyzer/types').AnalyzerResolveInput} AnalyzerResolveInput */
+/** @typedef {import('../../_types/resolvers/analyzer/types').AnalyzerResolveResult} AnalyzerResolveResult */
+/** @typedef {import('../../_types/resolvers/analyzer/types').AnalyzerFinding} AnalyzerFinding */
+
 /**
- * Resolver per l'Analyzer (SAST).
+ * Analyzer resolver (SAST) entrypoint.
+ *
+ * Responsibilities:
+ * - Instantiate the SAST engine with the requested options.
+ * - Run the analysis over HTML, scripts, forms and iframes.
+ * - Aggregate statistics by severity and context (scripts/forms/iframes/html).
+ * - Log a compact summary and return a normalized result payload.
  *
  * Input:
- *  - url:        URL completo della pagina analizzata
+ *  - url:        full page URL
  *  - scripts:    [{ code?: string, src?: string }, ...]
- *  - html:       stringa HTML completa
- *  - mainDomain: dominio principale (fallback se manca url)
- *  - forms:      array di form strutturati
- *  - iframes:    array di iframe strutturati
- *  - includeSnippets: se true, include estratti di codice/HTML nei findings
+ *  - html:       full HTML string
+ *  - mainDomain: main domain (fallback when url is missing)
+ *  - forms:      structured forms array
+ *  - iframes:    structured iframes array
+ *  - includeSnippets: if true, include JS/HTML snippets in findings
  *
- * Output:
+ * Output (success):
  *  {
- *    ok: true|false,
+ *    ok: true,
  *    pageUrl: string,
  *    totalFindings: number,
  *    stats: { high, medium, low },
  *    summary: { scripts, forms, iframes, html },
- *    findings: [ ... ]
+ *    findings: AnalyzerFinding[]
  *  }
+ *
+ * Output (failure):
+ *  { ok: false, error: string }
+ *
+ * @param {AnalyzerResolveInput} param0
+ * @returns {Promise<AnalyzerResolveResult>}
  */
 async function resolveAnalyzer({
   url = '',
@@ -37,9 +54,10 @@ async function resolveAnalyzer({
   try {
     const engine = new sastEngine({ includeSnippets });
 
-    // pageUrl servirà per collegare HTML / Request / Finding nell'ontologia
+    // pageUrl is used to link HTML / Request / Finding in the ontology
     const pageUrl = url || mainDomain || '';
 
+    /** @type {AnalyzerFinding[]} */
     const findings = await engine.scanCode(
       scripts,
       html,
@@ -50,7 +68,10 @@ async function resolveAnalyzer({
 
     const stats = { high: 0, medium: 0, low: 0 };
     for (const f of findings) {
-      if (f.severity && stats[f.severity] !== undefined) stats[f.severity]++;
+      if (f.severity && stats[/** @type {'high'|'medium'|'low'} */ (f.severity)] !== undefined) {
+        // @ts-ignore - runtime guard above
+        stats[f.severity]++;
+      }
     }
 
     const summary = { scripts: 0, forms: 0, iframes: 0, html: 0 };
@@ -81,10 +102,11 @@ async function resolveAnalyzer({
       findings,
     };
   } catch (err) {
-    log.error('Analyzer failed', err?.message || err);
+    const msg = /** @type {any} */ (err)?.message || String(err);
+    log.error('Analyzer failed', msg);
     return {
       ok: false,
-      error: err?.message || 'Analyzer execution failed',
+      error: msg || 'Analyzer execution failed',
     };
   }
 }

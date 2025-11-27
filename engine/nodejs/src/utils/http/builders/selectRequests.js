@@ -3,9 +3,20 @@
 /** @typedef {import('../../_types/http/builders/types').HttpRequest} HttpRequest */
 /** @typedef {import('../../_types/http/builders/types').SelectFilters} SelectFilters */
 /** @typedef {import('../../_types/http/builders/types').HttpHeader} HttpHeader */
+
 const { EX, G_HTTP } = require('../../constants');
 const { sanitizeLimit, sanitizeOffset } = require('../../sparql/pagination');
 const { escapeStr } = require('../../strings/escape');
+
+/**
+ * Parameters accepted by {@link buildSelectRequests}.
+ *
+ * @typedef {Object} SelectRequestsParams
+ * @property {string[]} [ids] - Optional list of request IDs to restrict the results to.
+ * @property {SelectFilters} [filters] - Optional filters to narrow results.
+ * @property {number} [limit] - Maximum number of rows to return (sanitized).
+ * @property {number} [offset] - Number of rows to skip (sanitized).
+ */
 
 /**
  * Build a SPARQL `SELECT` query that lists HTTP requests matching optional filters and pagination.
@@ -31,11 +42,7 @@ const { escapeStr } = require('../../strings/escape');
  * **Pagination**
  * - `limit` and `offset` are sanitized via `sanitizeLimit` / `sanitizeOffset`.
  *
- * @param {object} [params={}] - Builder parameters.
- * @param {string[]} [params.ids] - If provided, restrict results to these request IDs.
- * @param {SelectFilters} [params.filters] - Optional filters to narrow results.
- * @param {number} [params.limit=50] - Maximum number of rows to return (sanitized).
- * @param {number} [params.offset=0] - Number of rows to skip (sanitized).
+ * @param {SelectRequestsParams} [params={}] - Builder parameters.
  * @returns {string} A SPARQL `SELECT` query ready to execute against the `<${G_HTTP}>` named graph.
  *
  * @example
@@ -59,13 +66,13 @@ function buildSelectRequests({ ids = [], filters = {}, limit = 50, offset = 0 } 
     : '';
 
   const whereFilters = [];
-  if (method)     whereFilters.push(`FILTER(ucase(str(?methodName)) = "${escapeStr(String(method).toUpperCase())}")`);
-  if (scheme)     whereFilters.push(`FILTER(str(?scheme) = "${escapeStr(scheme)}")`);
-  if (authority)  whereFilters.push(`FILTER(str(?authority) = "${escapeStr(authority)}")`);
-  if (path)       whereFilters.push(`FILTER(str(?path) = "${escapeStr(path)}")`);
-  if (text)       whereFilters.push(`FILTER(CONTAINS(str(?uriFull), "${escapeStr(text)}"))`);
-  if (headerName) whereFilters.push(`FILTER(lcase(str(?hdrName)) = "${escapeStr(headerName.toLowerCase())}")`);
-  if (headerValue)whereFilters.push(`FILTER(str(?hdrValue) = "${escapeStr(headerValue)}")`);
+  if (method)      whereFilters.push(`FILTER(ucase(str(?methodName)) = "${escapeStr(String(method).toUpperCase())}")`);
+  if (scheme)      whereFilters.push(`FILTER(str(?scheme) = "${escapeStr(scheme)}")`);
+  if (authority)   whereFilters.push(`FILTER(str(?authority) = "${escapeStr(authority)}")`);
+  if (path)        whereFilters.push(`FILTER(str(?path) = "${escapeStr(path)}")`);
+  if (text)        whereFilters.push(`FILTER(CONTAINS(str(?uriFull), "${escapeStr(text)}"))`);
+  if (headerName)  whereFilters.push(`FILTER(lcase(str(?hdrName)) = "${escapeStr(headerName.toLowerCase())}")`);
+  if (headerValue) whereFilters.push(`FILTER(str(?hdrValue) = "${escapeStr(headerValue)}")`);
 
   const lim = sanitizeLimit(limit, 50);
   const off = sanitizeOffset(offset, 0);
@@ -108,7 +115,7 @@ WHERE {
       { ?req ex:reqHeader ?hdr . } UNION
       { ?req ex:repHeader ?hdr . } UNION
       { ?req ex:payHeader ?hdr . }
-      ?hdr ex:fieldName ?hdrName .
+      ?hdr ex:fieldName ?hdrName . 
       OPTIONAL { ?hdr ex:fieldValue ?hdrValue . }
     }
 
@@ -122,12 +129,12 @@ WHERE {
     # Connection via seeAlso or deterministic fallback
     OPTIONAL {
       ?req rdfs:seeAlso ?conn .
-      ?conn a ex:Connection .
+      ?conn a ex:Connection . 
       OPTIONAL { ?conn ex:connectionAuthority ?connAuthority . }
     }
     OPTIONAL {
       BIND(IRI(CONCAT("urn:req:", ENCODE_FOR_URI(?idVal), ":conn")) AS ?conn2)
-      ?conn2 a ex:Connection .
+      ?conn2 a ex:Connection . 
       OPTIONAL { ?conn2 ex:connectionAuthority ?connAuthority . }
     }
 
@@ -146,7 +153,7 @@ WHERE {
         { ?res ex:resHeader ?rhdr . } UNION
         { ?res ex:repHeader ?rhdr . } UNION
         { ?res ex:payHeader ?rhdr . }
-        ?rhdr ex:fieldName ?rhdrName .
+        ?rhdr ex:fieldName ?rhdrName . 
         OPTIONAL { ?rhdr ex:fieldValue ?rhdrValue . }
       }
     }

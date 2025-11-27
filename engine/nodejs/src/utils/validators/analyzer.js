@@ -10,10 +10,12 @@
 
 const { Joi } = require('celebrate');
 
+/** @typedef {import('../_types/validators/types').JoiObjectSchema} JoiObjectSchema */
+
 /**
  * Body schema for POST /analyzer/analyze
  * Keep parity with the original inline schema from routes/analyzer.js.
- * @type {import('joi').ObjectSchema}
+ * @type {JoiObjectSchema}
  */
 const analyzerBodySchema = Joi.object({
   url: Joi.string()
@@ -73,7 +75,7 @@ const analyzerBodySchema = Joi.object({
 /**
  * Params schema for GET /analyzer/results/:jobId
  * Matches the style used in other validators (techstack/jobId).
- * @type {import('joi').ObjectSchema}
+ * @type {JoiObjectSchema}
  */
 const jobIdParamSchema = Joi.object({
   jobId: Joi.string().required(),

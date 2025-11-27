@@ -7,13 +7,19 @@
  *  - Field: urn:html:field:{key}
  */
 
+/** @typedef {import('../_types/iri/types').IriString} IriString */
+/** @typedef {import('../_types/iri/types').HtmlKey} HtmlKey */
+
 const { iriFragmentSafe } = require('./http');
 
 /**
  * Build a URN for an HTML Tag individual.
  *
- * @param {string} key stable key (e.g. "https://site/page#script#0")
- * @returns {string} URN (without < >)
+ * Shape:
+ *   `urn:html:tag:{key}`
+ *
+ * @param {HtmlKey} key - Stable key (e.g. "https://site/page#script#0").
+ * @returns {IriString} URN (without angle brackets).
  */
 function iriHtmlTag(key) {
   return `urn:html:tag:${iriFragmentSafe(key)}`;
@@ -22,8 +28,11 @@ function iriHtmlTag(key) {
 /**
  * Build a URN for an HTML Field individual.
  *
- * @param {string} key stable key (e.g. "...#script#0:src")
- * @returns {string} URN (without < >)
+ * Shape:
+ *   `urn:html:field:{key}`
+ *
+ * @param {HtmlKey} key - Stable key (e.g. "...#script#0:src").
+ * @returns {IriString} URN (without angle brackets).
  */
 function iriHtmlField(key) {
   return `urn:html:field:${iriFragmentSafe(key)}`;

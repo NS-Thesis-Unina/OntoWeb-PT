@@ -9,8 +9,19 @@
  * ok === true only if server, graphdb and redis are all 'up'.
  */
 
-/** @typedef {'unknown'|'up'|'down'|'connecting'|'shutting_down'} HealthState */
+/** @typedef {import('../_types/monitors/types').HealthState} HealthState */
+/** @typedef {import('../_types/monitors/types').HealthComponentsKey} HealthComponentsKey */
+/** @typedef {import('../_types/monitors/types').HealthSnapshot} HealthSnapshot */
 
+/**
+ * Internal in-memory health state.
+ *
+ * - `server`  → HTTP server / API layer
+ * - `graphdb` → GraphDB connectivity
+ * - `redis`   → Redis connectivity
+ *
+ * @type {Record<HealthComponentsKey, HealthState>}
+ */
 const state = {
   server: /** @type {HealthState} */ ('up'),
   graphdb: /** @type {HealthState} */ ('unknown'),
@@ -19,20 +30,28 @@ const state = {
 
 /**
  * Update the health state for a component.
- * @param {'server'|'graphdb'|'redis'} key
- * @param {HealthState} value
+ *
+ * @param {HealthComponentsKey} key - Component identifier ('server', 'graphdb', 'redis').
+ * @param {HealthState} value - New health state for that component.
  */
 function setState(key, value) {
   state[key] = value;
 }
 
 /**
- * Return a snapshot of the current health and the aggregated ok flag.
- * @returns {{ ok: boolean, components: Record<'server'|'graphdb'|'redis', HealthState> }}
+ * Return a snapshot of the current health and the aggregated `ok` flag.
+ *
+ * - `ok === true` only if all tracked components are exactly 'up'.
+ *
+ * @returns {HealthSnapshot} Snapshot with `ok` and per-component states.
  */
 function getHealth() {
-  const snapshot = /** @type {Record<'server'|'graphdb'|'redis', HealthState>} */ ({ ...state });
-  const ok = snapshot.server === 'up' && snapshot.graphdb === 'up' && snapshot.redis === 'up';
+  /** @type {Record<HealthComponentsKey, HealthState>} */
+  const snapshot = { ...state };
+  const ok =
+    snapshot.server === 'up' &&
+    snapshot.graphdb === 'up' &&
+    snapshot.redis === 'up';
   return { ok, components: snapshot };
 }
 

@@ -1,4 +1,5 @@
-// src/analyzer/sast/sastEngine.js
+// @ts-check
+
 const acorn = require('acorn');
 const { ancestor, full } = require('acorn-walk');
 const staticRules = require('./rules/staticRules');
@@ -6,35 +7,48 @@ const formRules = require('./rules/formRules');
 const taintRules = require('./rules/taintRules');
 const axios = require('axios').default;
 
+/** @typedef {import('../../../_types/resolvers/analyzer/types').SastEngineOptions} SastEngineOptions */
+/** @typedef {import('../../../_types/resolvers/analyzer/types').AnalyzerScriptInput} AnalyzerScriptInput */
+/** @typedef {import('../../../_types/resolvers/analyzer/types').AnalyzerFormInput} AnalyzerFormInput */
+/** @typedef {import('../../../_types/resolvers/analyzer/types').AnalyzerIframeInput} AnalyzerIframeInput */
+/** @typedef {import('../../../_types/resolvers/analyzer/types').AnalyzerFinding} AnalyzerFinding */
+/** @typedef {import('../../../_types/resolvers/analyzer/types').AnalyzerLocation} AnalyzerLocation */
+/** @typedef {import('../../../_types/resolvers/analyzer/types').AnalyzerContextVector} AnalyzerContextVector */
+/** @typedef {import('../../../_types/resolvers/analyzer/types').AnalyzerHtmlRef} AnalyzerHtmlRef */
+
 class sastEngine {
   /**
-   * @param {object} [options]
-   * @param {number} [options.policy]
-   * @param {boolean} [options.includeSnippets]
+   * Create a new SAST engine instance.
+   *
+   * @param {SastEngineOptions} [options]
    */
   constructor(options = {}) {
-    // Tutte le regole statiche + HTML + taint
+    // All static rules + HTML + taint rules
     this.rules = staticRules.concat(formRules, taintRules);
     this.policy = options.policy || 0;
     this.includeSnippets = options.includeSnippets ?? false;
   }
 
   /**
+   * Run SAST analysis on the collected artifacts for a single page.
    *
-   * @param {Array<{code?: string, src?: string}>} scripts
-   * @param {string} html
-   * @param {string} pageUrl    // URL completo della pagina (usato per ontologia)
-   * @param {Array} forms
-   * @param {Array} iframes
-   * @returns {Promise<Array>}
+   * @param {AnalyzerScriptInput[]} [scripts=[]] - Array of scripts (inline and external).
+   * @param {string} [html=''] - Full HTML document.
+   * @param {string} [pageUrl=''] - Page URL used for ontology linking.
+   * @param {AnalyzerFormInput[]} [forms=[]] - Structured forms.
+   * @param {AnalyzerIframeInput[]} [iframes=[]] - Structured iframes.
+   * @returns {Promise<AnalyzerFinding[]>} List of normalized findings.
    */
   async scanCode(scripts = [], html = '', pageUrl = '', forms = [], iframes = []) {
+    /** @type {Record<string, string>} */
     const codeByFile = Object.create(null);
+    /** @type {any[]} */
     const allBodies = [];
+    /** @type {AnalyzerFinding[]} */
     const rawFindings = [];
 
     // ============================================================
-    // 1) Regole che lavorano direttamente sull'HTML (checkHtml)
+    // 1) Rules that operate directly on HTML (checkHtml)
     // ============================================================
     for (const rule of this.rules) {
       try {
@@ -42,8 +56,10 @@ class sastEngine {
           const htmlFindings = rule.checkHtml(html);
           if (Array.isArray(htmlFindings)) {
             for (const f of htmlFindings) {
-              // arricchisco subito con pageUrl di riferimento
+              // Enrich immediately with pageUrl reference
+              // @ts-ignore - rule objects are structurally compatible
               f.pageUrl = pageUrl || null;
+              // @ts-ignore
               rawFindings.push(f);
             }
           }
@@ -54,7 +70,7 @@ class sastEngine {
     }
 
     // ============================================================
-    // 2) Handler inline negli attributi HTML (onclick="...", ecc.)
+    // 2) Inline handlers inside HTML attributes (onclick="...", etc.)
     // ============================================================
     const inlineSnippets = this.extractInlineHandlers(html);
     for (let i = 0; i < inlineSnippets.length; i++) {
@@ -75,7 +91,7 @@ class sastEngine {
     }
 
     // ============================================================
-    // 3) Script esterni e inline <script>
+    // 3) External and inline <script> tags
     // ============================================================
     for (const script of scripts) {
       const fileId = script.src || `inline-script[#${allBodies.length}]`;
@@ -106,12 +122,12 @@ class sastEngine {
     }
 
     if (allBodies.length === 0) {
-      // niente codice JS, ritorno solo le findings HTML
+      // No JS code; return only HTML findings
       return rawFindings;
     }
 
     // ============================================================
-    // 4) AST "template" con tutti i corpi, per regole statiche/taint
+    // 4) AST "template" with all bodies, for static/taint rules
     // ============================================================
     const firstFileId = Object.keys(codeByFile)[0];
     const firstCode = codeByFile[firstFileId];
@@ -122,7 +138,7 @@ class sastEngine {
     });
     templateAST.body = allBodies.flat();
 
-    // eseguo tutte le regole che hanno check(AST)
+    // Run all rules that expose a check(AST) handler
     for (const rule of this.rules) {
       if (typeof rule.check !== 'function') continue;
       try {
@@ -134,7 +150,9 @@ class sastEngine {
         );
         if (Array.isArray(findings)) {
           for (const f of findings) {
+            // @ts-ignore
             f.pageUrl = pageUrl || null;
+            // @ts-ignore
             rawFindings.push(f);
           }
         }
@@ -145,24 +163,26 @@ class sastEngine {
     }
 
     // ============================================================
-    // 5) Normalizzazione e arricchimento findings
-    //    - snippet JS / HTML
+    // 5) Normalization & enrichment:
+    //    - JS / HTML snippets
     //    - contextVector (script/iframe/form/html)
-    //    - htmlRef (Tag/Field per ontologia)
-    //    - findingId stabile
+    //    - htmlRef (Tag/Field for ontology)
+    //    - stable findingId
     // ============================================================
+    /** @type {AnalyzerFinding[]} */
     const issues = [];
 
     for (const issue of rawFindings) {
+      // @ts-ignore
       const { file: fId, location, sourceFile, sourceLoc, sinkFile, sinkLoc } = issue;
 
-      // Assicuro sempre la presenza di pageUrl nel singolo finding
       if (!issue.pageUrl) {
+        // @ts-ignore
         issue.pageUrl = pageUrl || null;
       }
 
       // -------------------------------
-      // Snippet: JS
+      // JS snippet based on line/column
       // -------------------------------
       if (
         this.includeSnippets &&
@@ -171,11 +191,12 @@ class sastEngine {
         location &&
         typeof location.start === 'object'
       ) {
+        // @ts-ignore
         issue.snippet = this.getCodeSnippetExt(codeByFile[fId], location);
       }
 
       // -------------------------------
-      // Snippet: HTML (file === 'HTML Document' + offset numerico)
+      // HTML snippet based on offsets
       // -------------------------------
       if (
         this.includeSnippets &&
@@ -184,11 +205,12 @@ class sastEngine {
         location &&
         typeof location.start === 'number'
       ) {
+        // @ts-ignore
         issue.snippet = this.getHtmlSnippet(html, location);
       }
 
       // -------------------------------
-      // Snippet aggiuntivi per taint (source/sink)
+      // Additional snippets for taint (source/sink)
       // -------------------------------
       if (
         this.includeSnippets &&
@@ -197,6 +219,7 @@ class sastEngine {
         codeByFile[sourceFile] &&
         typeof sourceLoc.start === 'object'
       ) {
+        // @ts-ignore
         issue.sourceSnippet = this.getCodeSnippetExt(codeByFile[sourceFile], sourceLoc);
       }
       if (
@@ -206,15 +229,17 @@ class sastEngine {
         codeByFile[sinkFile] &&
         typeof sinkLoc.start === 'object'
       ) {
+        // @ts-ignore
         issue.sinkSnippet = this.getCodeSnippetExt(codeByFile[sinkFile], sinkLoc);
       }
 
       // -------------------------------
-      // Context vector (per AnalyzerScan)
+      // Context vector (for AnalyzerScan)
       // -------------------------------
+      /** @type {AnalyzerContextVector} */
       let contextVector = { type: 'unknown', index: null, origin: null };
 
-      // inline <script> raccolti come inline-script[#i]
+      // Inline <script> collected as inline-script[#i]
       if (fId?.startsWith('inline-script')) {
         const idx = Number(fId.match(/\[#(\d+)\]/)?.[1] ?? -1);
         const s = scripts[idx];
@@ -223,26 +248,43 @@ class sastEngine {
           index: idx,
           origin: s?.src ? 'external' : 'inline',
           src: s?.src || null,
+          title: null,
+          action: null,
+          method: null,
+          inputs: [],
         };
       }
 
-      // handler inline negli attributi HTML
+      // Inline handlers in HTML attributes
       else if (fId?.startsWith('inline-handler')) {
         const idx = Number(fId.match(/\[#(\d+)\]/)?.[1] ?? -1);
         contextVector = {
           type: 'html-inline-handler',
           index: idx,
           origin: 'markup',
+          src: null,
+          title: null,
+          action: null,
+          method: null,
+          inputs: [],
         };
       }
 
-      // findings direttamente sull'HTML
+      // Findings directly on HTML
       else if (fId === 'HTML Document') {
-        // @ts-ignore
-        contextVector = { type: 'html', index: null, origin: 'markup' };
+        contextVector = {
+          type: 'html',
+          index: null,
+          origin: 'markup',
+          src: null,
+          title: null,
+          action: null,
+          method: null,
+          inputs: [],
+        };
       }
 
-      // script esterni (src matcha uno degli script)
+      // External scripts (fileId matches one of the scripts.src)
       else if (fId) {
         const match = scripts.findIndex((s) => s.src === fId);
         if (match >= 0) {
@@ -252,11 +294,15 @@ class sastEngine {
             index: match,
             origin: s?.src ? 'external' : 'inline',
             src: s?.src || null,
+            title: null,
+            action: null,
+            method: null,
+            inputs: [],
           };
         }
       }
 
-      // Specializzazione per regole iframe
+      // Specialization for iframe rules
       if (issue.ruleId?.includes('iframe')) {
         let idx = -1;
         for (let i = 0; i < iframes.length; i++) {
@@ -279,10 +325,13 @@ class sastEngine {
           origin: 'markup',
           src: iframe?.src || null,
           title: iframe?.title || null,
+          action: null,
+          method: null,
+          inputs: [],
         };
       }
 
-      // Specializzazione per regole form
+      // Specialization for form rules
       if (issue.ruleId?.includes('form')) {
         const idx = forms.findIndex((f) => {
           if (!f) return false;
@@ -299,6 +348,8 @@ class sastEngine {
           type: 'form',
           index: idx >= 0 ? idx : null,
           origin: 'markup',
+          src: null,
+          title: null,
           action: form?.action || null,
           method: form?.method || null,
           inputs: Array.isArray(form?.inputs)
@@ -309,18 +360,22 @@ class sastEngine {
         };
       }
 
+      // @ts-ignore
       issue.contextVector = contextVector;
 
       // -------------------------------
-      // htmlRef: info strutturata per ontologia (HTML / Tag / Field)
+      // htmlRef: structured info for ontology (HTML / Tag / Field)
       // -------------------------------
+      // @ts-ignore
       issue.htmlRef = this.buildHtmlRef(contextVector, scripts, forms, iframes);
 
       // -------------------------------
-      // findingId stabile per IRIs ontologici
+      // findingId for stable IRIs
       // -------------------------------
+      // @ts-ignore
       issue.findingId = this.buildFindingId(issue, fId, location, pageUrl);
 
+      // @ts-ignore
       issues.push(issue);
     }
 
@@ -328,8 +383,11 @@ class sastEngine {
   }
 
   /**
-   * Estrae i contenuti JS degli handler inline negli attributi HTML
-   * (onclick="...", onload="...", ecc.)
+   * Extract JS bodies from inline HTML event handlers
+   * (onclick="...", onload="...", etc.).
+   *
+   * @param {string} htmlText
+   * @returns {string[]}
    */
   extractInlineHandlers(htmlText) {
     const attrs = [
@@ -360,36 +418,63 @@ class sastEngine {
   }
 
   /**
-   * Snippet di codice JS basato su line/column
+   * Build a JS snippet based on line/column information.
+   *
+   * @param {string} code
+   * @param {AnalyzerLocation} location
+   * @returns {string}
    */
   getCodeSnippetExt(code, location) {
-    if (!code || !location) return '';
+    if (!code || !location || typeof location.start !== 'object') return '';
     const lines = code.split(/\r?\n/);
-    const { start, end } = location;
-    const startLine = Math.max(0, (start.line || 1) - 2);
-    const endLine = Math.min(lines.length - 1, (end.line || start.line) + 1);
+
+    const startLoc = /** @type {{ line: number, column: number }} */ (
+      location.start
+    );
+    const endLoc =
+      location.end && typeof location.end === 'object'
+        ? /** @type {{ line: number, column: number }} */ (location.end)
+        : startLoc;
+
+    const startLine = Math.max(0, (startLoc.line || 1) - 2);
+    const endLine = Math.min(
+      lines.length - 1,
+      (endLoc.line || startLoc.line || 1) + 1
+    );
     const context = lines.slice(startLine, endLine + 1);
     return context.join('\n');
   }
 
   /**
-   * Snippet HTML basato su offset (start/end numerici nel testo HTML)
+   * Build an HTML snippet based on offset information
+   * (start/end numeric positions in the HTML text).
+   *
+   * @param {string} htmlText
+   * @param {AnalyzerLocation} location
+   * @returns {string}
    */
   getHtmlSnippet(htmlText, location) {
-    if (!htmlText || !location) return '';
-    const start = Math.max(0, (location.start ?? 0) - 80);
-    const end = Math.min(htmlText.length, (location.end ?? location.start ?? 0) + 80);
+    if (!htmlText || !location || typeof location.start !== 'number') return '';
+
+    const startNum = /** @type {number} */ (location.start ?? 0);
+    const endNum =
+      typeof location.end === 'number'
+        ? location.end
+        : startNum;
+
+    const start = Math.max(0, startNum - 80);
+    const end = Math.min(htmlText.length, endNum + 80);
     return htmlText.slice(start, end);
   }
 
   /**
-   * Costruisce un riferimento HTML strutturato (Tag + Fields)
-   * coerente con l'ontologia HTML / Tag / Field.
+   * Build a structured HTML reference (Tag + Fields) aligned with the ontology.
    *
-   * @param {object} contextVector
-   * @param {Array} scripts
-   * @param {Array} forms
-   * @param {Array} iframes
+   * @param {AnalyzerContextVector} contextVector
+   * @param {AnalyzerScriptInput[]} scripts
+   * @param {AnalyzerFormInput[]} forms
+   * @param {AnalyzerIframeInput[]} iframes
+   * @returns {AnalyzerHtmlRef | null}
    */
   buildHtmlRef(contextVector, scripts, forms, iframes) {
     if (!contextVector || !contextVector.type) return null;
@@ -478,16 +563,16 @@ class sastEngine {
       if (script?.async) attributes.push({ name: 'async', value: String(script.async) });
       if (script?.defer) attributes.push({ name: 'defer', value: String(script.defer) });
 
-      return {
+      return /** @type {AnalyzerHtmlRef} */ ({
         type: 'script',
         tag: 'script',
         index: idx,
         attributes,
         fields: [],
-      };
+      });
     }
 
-    // HANDLER INLINE o HTML generico
+    // Inline handler or generic HTML context
     if (
       contextVector.type === 'html-inline-handler' ||
       contextVector.type === 'html'
@@ -501,12 +586,18 @@ class sastEngine {
       };
     }
 
-    // Default: nessun riferimento HTML strutturato
+    // Default: no structured HTML reference
     return null;
   }
 
   /**
-   * Costruisce un ID stabile per la finding (utile per IRIs dell'ontologia)
+   * Build a stable finding ID (useful for ontology IRIs).
+   *
+   * @param {AnalyzerFinding} issue
+   * @param {string} [fileId]
+   * @param {AnalyzerLocation} [location]
+   * @param {string} [pageUrl]
+   * @returns {string}
    */
   buildFindingId(issue, fileId, location, pageUrl) {
     const ruleId = issue.ruleId || 'rule';
@@ -515,14 +606,25 @@ class sastEngine {
     let locPart = 'loc-unknown';
     if (location) {
       if (typeof location.start === 'number') {
-        const s = location.start ?? 0;
-        const e = location.end ?? s;
-        locPart = `off-${s}-${e}`;
+        const startNum = /** @type {number} */ (location.start ?? 0);
+        const endNum =
+          typeof location.end === 'number'
+            ? location.end
+            : startNum;
+        locPart = `off-${startNum}-${endNum}`;
       } else if (typeof location.start === 'object') {
-        const sLine = location.start?.line ?? 0;
-        const sCol = location.start?.column ?? 0;
-        const eLine = location.end?.line ?? sLine;
-        const eCol = location.end?.column ?? sCol;
+        const startLoc = /** @type {{ line: number, column: number }} */ (
+          location.start
+        );
+        const endLoc =
+          location.end && typeof location.end === 'object'
+            ? /** @type {{ line: number, column: number }} */ (location.end)
+            : startLoc;
+
+        const sLine = startLoc.line ?? 0;
+        const sCol = startLoc.column ?? 0;
+        const eLine = endLoc.line ?? sLine;
+        const eCol = endLoc.column ?? sCol;
         locPart = `l${sLine}c${sCol}-l${eLine}c${eCol}`;
       }
     }

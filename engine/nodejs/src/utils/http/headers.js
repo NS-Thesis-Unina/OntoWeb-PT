@@ -41,22 +41,6 @@ const representationReq = new Set([
  *
  * @param {string} [name=''] Raw header name (any case).
  * @returns {HeaderClassification} Object with ontology class `cls` and linking property `prop`.
- *
- * @example
- * classifyRequestHeader('Content-Type');
- * // { cls: 'PayloadHeaders', prop: 'payHeader' }
- *
- * @example
- * classifyRequestHeader('Accept');
- * // { cls: 'RepresentationHeaders', prop: 'repHeader' }
- *
- * @example
- * classifyRequestHeader('Cookie');
- * // { cls: 'Cookie', prop: 'reqHeader' }
- *
- * @example
- * classifyRequestHeader('X-Request-ID');
- * // { cls: 'RequestHeader', prop: 'reqHeader' }
  */
 function classifyRequestHeader(name = '') {
   const n = String(name).toLowerCase();
@@ -64,7 +48,6 @@ function classifyRequestHeader(name = '') {
   // Ontology v1.0.1: "Cookie" has its own class (ex:Cookie) as a subclass of RequestHeader.
   // We keep the link via ex:reqHeader to stay consistent with the domain/range.
   if (n === 'cookie') {
-    // @ts-ignore
     return { cls: 'Cookie', prop: 'reqHeader' };
   }
 
@@ -96,22 +79,6 @@ function classifyRequestHeader(name = '') {
  *
  * @param {string} [name=''] - Raw header name (any case).
  * @returns {HeaderClassification} An object with the ontology class `cls` and the linking property `prop`.
- *
- * @example
- * classifyResponseHeader('Content-Length');
- * // { cls: 'PayloadHeaders', prop: 'payHeader' }
- *
- * @example
- * classifyResponseHeader('ETag');
- * // { cls: 'RepresentationHeaders', prop: 'repHeader' }
- *
- * @example
- * classifyResponseHeader('Set-Cookie');
- * // { cls: 'Set-Cookie', prop: 'resHeader' }
- *
- * @example
- * classifyResponseHeader('X-Trace-Id');
- * // { cls: 'ResponseHeader', prop: 'resHeader' }
  */
 function classifyResponseHeader(name = '') {
   const n = String(name).toLowerCase();
@@ -119,7 +86,6 @@ function classifyResponseHeader(name = '') {
   // Ontology v1.0.1: "Set-Cookie" has its own class (ex:Set-Cookie)
   // as a subclass of ResponseHeader. We still link via ex:resHeader.
   if (n === 'set-cookie') {
-    // @ts-ignore
     return { cls: 'Set-Cookie', prop: 'resHeader' };
   }
 

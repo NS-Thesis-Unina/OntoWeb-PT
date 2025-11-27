@@ -1,4 +1,5 @@
 // @ts-check
+
 /**
  * Minimal logger with:
  * - levels (error, warn, info, debug)
@@ -7,19 +8,16 @@
  * - rate-limit/coalescing of repeated messages within a time window
  */
 
-/** @typedef {'error' | 'warn' | 'info' | 'debug'} Level */
-/** @typedef {'pretty' | 'json'} LogFormat */
+/** @typedef {import('../_types/logs/types').LogLevel} LogLevel */
+/** @typedef {import('../_types/logs/types').LogFormat} LogFormat */
+/** @typedef {import('../_types/logs/types').CoalesceState} CoalesceState */
+/** @typedef {import('../_types/logs/types').Logger} Logger */
 
-/**
- * Internal structure used to coalesce repeated messages.
- * @typedef {{ count: number, timeout: NodeJS.Timeout }} CoalesceState
- */
-
-/** @type {readonly Level[]} */
+/** @type {readonly LogLevel[]} */
 const LEVELS = /** @type {const} */ (['error', 'warn', 'info', 'debug']);
 
 /** Rank per level (lower is more important). */
-/** @type {Record<Level, number>} */
+/** @type {Record<LogLevel, number>} */
 const LEVEL_RANK = { error: 0, warn: 1, info: 2, debug: 3 };
 
 /** Resolve output format from env with sensible defaults. */
@@ -34,9 +32,10 @@ const LOG_FORMAT =
 const LOG_LEVEL_RAW = String(process.env.LOG_LEVEL || 'info').toLowerCase();
 
 /**
- * Type guard: string → Level
+ * Type guard: string → LogLevel.
+ *
  * @param {string} x
- * @returns {x is Level}
+ * @returns {x is LogLevel}
  */
 function isLevel(x) {
   // @ts-ignore - includes works against the readonly literal tuple
@@ -44,18 +43,19 @@ function isLevel(x) {
 }
 
 /**
- * Normalize env-provided level to a valid Level literal.
+ * Normalize env-provided level to a valid LogLevel literal.
  * Falls back to 'info' when invalid.
+ *
  * @param {string} raw
- * @returns {Level}
+ * @returns {LogLevel}
  */
 function normalizeLevel(raw) {
   const x = String(raw || '').toLowerCase();
-  return /** @type {Level} */ (isLevel(x) ? x : 'info');
+  return /** @type {LogLevel} */ (isLevel(x) ? x : 'info');
 }
 
 /** Final effective log level. */
-/** @type {Level} */
+/** @type {LogLevel} */
 const LOG_LEVEL = normalizeLevel(LOG_LEVEL_RAW);
 
 /** Numeric threshold for printing. */
@@ -71,8 +71,9 @@ const WINDOW_MS = Number(process.env.LOG_COALESCE_WINDOW_MS || 3000);
 
 /**
  * Low-level emitter (pretty or json).
+ *
  * @param {string} ns
- * @param {Level} level
+ * @param {LogLevel} level
  * @param {string} timeIso
  * @param {unknown[]} args
  */
@@ -104,8 +105,9 @@ function emit(ns, level, timeIso, args) {
 
 /**
  * High-level log with coalescing of repeated messages within WINDOW_MS.
+ *
  * @param {string} ns
- * @param {Level} level
+ * @param {LogLevel} level
  * @param {...unknown} args
  */
 function log(ns, level, ...args) {
@@ -139,8 +141,9 @@ function log(ns, level, ...args) {
 
 /**
  * Create a namespaced logger.
- * @param {string} ns
- * @returns {{ error: (...a: unknown[]) => void, warn: (...a: unknown[]) => void, info: (...a: unknown[]) => void, debug: (...a: unknown[]) => void }}
+ *
+ * @param {string} ns - Namespace (e.g. "api", "worker", "graphdb").
+ * @returns {Logger} Namespaced logger with `error`, `warn`, `info`, `debug` methods.
  */
 const makeLogger = (ns) => ({
   error: (...a) => log(ns, 'error', ...a),

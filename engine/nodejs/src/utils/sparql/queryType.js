@@ -1,5 +1,7 @@
 // @ts-check
 
+/** @typedef {import('../_types/sparql/types').SparqlString} SparqlString */
+
 /**
  * Detect whether a SPARQL string starts with a `SELECT` or `ASK` query.
  *

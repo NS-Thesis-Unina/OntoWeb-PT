@@ -5,12 +5,13 @@
  *
  * Behavior:
  * - Converts the input with `Number(limit)`.
- * - Applies `Math.floor(...)` to force an integer.
- * - Returns the integer if it is finite and **>= 0**; otherwise returns `fallback` (default **50**, also floored).
+ * - Applies `Math.floor(...)` to force an integer value.
+ * - Returns the integer if it is finite and **>= 0**; otherwise returns `fallback`
+ *   (default **50**, also floored).
  *
- * @param {any} limit User-provided LIMIT (string/number/etc.).
- * @param {number} [fallback=50] Fallback to use when `limit` is invalid.
- * @returns {number} A non-negative integer suitable for LIMIT.
+ * @param {any} limit - User-provided LIMIT (string/number/etc.).
+ * @param {number} [fallback=50] - Fallback to use when `limit` is invalid.
+ * @returns {number} A non-negative integer suitable for `LIMIT`.
  *
  * @example
  * sanitizeLimit('25');        // 25
@@ -29,12 +30,13 @@ function sanitizeLimit(limit, fallback = 50) {
  *
  * Behavior:
  * - Converts the input with `Number(offset)`.
- * - Applies `Math.floor(...)` to force an integer.
- * - Returns the integer if it is finite and **>= 0**; otherwise returns `fallback` (default **0**, anche questo floored).
+ * - Applies `Math.floor(...)` to force an integer value.
+ * - Returns the integer if it is finite and **>= 0**; otherwise returns `fallback`
+ *   (default **0**, also floored).
  *
- * @param {any} offset User-provided OFFSET (string/number/etc.).
- * @param {number} [fallback=0] Fallback to use when `offset` is invalid.
- * @returns {number} A non-negative integer suitable for OFFSET.
+ * @param {any} offset - User-provided OFFSET (string/number/etc.).
+ * @param {number} [fallback=0] - Fallback to use when `offset` is invalid.
+ * @returns {number} A non-negative integer suitable for `OFFSET`.
  *
  * @example
  * sanitizeOffset('10');       // 10

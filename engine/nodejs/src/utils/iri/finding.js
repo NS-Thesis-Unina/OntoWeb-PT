@@ -10,13 +10,21 @@
  *   - Resolver: urn:resolver:{key}
  */
 
+/** @typedef {import('../_types/iri/types').IriString} IriString */
+/** @typedef {import('../_types/iri/types').FindingId} FindingId */
+/** @typedef {import('../_types/iri/types').EvidenceIndex} EvidenceIndex */
+/** @typedef {import('../_types/iri/types').ResolverKey} ResolverKey */
+
 const { iriFragmentSafe } = require('./http');
 
 /**
  * Build a URN for a Finding individual.
  *
- * @param {string} id Stable finding identifier (e.g. "tech:react:18:CVE-2024-xxxx").
- * @returns {string} URN (without angle brackets).
+ * Shape:
+ *   `urn:finding:{id}`
+ *
+ * @param {FindingId} id - Stable finding identifier (e.g. "tech:react:18:CVE-2024-xxxx").
+ * @returns {IriString} URN (without angle brackets).
  */
 function iriFinding(id) {
   return `urn:finding:${iriFragmentSafe(id)}`;
@@ -25,9 +33,12 @@ function iriFinding(id) {
 /**
  * Build a URN for an Evidence individual associated with a Finding.
  *
- * @param {string} findingId Same id used in iriFinding().
- * @param {number|string} index Index or key for the evidence block.
- * @returns {string} URN (without angle brackets).
+ * Shape:
+ *   `urn:finding:{id}:evidence:{index}`
+ *
+ * @param {FindingId} findingId - Same id used in {@link iriFinding}.
+ * @param {EvidenceIndex} index - Index or key for the evidence block.
+ * @returns {IriString} URN (without angle brackets).
  */
 function iriEvidence(findingId, index) {
   return `urn:finding:${iriFragmentSafe(findingId)}:evidence:${index}`;
@@ -36,8 +47,11 @@ function iriEvidence(findingId, index) {
 /**
  * Build a URN for a Resolver instance (e.g., techstack/http/analyzer).
  *
- * @param {string} key Logical key, e.g., "techstack", "http", "analyzer".
- * @returns {string} URN (without angle brackets).
+ * Shape:
+ *   `urn:resolver:{key}`
+ *
+ * @param {ResolverKey} key - Logical key, e.g., "techstack", "http", "analyzer".
+ * @returns {IriString} URN (without angle brackets).
  */
 function iriResolverInstance(key) {
   return `urn:resolver:${iriFragmentSafe(key)}`;

@@ -1,8 +1,24 @@
+// @ts-check
+
 const axios = require('axios').default;
 const { makeLogger } = require('../../logs/logger');
 const log = makeLogger('resolver:techstack');
 
 const NVD_BASE = 'https://services.nvd.nist.gov/rest/json/cves/2.0';
+
+/** @typedef {import('../../_types/resolvers/techstack/types').TechstackSeverity} TechstackSeverity */
+/** @typedef {import('../../_types/resolvers/techstack/types').NvdLookupResult} NvdLookupResult */
+/** @typedef {import('../../_types/resolvers/techstack/types').TechstackFinding} TechstackFinding */
+/** @typedef {import('../../_types/resolvers/techstack/types').TechstackClassifiedHeader} TechstackClassifiedHeader */
+/** @typedef {import('../../_types/resolvers/techstack/types').TechstackCookieFinding} TechstackCookieFinding */
+/** @typedef {import('../../_types/resolvers/techstack/types').TechstackTechnologyNvdSummary} TechstackTechnologyNvdSummary */
+/** @typedef {import('../../_types/resolvers/techstack/types').TechstackWafNvdSummary} TechstackWafNvdSummary */
+/** @typedef {import('../../_types/resolvers/techstack/types').TechstackResolveInput} TechstackResolveInput */
+/** @typedef {import('../../_types/resolvers/techstack/types').TechstackResolveResult} TechstackResolveResult */
+/** @typedef {import('../../_types/resolvers/techstack/types').TechstackFindingCollector} TechstackFindingCollector */
+/** @typedef {import('../../_types/resolvers/techstack/types').TechstackCookieIssue} TechstackCookieIssue */
+/** @typedef {import('../../_types/resolvers/techstack/types').TechstackCookieInput} TechstackCookieInput */
+/** @typedef {import('../../_types/resolvers/techstack/types').TechstackSecureHeaderInput} TechstackSecureHeaderInput */
 
 // === NVD rate limiting config ===
 // Without API key: 5 requests / 30 seconds
@@ -15,6 +31,7 @@ const NVD_LIMIT_WITH_KEY = 50;
 const NVD_API_KEY = process.env.NVD_API_KEY || null;
 
 // In-memory list of timestamps for recent NVD calls
+/** @type {number[]} */
 let nvdCallTimestamps = [];
 
 // Severity normalization and ordering (for ontology compatibility)
@@ -27,27 +44,51 @@ const SEVERITY_ORDER = {
   UNKNOWN: 0,
 };
 
+/**
+ * Normalize any severity string to the internal TechstackSeverity set.
+ *
+ * @param {string} [severity]
+ * @returns {TechstackSeverity}
+ */
 function normalizeSeverity(severity) {
   if (!severity) return 'UNKNOWN';
   const s = String(severity).toUpperCase();
   if (s === 'CRITICAL' || s === 'HIGH' || s === 'MEDIUM' || s === 'LOW' || s === 'INFO') {
-    return s;
+    return /** @type {TechstackSeverity} */ (s);
   }
   return 'UNKNOWN';
 }
 
+/**
+ * Pick the worst severity between two values according to SEVERITY_ORDER.
+ *
+ * @param {TechstackSeverity|string} current
+ * @param {TechstackSeverity|string} candidate
+ * @returns {TechstackSeverity}
+ */
 function worstSeverity(current, candidate) {
   const cur = normalizeSeverity(current);
   const cand = normalizeSeverity(candidate);
   return SEVERITY_ORDER[cand] > SEVERITY_ORDER[cur] ? cand : cur;
 }
 
-// Simple sleep helper
+/**
+ * Simple sleep helper (ms).
+ *
+ * @param {number} ms
+ * @returns {Promise<void>}
+ */
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-// Wrapper around axios.get with basic client-side rate limiting
+/**
+ * Wrapper around axios.get with basic client-side rate limiting for NVD.
+ *
+ * @param {string} url
+ * @param {import('axios').AxiosRequestConfig} [config]
+ * @returns {Promise<import('axios').AxiosResponse<any>>}
+ */
 async function rateLimitedGet(url, config = {}) {
   const now = Date.now();
   const limit = NVD_API_KEY ? NVD_LIMIT_WITH_KEY : NVD_LIMIT_NO_KEY;
@@ -82,6 +123,13 @@ async function rateLimitedGet(url, config = {}) {
   });
 }
 
+/**
+ * Lookup CVEs and CPEs on NVD for a given product/version pair.
+ *
+ * @param {string} product
+ * @param {string} [version='']
+ * @returns {Promise<NvdLookupResult>}
+ */
 async function lookupNvd(product, version = '') {
   const keyword = encodeURIComponent(`${product}${version ? ' ' + version : ''}`);
   const url = `${NVD_BASE}?keywordSearch=${keyword}`;
@@ -94,7 +142,8 @@ async function lookupNvd(product, version = '') {
       const res = await rateLimitedGet(url);
       const vulns = res.data?.vulnerabilities || [];
 
-      const cves = [];
+      /** @type {NvdLookupResult} */
+      const out = { cve: [], cpe: [] };
       const cpes = new Set();
 
       for (const v of vulns) {
@@ -110,7 +159,7 @@ async function lookupNvd(product, version = '') {
         const score = cvss.baseScore || null;
         const severity = normalizeSeverity(cvss.baseSeverity || 'UNKNOWN');
 
-        cves.push({ id, severity, score });
+        out.cve.push({ id, severity, score });
 
         const configs = v?.cve?.configurations || [];
         for (const c of configs) {
@@ -122,10 +171,15 @@ async function lookupNvd(product, version = '') {
         }
       }
 
-      return { cve: cves.slice(0, 10), cpe: [...cpes].slice(0, 10) };
+      out.cpe = [...cpes];
+      return {
+        cve: out.cve.slice(0, 10),
+        cpe: out.cpe.slice(0, 10),
+      };
     } catch (err) {
-      const status = err?.response?.status;
-      const msg = err?.message || String(err);
+      const e = /** @type {any} */ (err);
+      const status = e?.response?.status;
+      const msg = e?.message || String(e);
 
       if (status === 429 && attempt < maxRetries) {
         const backoffMs = 2000 * (attempt + 1);
@@ -148,7 +202,15 @@ async function lookupNvd(product, version = '') {
   return { cve: [], cpe: [] };
 }
 
+/**
+ * Classify security headers (HSTS, CSP, X-Frame-Options, etc.) and
+ * attach risk, severity and remediation hints.
+ *
+ * @param {TechstackSecureHeaderInput[]} headers
+ * @returns {TechstackClassifiedHeader[]}
+ */
 function classifyHeaders(headers = []) {
+  /** @type {TechstackClassifiedHeader[]} */
   const results = [];
 
   for (const h of headers) {
@@ -223,7 +285,15 @@ function classifyHeaders(headers = []) {
   return results;
 }
 
+/**
+ * Analyze WAF technologies via NVD and optionally emit findings via a collector.
+ *
+ * @param {Array<{ name?: string }>} wafList
+ * @param {TechstackFindingCollector} [collectFinding]
+ * @returns {Promise<TechstackWafNvdSummary[]>}
+ */
 async function analyzeWaf(wafList = [], collectFinding) {
+  /** @type {TechstackWafNvdSummary[]} */
   const analyzed = [];
   const hasCollector = typeof collectFinding === 'function';
 
@@ -244,7 +314,8 @@ async function analyzeWaf(wafList = [], collectFinding) {
     if (hasKnownCVE && hasCollector) {
       for (const cve of nvd.cve) {
         const severity = normalizeSeverity(cve.severity);
-        collectFinding({
+        /** @type {TechstackFinding} */
+        const finding = {
           id: `waf:${name}:${cve.id}`,
           source: 'techstack',
           kind: 'WafCVE',
@@ -260,7 +331,8 @@ async function analyzeWaf(wafList = [], collectFinding) {
             name,
             cpe: nvd.cpe,
           },
-        });
+        };
+        collectFinding(finding);
       }
     }
   }
@@ -268,12 +340,22 @@ async function analyzeWaf(wafList = [], collectFinding) {
   return analyzed;
 }
 
+/**
+ * Analyze cookies according to security flags and domain/scope.
+ *
+ * @param {TechstackCookieInput[]} cookies
+ * @param {string} [mainDomain='']
+ * @returns {TechstackCookieFinding[]}
+ */
 function analyzeCookies(cookies = [], mainDomain = '') {
   const now = Date.now() / 1000;
+  /** @type {TechstackCookieFinding[]} */
   const findings = [];
 
   for (const c of cookies) {
+    /** @type {TechstackCookieIssue[]} */
     const issues = [];
+    /** @type {TechstackSeverity} */
     let cookieWorstSeverity = 'INFO';
 
     // NOTE: if "secure" / "httpOnly" / "sameSite" are missing in the input,
@@ -283,7 +365,7 @@ function analyzeCookies(cookies = [], mainDomain = '') {
       const issue = {
         rule: 'missing_secure',
         risk: 'HIGH',
-        severity: 'HIGH',
+        severity: normalizeSeverity('HIGH'),
         category: 'SessionHijacking',
         description: 'Cookie not marked as Secure — can be sent over HTTP.',
         remediation: 'Set Secure flag.',
@@ -296,7 +378,7 @@ function analyzeCookies(cookies = [], mainDomain = '') {
       const issue = {
         rule: 'missing_httponly',
         risk: 'HIGH',
-        severity: 'HIGH',
+        severity: normalizeSeverity('HIGH'),
         category: 'XSSDataTheft',
         description: 'Cookie accessible from JavaScript.',
         remediation: 'Set HttpOnly flag.',
@@ -309,7 +391,7 @@ function analyzeCookies(cookies = [], mainDomain = '') {
       const issue = {
         rule: 'missing_samesite',
         risk: 'MEDIUM',
-        severity: 'MEDIUM',
+        severity: normalizeSeverity('MEDIUM'),
         category: 'CSRF',
         description: 'Cookie lacks SameSite protection.',
         remediation: 'Set SameSite=Lax or Strict.',
@@ -322,7 +404,7 @@ function analyzeCookies(cookies = [], mainDomain = '') {
       const issue = {
         rule: 'invalid_samesite_none',
         risk: 'HIGH',
-        severity: 'HIGH',
+        severity: normalizeSeverity('HIGH'),
         category: 'CSRFSessionLeak',
         description: 'SameSite=None without Secure is insecure.',
         remediation: 'Always set Secure with SameSite=None.',
@@ -335,7 +417,7 @@ function analyzeCookies(cookies = [], mainDomain = '') {
       const issue = {
         rule: 'long_expiry',
         risk: 'LOW',
-        severity: 'LOW',
+        severity: normalizeSeverity('LOW'),
         category: 'PrivacyPersistence',
         description: 'Cookie persists for over 1 year.',
         remediation: 'Shorten cookie lifetime.',
@@ -348,7 +430,7 @@ function analyzeCookies(cookies = [], mainDomain = '') {
       const issue = {
         rule: 'third_party_cookie',
         risk: 'LOW',
-        severity: 'LOW',
+        severity: normalizeSeverity('LOW'),
         category: 'ThirdPartyTracking',
         description: `Cookie from third-party domain ${c.domain}.`,
         remediation: 'Check necessity and GDPR compliance.',
@@ -361,7 +443,7 @@ function analyzeCookies(cookies = [], mainDomain = '') {
       const issue = {
         rule: 'unprotected_session_cookie',
         risk: 'HIGH',
-        severity: 'HIGH',
+        severity: normalizeSeverity('HIGH'),
         category: 'SessionExposure',
         description: `Sensitive cookie (${c.name}) lacks proper flags.`,
         remediation: 'Ensure both Secure and HttpOnly are set.',
@@ -388,6 +470,13 @@ function analyzeCookies(cookies = [], mainDomain = '') {
   return findings;
 }
 
+/**
+ * Techstack resolver: correlate technologies/WAF/headers/cookies with
+ * known vulnerabilities and best practice recommendations.
+ *
+ * @param {TechstackResolveInput} param0
+ * @returns {Promise<TechstackResolveResult>}
+ */
 async function resolveTechstack({
   technologies = [],
   waf = [],
@@ -401,15 +490,18 @@ async function resolveTechstack({
 
   const analyzedAt = new Date().toISOString();
 
-  // Global findings list (aligned with ontology's Finding / Evidence model)
+  // Global findings list (aligned with the ontology's Finding / Evidence model)
+  /** @type {TechstackFinding[]} */
   const findings = [];
+  /** @type {import('../../_types/resolvers/techstack/types').TechstackStats} */
   const stats = {
-    bySeverity: {},
+    bySeverity: /** @type {any} */ ({}),
     byCategory: {},
     byKind: {},
   };
   let totalFindings = 0;
 
+  /** @type {TechstackFindingCollector} */
   function pushFinding(f) {
     findings.push(f);
     totalFindings += 1;
@@ -426,6 +518,7 @@ async function resolveTechstack({
   }
 
   // === Technologies → NVD → Findings ===
+  /** @type {TechstackTechnologyNvdSummary[]} */
   const analyzedTech = [];
   for (const t of technologies) {
     const name = String(t.name || '').trim();
@@ -482,7 +575,7 @@ async function resolveTechstack({
       id: `header:${String(hf.header || '').toLowerCase()}:${hf.rule || 'generic'}`,
       source: 'techstack',
       kind: 'HeaderIssue',
-      rule: hf.rule || null,
+      rule: hf.rule || 'generic',
       severity,
       category: hf.category || 'HeaderSecurity',
       message: hf.description || `Header ${hf.header} has a security recommendation.`,
@@ -527,6 +620,7 @@ async function resolveTechstack({
     }
   }
 
+  /** @type {import('../../_types/resolvers/techstack/types').TechstackSummary} */
   const summary = {
     totalTechnologies: analyzedTech.length,
     technologiesWithKnownCVE: analyzedTech.filter((t) => t.hasKnownCVE).length,
@@ -540,6 +634,7 @@ async function resolveTechstack({
     totalFindings,
   };
 
+  /** @type {TechstackResolveResult} */
   const result = {
     ok: true,
     resolver: {

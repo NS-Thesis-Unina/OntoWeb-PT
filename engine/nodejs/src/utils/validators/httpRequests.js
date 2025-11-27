@@ -9,6 +9,9 @@
 
 const { Joi } = require('celebrate');
 
+/** @typedef {import('../_types/validators/types').JoiSchema} JoiSchema */
+/** @typedef {import('../_types/validators/types').JoiObjectSchema} JoiObjectSchema */
+
 /** RFC 7230 "token" for HTTP header names — now optional (kept for reference) */
 const HEADER_TOKEN_RE = /^[!#$%&'*+.^_`|~0-9A-Za-z-]+$/;
 
@@ -40,16 +43,18 @@ const xmlSchema = Joi.string().trim().max(20000); // queryXml
 /** Header object: relaxed — no pattern check on name */
 const headerSchema = Joi.object({
   name: Joi.string().trim().lowercase().max(256).required(),
-  value: Joi.string().trim().allow('').max(8000).default('')
+  value: Joi.string().trim().allow('').max(8000).default(''),
 }).unknown(false);
 
 /** Query params array: unchanged, just relaxed types */
-const paramsSchema = Joi.array().items(
-  Joi.object({
-    name: Joi.string().trim().max(256).required(),
-    value: Joi.string().trim().allow('').max(2000).default('')
-  }).unknown(false)
-).max(200);
+const paramsSchema = Joi.array()
+  .items(
+    Joi.object({
+      name: Joi.string().trim().max(256).required(),
+      value: Joi.string().trim().allow('').max(2000).default(''),
+    }).unknown(false)
+  )
+  .max(200);
 
 /** queryRaw: strip a leading '?' if present */
 const queryRawSchema = Joi.string()
@@ -66,13 +71,16 @@ const uriSchema = Joi.object({
   fragment: fragmentSchema.optional(),
   queryXml: xmlSchema.optional(),
   params: paramsSchema.optional(),
-  queryRaw: queryRawSchema.optional()
+  queryRaw: queryRawSchema.optional(),
 }).unknown(false);
 
 /** Base64 scrubber: remove whitespace before validation */
 const base64Sanitizer = (v) => (typeof v === 'string' ? v.replace(/\s+/g, '') : v);
 
-/** Request object: relaxed and tolerant */
+/**
+ * Request object: relaxed and tolerant.
+ * @type {JoiObjectSchema}
+ */
 const requestSchema = Joi.object({
   graph: Joi.string().trim().max(2048).optional(),
 
@@ -97,32 +105,36 @@ const requestSchema = Joi.object({
       .custom((v) => base64Sanitizer(v), 'strip whitespace')
       .max(20 * 1024 * 1024)
       .optional(),
-    headers: Joi.array().items(headerSchema).max(200).optional()
-  }).unknown(false).optional(),
+    headers: Joi.array().items(headerSchema).max(200).optional(),
+  })
+    .unknown(false)
+    .optional(),
 
   connection: Joi.object({
-    authority: authoritySchema.required()
-  }).unknown(false).optional()
+    authority: authoritySchema.required(),
+  })
+    .unknown(false)
+    .optional(),
 }).unknown(false);
 
 /**
  * Validate & sanitize payloads for POST /ingest-http.
  * Functional: allows any of { object | array | { items: [...] } }
- * @type {import('joi').Schema}
+ * @type {JoiSchema}
  */
 const ingestPayloadSchema = Joi.alternatives().try(
   requestSchema,
   Joi.array().items(requestSchema).min(1),
-  Joi.object({ 
-    items: Joi.array().items(requestSchema).min(1).required(), 
-    activateResolver: Joi.boolean().default(false) 
+  Joi.object({
+    items: Joi.array().items(requestSchema).min(1).required(),
+    activateResolver: Joi.boolean().default(false),
   }).unknown(false)
 );
 
 /**
  * Validate & sanitize query string for GET /http-requests/list.
  * Functional: all optional, very permissive.
- * @type {import('joi').Schema}
+ * @type {JoiSchema}
  */
 const listQuerySchema = Joi.object({
   limit: Joi.number().integer().min(0).max(1000).default(10),
@@ -133,20 +145,21 @@ const listQuerySchema = Joi.object({
   path: pathSchema.optional(),
   headerName: Joi.string().trim().lowercase().max(256).optional(),
   headerValue: Joi.string().trim().max(8000).optional(),
-  text: Joi.string().trim().max(4000).optional()
+  text: Joi.string().trim().max(4000).optional(),
 }).unknown(false);
 
-/** Path parameter :id — keep basic sanity
- * @type {import('joi').Schema}
+/**
+ * Path parameter :id — keep basic sanity.
+ * @type {JoiSchema}
  */
 const idParamSchema = Joi.object({
-  id: idSchema.required()
+  id: idSchema.required(),
 }).unknown(false);
 
 /**
  * Params schema for GET /analyzer/results/:jobId
  * Matches the style used in other validators (techstack/jobId).
- * @type {import('joi').ObjectSchema}
+ * @type {JoiObjectSchema}
  */
 const jobIdParamSchema = Joi.object({
   jobId: Joi.string().required(),
@@ -156,5 +169,5 @@ module.exports = {
   ingestPayloadSchema,
   listQuerySchema,
   idParamSchema,
-  jobIdParamSchema
+  jobIdParamSchema,
 };

@@ -1,9 +1,19 @@
 // @ts-check
 
 /** @typedef {import('../../_types/http/builders/types').SelectFilters} SelectFilters */
+
 const { EX, G_HTTP } = require('../../constants');
 const { sanitizeLimit, sanitizeOffset } = require('../../sparql/pagination');
 const { escapeStr } = require('../../strings/escape');
+
+/**
+ * Parameters accepted by {@link buildSelectRequestsPaged}.
+ *
+ * @typedef {Object} SelectPagedParams
+ * @property {SelectFilters} [filters] - Optional filters to narrow matching requests.
+ * @property {number} [limit] - Page size (will be sanitized).
+ * @property {number} [offset] - Page offset (will be sanitized).
+ */
 
 /**
  * Build a single **paginated** SPARQL SELECT that returns:
@@ -39,11 +49,8 @@ const { escapeStr } = require('../../strings/escape');
  *      ?connAuthority,
  *      ?total
  *
- * @param {object} [params={}]               Builder parameters.
- * @param {SelectFilters} [params.filters]    Optional filters (see above).
- * @param {number} [params.limit=10]          Page size (sanitized, default 10).
- * @param {number} [params.offset=0]          Page offset (sanitized, default 0).
- * @returns {string}                          A complete SPARQL SELECT string ready to run on GraphDB.
+ * @param {SelectPagedParams} [params={}] Builder parameters.
+ * @returns {string} A complete SPARQL SELECT string ready to run on GraphDB.
  *
  * @example
  * const q = buildSelectRequestsPaged({
@@ -108,7 +115,7 @@ WHERE {
           { ?req0 ex:reqHeader ?hdr0 . } UNION
           { ?req0 ex:repHeader ?hdr0 . } UNION
           { ?req0 ex:payHeader ?hdr0 . }
-          ?hdr0 ex:fieldName ?hdrName0 .
+          ?hdr0 ex:fieldName ?hdrName0 . 
           OPTIONAL { ?hdr0 ex:fieldValue ?hdrValue0 . }
         }
 
@@ -140,7 +147,7 @@ WHERE {
             { ?req1 ex:reqHeader ?hdr0 . } UNION
             { ?req1 ex:repHeader ?hdr0 . } UNION
             { ?req1 ex:payHeader ?hdr0 . }
-            ?hdr0 ex:fieldName ?hdrName0 .
+            ?hdr0 ex:fieldName ?hdrName0 . 
             OPTIONAL { ?hdr0 ex:fieldValue ?hdrValue0 . }
           }
 
@@ -176,7 +183,7 @@ WHERE {
         { ?req ex:reqHeader ?hdr . } UNION
         { ?req ex:repHeader ?hdr . } UNION
         { ?req ex:payHeader ?hdr . }
-        ?hdr ex:fieldName ?hdrName .
+        ?hdr ex:fieldName ?hdrName . 
         OPTIONAL { ?hdr ex:fieldValue ?hdrValue . }
       }
 
@@ -214,7 +221,7 @@ WHERE {
           { ?res ex:resHeader ?rhdr . } UNION
           { ?res ex:repHeader ?rhdr . } UNION
           { ?res ex:payHeader ?rhdr . }
-          ?rhdr ex:fieldName ?rhdrName .
+          ?rhdr ex:fieldName ?rhdrName . 
           OPTIONAL { ?rhdr ex:fieldValue ?rhdrValue . }
         }
       }

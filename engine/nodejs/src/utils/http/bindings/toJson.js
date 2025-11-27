@@ -4,6 +4,16 @@
 /** @typedef {import('../../_types/http/bindings/types').SelectFilters} SelectFilters */
 /** @typedef {import('../../_types/http/bindings/types').HttpHeader} HttpHeader */
 /** @typedef {import('../../_types/http/bindings/types').HttpRequestList} HttpRequestList */
+/** @typedef {import('../../_types/http/bindings/types').HttpRequestFromBindings} HttpRequestFromBindings */
+/** @typedef {import('../../_types/graphdb/types').SparqlBindingCell} SparqlBindingCell */
+
+/**
+ * A single SPARQL binding row as returned by GraphDB for SELECT queries.
+ * Keys are variable names, values are SPARQL binding cells.
+ *
+ * @typedef {Record<string, SparqlBindingCell>} SparqlBindingRow
+ */
+
 const { G_HTTP } = require('../../constants');
 
 /**
@@ -25,8 +35,12 @@ const { G_HTTP } = require('../../constants');
  * - `resHttpVersion`, `resBodyBase64`, `statusCodeNumber`, `reasonPhrase`
  * - `rhdrName`, `rhdrValue` (response headers)
  *
- * @param {any[]} bindings - SPARQL JSON result `bindings` array (W3C format).
- * @returns {HttpRequestList} Object containing the normalized items `{ items: HttpRequest[] }`.
+ * The returned structure matches {@link HttpRequestList}, where each item
+ * is an {@link HttpRequestFromBindings} (base HttpRequest plus `graph`,
+ * `connection`, `response`, `uri.params`, `uri.queryRaw`).
+ *
+ * @param {SparqlBindingRow[]} bindings - SPARQL JSON `results.bindings` array (W3C format).
+ * @returns {HttpRequestList} Object containing the normalized items `{ items: HttpRequestFromBindings[] }`.
  *
  * @example
  * // Given `bindings` from a SELECT, turn them into normalized requests:
@@ -62,7 +76,7 @@ function bindingsToRequestsJson(bindings) {
         bodyBase64: valueOf(b.bodyBase64) || '',
         graph: G_HTTP,
         response: undefined,
-        connection: undefined
+        connection: undefined,
       });
     }
 
@@ -125,7 +139,9 @@ function bindingsToRequestsJson(bindings) {
     if (r.uri?.params?.length) {
       r.uri.params.sort((a, b) => a.name.localeCompare(b.name));
       if (!r.uri.queryRaw) {
-        r.uri.queryRaw = r.uri.params.map(p => `${encodeURIComponent(p.name)}=${encodeURIComponent(p.value ?? '')}`).join('&');
+        r.uri.queryRaw = r.uri.params
+          .map(p => `${encodeURIComponent(p.name)}=${encodeURIComponent(p.value ?? '')}`)
+          .join('&');
       }
     }
 

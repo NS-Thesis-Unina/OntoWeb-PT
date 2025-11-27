@@ -1,3 +1,5 @@
+// @ts-check
+
 const { makeLogger } = require('../../logs/logger');
 const { httpRules } = require('./httpRules');
 const { G_HTTP } = require('../../constants');
@@ -10,19 +12,30 @@ const {
   iriParam,
 } = require('../../iri/http');
 
+/** @typedef {import('../../_types/resolvers/http/types').HttpResolverRequest} HttpResolverRequest */
+/** @typedef {import('../../_types/resolvers/http/types').HttpResolverResult} HttpResolverResult */
+/** @typedef {import('../../_types/resolvers/http/types').HttpContextBase} HttpContextBase */
+/** @typedef {import('../../_types/resolvers/http/types').HttpContext} HttpContext */
+/** @typedef {import('../../_types/resolvers/http/types').HttpEvidence} HttpEvidence */
+
 const log = makeLogger('resolver:http');
 
 /**
- * Costruisce il contesto HTTP comune a tutte le regole per una request.
- * Qui le cose che servono a legare i finding all’ontologia:
- *   - requestId (usato in EX:id)
- *   - graph (named graph dove è stata inserita la Request)
- *   - IRIs di Request / URI / Response
+ * Build the base HTTP context shared by all rules for a single request.
+ *
+ * This context carries:
+ *   - requestId (used in EX:id)
+ *   - graph    (named graph where the Request was inserted)
+ *   - IRIs     for Request / URI / Response
+ *
+ * @param {HttpResolverRequest} req
+ * @returns {HttpContextBase}
  */
 function buildBaseHttpContext(req) {
   const requestId = req?.id || null;
   const graph = req?.graph || G_HTTP;
 
+  /** @type {HttpContextBase} */
   const ctx = {
     requestId,
     graph,
@@ -40,19 +53,24 @@ function buildBaseHttpContext(req) {
 }
 
 /**
- * Arricchisce il contesto HTTP con IRIs specifici per headers / params / cookies,
- * usando gli indici presenti in evidence.
+ * Enrich the HTTP context with header/param/cookie IRIs using the
+ * evidence indexes provided by the rules.
  *
- * - headers[].iri       -> urn:req:{id}:hdr:{i} o :resh:{i}
+ * - headers[].iri       -> urn:req:{id}:hdr:{i} or :resh:{i}
  * - params[].iri        -> urn:req:{id}:param:{i}
- * - cookies[].headerIri -> IRI dell’header che contiene i cookie
+ * - cookies[].headerIri -> IRI of the header that contains the cookie
+ *
+ * @param {HttpContextBase} baseCtx
+ * @param {HttpEvidence | undefined | null} evidence
+ * @returns {HttpContext}
  */
 function enrichHttpContextWithEvidence(baseCtx, evidence) {
+  /** @type {HttpContext} */
   const ctx = { ...baseCtx };
 
   const requestId = baseCtx.requestId;
   if (!requestId) {
-    // senza id non possiamo calcolare URN; restituiamo solo baseCtx
+    // Without an ID we cannot compute URNs; return baseCtx as-is.
     return ctx;
   }
 
@@ -98,9 +116,23 @@ function enrichHttpContextWithEvidence(baseCtx, evidence) {
   return ctx;
 }
 
+/**
+ * Run ontology-aware HTTP security rules on a list of HTTP requests.
+ *
+ * For each request:
+ *  - Build a base HTTP context (requestId, graph, IRIs).
+ *  - Execute all rules from httpRules.
+ *  - When a rule matches, compute an enriched httpContext using the evidence.
+ *  - Emit a normalized finding object that can be directly mapped to the ontology.
+ *
+ * @param {HttpResolverRequest[]} [requests=[]]
+ * @param {boolean} [verbose=false]
+ * @returns {Promise<HttpResolverResult>}
+ */
 async function analyzeHttpRequests(requests = [], verbose = false) {
   log.info(`Analyzing ${requests.length} HTTP requests with ${httpRules.length} rules...`);
 
+  /** @type {import('../../_types/resolvers/http/types').HttpResolverFinding[]} */
   const findings = [];
 
   for (const req of requests) {
@@ -108,6 +140,8 @@ async function analyzeHttpRequests(requests = [], verbose = false) {
 
     for (const rule of httpRules) {
       try {
+        /** @type {HttpEvidence | false | null | undefined} */
+        // @ts-ignore - httpRules is a plain JS array, we trust its shape
         const evidence = rule.check(req);
 
         if (!evidence) {
@@ -117,29 +151,29 @@ async function analyzeHttpRequests(requests = [], verbose = false) {
         const httpContext = enrichHttpContextWithEvidence(baseCtx, evidence);
 
         const finding = {
-          // === Metadata della regola ===
+          // === Rule metadata ===
           ruleId: rule.id,
           severity: rule.severity,
           description: rule.description,
           category: rule.category,
           owasp: rule.owasp,
 
-          // === Info HTTP “classiche” ===
+          // === Classic HTTP info ===
           url: req?.uri?.full,
           method: req?.method,
           responseStatus: req?.response?.status,
 
-          // === Collegamento all’ontologia ===
-          // Request già inserita in GraphDB con:
+          // === Ontology linkage ===
+          // Request already inserted in GraphDB with:
           //   <urn:req:{id}> a ex:Request ; ex:id "{id}" .
           requestId: baseCtx.requestId,
           graph: baseCtx.graph,
 
-          // Resolver semantico (per ex:detectedByResolver)
-          // mappabile all’individual HttpResolverInstance
+          // Semantic resolver (for ex:detectedByResolver)
+          // mappable to the HttpResolverInstance individual
           resolver: 'HttpResolverInstance',
 
-          // Contesto HTTP con IRIs pronti per essere usati in SPARQL:
+          // HTTP context with IRIs ready to be used in SPARQL:
           // - httpContext.requestIri
           // - httpContext.uriIri
           // - httpContext.responseIri
@@ -148,14 +182,14 @@ async function analyzeHttpRequests(requests = [], verbose = false) {
           // - httpContext.cookies[].headerIri
           httpContext,
 
-          // Evidence raw, utile lato UI / debug
+          // Raw evidence, useful for UI / debugging
           evidence,
         };
 
         findings.push(finding);
 
         if (verbose) {
-          log.info(`🧩 Rule matched: ${rule.id}`, {
+          log.info(`Rule matched: ${rule.id}`, {
             url: finding.url,
             method: finding.method,
             severity: finding.severity,
@@ -163,7 +197,8 @@ async function analyzeHttpRequests(requests = [], verbose = false) {
           });
         }
       } catch (err) {
-        log.warn(`Rule ${rule.id} threw an error: ${err.message}`);
+        const e = /** @type {any} */ (err);
+        log.warn(`Rule ${rule.id} threw an error: ${e?.message || e}`);
       }
     }
   }

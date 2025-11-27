@@ -8,9 +8,11 @@
 
 const { Joi } = require('celebrate');
 
+/** @typedef {import('../_types/validators/types').JoiObjectSchema} JoiObjectSchema */
+
 /**
  * Body schema for POST /techstack/analyze
- * @type {import('joi').ObjectSchema}
+ * @type {JoiObjectSchema}
  */
 const techstackBodySchema = Joi.object({
   technologies: Joi.array()
@@ -69,7 +71,7 @@ const techstackBodySchema = Joi.object({
 
 /**
  * Params schema for GET /techstack/results/:jobId
- * @type {import('joi').ObjectSchema}
+ * @type {JoiObjectSchema}
  */
 const jobIdParamSchema = Joi.object({
   jobId: Joi.string().required(),

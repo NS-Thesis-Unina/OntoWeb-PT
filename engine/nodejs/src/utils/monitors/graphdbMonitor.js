@@ -2,15 +2,25 @@
 
 const { makeLogger } = require('../logs/logger');
 
+/** @typedef {import('../_types/monitors/types').GraphDBHealthState} GraphDBHealthState */
+/** @typedef {import('../_types/monitors/types').GraphDBRunSelectFn} GraphDBRunSelectFn */
+/** @typedef {import('../_types/monitors/types').GraphDBStateReporter} GraphDBStateReporter */
+/** @typedef {import('../_types/monitors/types').GraphDBProbeHandle} GraphDBProbeHandle */
+
 /**
- * Periodically pings GraphDB via runSelect("ASK {}") and logs state transitions.
- * It optionally reports state changes to a callback (for health aggregation).
+ * Start a periodic GraphDB health probe based on `ASK {}`.
  *
- * @param {(sparql: string) => Promise<any>} runSelect - function to run SPARQL SELECT/ASK
- * @param {string} [ns='graphdb:probe'] - logger namespace
- * @param {number} [intervalMs=Number(process.env.GRAPHDB_HEALTH_INTERVAL_MS || 5000)] - probe interval in ms
- * @param {(state: 'up'|'down'|'unknown') => void} [report] - optional state reporter
- * @returns {{ stop: () => void, getState: () => 'up'|'down'|'unknown' }}
+ * Behavior:
+ * - Periodically executes `runSelect("ASK {}")`.
+ * - Tracks internal state: 'unknown' → 'up' or 'down'.
+ * - Logs transitions (DOWN → UP, UP → DOWN).
+ * - Optionally reports state changes to a callback (e.g. for central health aggregation).
+ *
+ * @param {GraphDBRunSelectFn} runSelect - Function used to run SPARQL SELECT/ASK against GraphDB.
+ * @param {string} [ns='graphdb:probe'] - Logger namespace.
+ * @param {number} [intervalMs=Number(process.env.GRAPHDB_HEALTH_INTERVAL_MS || 5000)] - Probe interval in milliseconds.
+ * @param {GraphDBStateReporter} [report] - Optional state reporter invoked on transitions.
+ * @returns {GraphDBProbeHandle} Handle with `stop()` and `getState()` helpers.
  */
 function startGraphDBHealthProbe(
   runSelect,
@@ -19,7 +29,7 @@ function startGraphDBHealthProbe(
   report
 ) {
   const log = makeLogger(ns);
-  /** @type {'up'|'down'|'unknown'} */
+  /** @type {GraphDBHealthState} */
   let state = 'unknown';
 
   async function probe() {
@@ -40,7 +50,7 @@ function startGraphDBHealthProbe(
     }
   }
 
-  // initial kick + interval
+  // Initial kick + periodic interval
   void probe();
   const timer = setInterval(probe, intervalMs);
 

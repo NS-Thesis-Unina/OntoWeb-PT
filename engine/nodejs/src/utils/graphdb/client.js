@@ -45,34 +45,12 @@ function repoUrlBase() {
  *
  * Returns the SPARQL JSON payload **as-is**:
  * - SELECT → `{ head: { vars: string[] }, results: { bindings: Record<string, {type,value,...}>[] } }`
- * - ASK    → `{ boolean: boolean }`
+ * - ASK    → `{ head?: { ... }, boolean: boolean }`
  *
  * @param {string} sparql - The SPARQL query string (either SELECT or ASK).
  * @returns {Promise<SparqlJsonResult>} The SPARQL JSON result as specified by the W3C format.
- * @throws {Error} Propagates Axios errors (network errors, non-2xx responses, timeouts).
- *
- * @example
- * // SELECT example
- * const q = `
- *   SELECT ?s ?p ?o
- *   WHERE { ?s ?p ?o }
- *   LIMIT 10
- * `;
- * const res = await runSelect(q);
- * if ('results' in res) {
- *   // Array of bindings: each binding has variables as keys and { type, value, ... } as cells
- *   console.log(res.results.bindings.map(row => row.s?.value));
- * }
- *
- * @example
- * // ASK example
- * const ask = `
- *   ASK { ?s a <http://example.com/SomeType> }
- * `;
- * const ok = await runSelect(ask);
- * if ('boolean' in ok && ok.boolean) {
- *   console.log('At least one resource of SomeType exists');
- * }
+ * @throws {Error} Throws an Error whose message is derived from the GraphDB response
+ *                 or the underlying Axios error (code/message).
  */
 async function runSelect(sparql) {
   const url = repoUrlBase();
@@ -80,14 +58,18 @@ async function runSelect(sparql) {
     const res = await axios.post(url, `query=${encodeURIComponent(sparql)}`, {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
-        'Accept': 'application/sparql-results+json'
+        'Accept': 'application/sparql-results+json',
       },
-      timeout: 30000
+      timeout: 30000,
     });
     return res.data;
   } catch (err) {
-      const e = /** @type {any} */(err);
-      const msg = e?.response?.data?.message || e?.code || e?.message || 'GraphDB SELECT error';
+    const e = /** @type {any} */ (err);
+    const msg =
+      e?.response?.data?.message ||
+      e?.code ||
+      e?.message ||
+      'GraphDB SELECT error';
     throw new Error(msg);
   }
 }
@@ -105,41 +87,24 @@ async function runSelect(sparql) {
  *
  * @param {string} sparqlUpdate - The SPARQL UPDATE statement (e.g., INSERT DATA / DELETE WHERE / DELETE/INSERT ... WHERE).
  * @returns {Promise<number>} The HTTP status code from the GraphDB response.
- * @throws {Error} Propagates Axios errors (network errors, non-2xx responses, timeouts).
- *
- * @example
- * // INSERT DATA into a named graph
- * const status = await runUpdate(`
- *   INSERT DATA {
- *     GRAPH <http://example.com/graphs/http-requests> {
- *       <urn:ex:s> <urn:ex:p> "o"
- *     }
- *   }
- * `);
- * if (status === 204) {
- *   console.log('Update applied successfully');
- * }
- *
- * @example
- * // DELETE WHERE pattern
- * const del = await runUpdate(`
- *   WITH <http://example.com/graphs/http-requests>
- *   DELETE { ?s ?p ?o }
- *   WHERE  { ?s ?p ?o FILTER(?p = <urn:ex:p>) }
- * `);
- * console.log('HTTP status:', del); // usually 204
+ * @throws {Error} Throws an Error whose message is derived from the GraphDB response
+ *                 or the underlying Axios error (code/message).
  */
 async function runUpdate(sparqlUpdate) {
   const url = `${repoUrlBase()}/statements`;
   try {
     const res = await axios.post(url, sparqlUpdate, {
       headers: { 'Content-Type': 'application/sparql-update' },
-      timeout: 60000
+      timeout: 60000,
     });
     return res.status;
   } catch (err) {
-      const e = /** @type {any} */(err);
-      const msg = e?.response?.data?.message || e?.code || e?.message || 'GraphDB UPDATE error';
+    const e = /** @type {any} */ (err);
+    const msg =
+      e?.response?.data?.message ||
+      e?.code ||
+      e?.message ||
+      'GraphDB UPDATE error';
     throw new Error(msg);
   }
 }

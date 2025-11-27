@@ -1,6 +1,8 @@
 // @ts-check
 
 /** @typedef {import('../_types/sparql/types').ParamEntry} ParamEntry */
+/** @typedef {import('../_types/sparql/types').XmlLiteralString} XmlLiteralString */
+
 const { escapeStringLiteral, escapeXml } = require('../strings/escape');
 
 /**
@@ -11,7 +13,7 @@ const { escapeStringLiteral, escapeXml } = require('../strings/escape');
  * whether the string is well-formed XML — it assumes you pass valid XML markup.
  *
  * @param {string} [xmlString=''] - XML markup to embed into the SPARQL literal.
- * @returns {string} A SPARQL literal with `rdf:XMLLiteral` datatype.
+ * @returns {XmlLiteralString} A SPARQL literal with `rdf:XMLLiteral` datatype.
  *
  * @example
  * asXmlLiteral('<query><param name="q">node</param></query>');
@@ -30,10 +32,10 @@ function asXmlLiteral(xmlString = '') {
  * Convert a raw querystring into an XML `<query>…</query>` and wrap it as `rdf:XMLLiteral`.
  *
  * The raw string is XML-escaped (via `escapeXml`) and inserted as text content of `<query>`.
- * The resulting XML is then wrapped with `asXmlLiteral` so it is safe as a SPARQL typed literal.
+ * The resulting XML is then wrapped with {@link asXmlLiteral} so it is safe as a SPARQL typed literal.
  *
- * @param {string} [raw=''] - Raw querystring (e.g., "q=node&sort=asc").
- * @returns {string} A SPARQL `rdf:XMLLiteral` representing `<query>{escaped(raw)}</query>`.
+ * @param {string} [raw=''] - Raw querystring (e.g., `"q=node&sort=asc"`).
+ * @returns {XmlLiteralString} A SPARQL `rdf:XMLLiteral` representing `<query>{escaped(raw)}</query>`.
  *
  * @example
  * xmlLiteralFromQueryRaw('q=node&sort=asc');
@@ -54,7 +56,7 @@ function xmlLiteralFromQueryRaw(raw = '') {
  * - If `params` is not an array, it is treated as empty.
  *
  * @param {ParamEntry[]} [params=[]] - List of parameters to serialize.
- * @returns {string} A SPARQL `rdf:XMLLiteral` containing a `<query>` element with zero or more `<param>` children.
+ * @returns {XmlLiteralString} A SPARQL `rdf:XMLLiteral` containing a `<query>` element with zero or more `<param>` children.
  *
  * @example
  * const lit = xmlLiteralFromParams([
@@ -69,12 +71,20 @@ function xmlLiteralFromQueryRaw(raw = '') {
  * xmlLiteralFromParams(); // or xmlLiteralFromParams([])
  */
 function xmlLiteralFromParams(params = []) {
-  const items = (Array.isArray(params) ? params : []).map(p => {
-    const n = escapeXml(p?.name ?? '');
-    const v = escapeXml(String(p?.value ?? ''));
-    return `  <param name="${n}">${v}</param>`;
-  }).join('\n');
+  const items = (Array.isArray(params) ? params : [])
+    .map(p => {
+      const n = escapeXml(p?.name ?? '');
+      const v = escapeXml(String(p?.value ?? ''));
+      return `  <param name="${n}">${v}</param>`;
+    })
+    .join('\n');
+
   return asXmlLiteral(`<query>\n${items}\n</query>`);
 }
 
-module.exports = { asXmlLiteral, xmlLiteralFromQueryRaw, xmlLiteralFromParams, escapeXml };
+module.exports = {
+  asXmlLiteral,
+  xmlLiteralFromQueryRaw,
+  xmlLiteralFromParams,
+  escapeXml,
+};

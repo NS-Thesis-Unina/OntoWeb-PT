@@ -3,24 +3,37 @@
 const IORedis = require('ioredis').default;
 const { makeLogger } = require('../logs/logger');
 
+/** @typedef {import('../_types/monitors/types').RedisMonitorState} RedisMonitorState */
+/** @typedef {import('../_types/monitors/types').RedisConnectionOptions} RedisConnectionOptions */
+/** @typedef {import('../_types/monitors/types').RedisStateReporter} RedisStateReporter */
+/** @typedef {import('../_types/monitors/types').RedisMonitorHandle} RedisMonitorHandle */
+
 /**
  * Start a lightweight Redis connection just for health logging and state transitions.
- * It optionally reports state changes to a callback (for health aggregation).
  *
- * @param {object} connectionOpts - same shape you pass to BullMQ/ioredis
- * @param {string} [ns='redis:monitor'] - logger namespace
- * @param {(state: 'unknown'|'connecting'|'up'|'down') => void} [report] - optional state reporter
- * @returns {{ stop: () => void, getState: () => 'unknown'|'connecting'|'up'|'down' }}
+ * This monitor:
+ * - Creates an internal ioredis client (separate from BullMQ / main client).
+ * - Tracks connection state: 'unknown' → 'connecting' → 'up' / 'down'.
+ * - Logs lifecycle events (connect, ready, reconnecting, end, error, wait).
+ * - Optionally reports state changes to a callback (for centralized health handling).
+ *
+ * The created connection is meant purely for monitoring and can be stopped via
+ * the returned `stop()` method, which calls `redis.disconnect()`.
+ *
+ * @param {RedisConnectionOptions} connectionOpts - Options passed to `new IORedis(...)` (same shape as your BullMQ/ioredis config).
+ * @param {string} [ns='redis:monitor'] - Logger namespace.
+ * @param {RedisStateReporter} [report] - Optional state reporter invoked on transitions.
+ * @returns {RedisMonitorHandle} Handle with `stop()` and `getState()` helpers.
  */
 function startRedisMonitor(connectionOpts, ns = 'redis:monitor', report) {
   const log = makeLogger(ns);
-  // shallow clone to avoid outside mutations
+  // Shallow clone to avoid outside mutations
   const opts = { ...connectionOpts };
 
   const redis = new IORedis(opts);
   let wasReady = false;
   let reconnectAttempts = 0;
-  /** @type {'unknown'|'connecting'|'up'|'down'} */
+  /** @type {RedisMonitorState} */
   let state = 'unknown';
 
   redis.on('connect', () => {
@@ -47,7 +60,7 @@ function startRedisMonitor(connectionOpts, ns = 'redis:monitor', report) {
     if (typeof report === 'function') report(state);
   });
 
-  // 'end' = connection closed; after this, 'reconnecting' will be emitted
+  // 'end' = connection closed; after this, 'reconnecting' will be emitted (unless fully stopped)
   redis.on('end', () => {
     if (wasReady) log.warn('Redis DISCONNECTED');
     wasReady = false;
@@ -62,7 +75,7 @@ function startRedisMonitor(connectionOpts, ns = 'redis:monitor', report) {
     log.warn('Redis error', msg);
   });
 
-  // Optional: when the server is in LOADING or similar states
+  // Optional: when the server is in LOADING or similar transitional states
   redis.on('wait', () => {
     log.debug('Waiting for Redis to be ready...');
   });
