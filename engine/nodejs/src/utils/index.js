@@ -34,6 +34,10 @@ module.exports = {
   // Finding / vulnerability builders
   findingBuilders: {
     buildInsertFromFindingsArray: require('./finding/builders/insertBatch'),
+    buildSelectHttpFindingsPaged: require('./finding/builders/http/selectHttpFindingsPaged'),
+    bindingsToHttpFindingsList: require('./finding/bindings/http/httpFindingsList'),
+    buildSelectHttpFindingById: require('./finding/builders/http/selectHttpFindingById'),
+    bindingsToHttpFindingDetail: require('./finding/bindings/http/httpFindingDetail'),
   },
 
   // Monitors

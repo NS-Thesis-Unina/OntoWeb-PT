@@ -10,6 +10,12 @@ const {
     bindingsToRequestsJson,
     buildSelectRequestsPaged,
   },
+  findingBuilders: {
+    buildSelectHttpFindingsPaged,
+    bindingsToHttpFindingsList,
+    bindingsToHttpFindingDetail,
+    buildSelectHttpFindingById
+  },
   graphdb: { runSelect },
   makeLogger,
   validators: {
@@ -44,11 +50,14 @@ router.post(
       const job = await queueHttpRequests.add('http-ingest', { payload: list });
       log.info('ingest-http enqueued', { jobId: job.id, count: list.length });
 
-      objRes = {resRequest: { accepted: true, jobId: job.id, count: list.length }}
+      objRes = { resRequest: { accepted: true, jobId: job.id, count: list.length } };
 
-      if(raw?.activateResolver){
-        const jobRes = await queueHttpRequests.add('http-resolver', {list});
-        objRes = {...objRes, resResolver: { accepted: true, jobId: jobRes.id, count: list.length } }
+      if (raw?.activateResolver) {
+        const jobRes = await queueHttpRequests.add('http-resolver', { list });
+        objRes = {
+          ...objRes,
+          resResolver: { accepted: true, jobId: jobRes.id, count: list.length },
+        };
         log.info('http-resolver enqueued', { jobId: jobRes.id, count: list.length });
       }
 
@@ -112,7 +121,7 @@ router.get(
   async (req, res) => {
     try {
       const {
-        limit = '10',
+        limit = '100',
         offset = '0',
         method,
         scheme,
@@ -132,7 +141,7 @@ router.get(
         headerValue,
         text,
       };
-      const lim = Number.parseInt(limit, 10) || 10;
+      const lim = Number.parseInt(limit, 10) || 100;
       const off = Number.parseInt(offset, 10) || 0;
 
       const sparql = buildSelectRequestsPaged({ filters, limit: lim, offset: off });
@@ -196,7 +205,7 @@ router.get(
       const sparql = buildSelectRequests({
         ids: [id],
         filters: {},
-        limit: 1000,
+        limit: 100,
         offset: 0,
       });
       const data = await runSelect(sparql);
@@ -210,6 +219,97 @@ router.get(
       res.json(item);
     } catch (err) {
       log.error('get by id GraphDB query failed', err?.message || err);
+      res.status(502).json({
+        error: 'GraphDB query failed',
+        detail: String(err?.message || err),
+      });
+    }
+  }
+);
+
+/**
+ * Paginated list of HttpScan findings detected by HttpResolverInstance.
+ * Returns only finding IDs (no details).
+ *
+ * GET /http-requests/finding/list
+ */
+router.get(
+  '/finding/list',
+  celebrate({ [Segments.QUERY]: listQuerySchema }, celebrateOptions),
+  async (req, res) => {
+    try {
+      const { limit = '100', offset = '0' } = req.query;
+
+      const lim = Number.parseInt(String(limit), 10) || 100;
+      const off = Number.parseInt(String(offset), 10) || 0;
+
+      const sparql = buildSelectHttpFindingsPaged({ limit: lim, offset: off });
+      const data = await runSelect(sparql);
+      const bindings = data.results?.bindings || [];
+
+      const { items, total } = bindingsToHttpFindingsList(bindings);
+
+      const hasNext = off + lim < total;
+      const hasPrev = off > 0;
+      const nextOffset = hasNext ? off + lim : null;
+      const prevOffset = hasPrev ? Math.max(0, off - lim) : null;
+
+      log.info('http findings list ok', {
+        count: items.length,
+        total,
+        limit: lim,
+        offset: off,
+      });
+
+      res.json({
+        items,
+        page: {
+          limit: lim,
+          offset: off,
+          total,
+          hasNext,
+          hasPrev,
+          nextOffset,
+          prevOffset,
+        },
+      });
+    } catch (err) {
+      log.error('http findings list GraphDB query failed', err?.message || err);
+      res.status(502).json({
+        error: 'GraphDB query failed',
+        detail: String(err?.message || err),
+      });
+    }
+  }
+);
+
+/**
+ * Get detailed information for a single HttpScan finding by id.
+ * Aggregates scalar fields and related HTTP entities.
+ *
+ * GET /http-requests/finding/:id
+ */
+router.get(
+  '/finding/:id',
+  async (req, res) => {
+    try {
+      const { id } = req.params; // raw id from URL
+
+      const sparql = buildSelectHttpFindingById({ id });
+      const data = await runSelect(sparql);
+      const bindings = data.results?.bindings || [];
+
+      const detail = bindingsToHttpFindingDetail(bindings);
+
+      if (!detail) {
+        log.info('http finding detail: not found', { id });
+        return res.status(404).json({ error: 'Not found', id });
+      }
+
+      log.info('http finding detail ok', { id });
+      res.json(detail);
+    } catch (err) {
+      log.error('http finding detail GraphDB query failed', err?.message || err);
       res.status(502).json({
         error: 'GraphDB query failed',
         detail: String(err?.message || err),

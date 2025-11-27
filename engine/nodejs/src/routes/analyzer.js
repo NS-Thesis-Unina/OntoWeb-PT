@@ -92,4 +92,7 @@ router.get(
   }
 );
 
+// /finding/list ti da tutta la lista di urn dei finding inerenti ad AnalyzerResolverIstance dell'ontologia
+// /finding/:id ti da i dettagli di uno specifico finding ottenuto dall'urn. Utilizzare il normilize in builders/helpers. Inoltre ti deve dare anche tutto l'htmlRef.
+
 module.exports = router;
