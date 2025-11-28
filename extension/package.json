@@ -1,12 +1,9 @@
 {
+  "name": "extension",
   "private": true,
-  "name": "OntoWebPT",
-  "description": "Extension for penetration testing workflows.",
-  "version": "0.0.1",
-  "author": {
-    "name": "Francesco Scognamiglio, Felice Micillo",
-    "email": "francosco@hotmail.it, felicemicillo13@gmail.com"
-  },
+  "version": "1.0.0",
+  "description": "Extension (Client)",
+  "author": "Francesco Scognamiglio | Felice Micillo",
   "license": "MIT",
   "type": "module",
   "scripts": {

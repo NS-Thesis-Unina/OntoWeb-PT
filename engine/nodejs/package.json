@@ -1,9 +1,10 @@
 {
   "name": "nodejs",
+  "private": true,
   "version": "1.0.0",
   "description": "NodeJS (Backend)",
-  "license": "ISC",
   "author": "Francesco Scognamiglio | Felice Micillo",
+  "license": "ISC",
   "type": "commonjs",
   "main": "src/server.js",
   "scripts": {
