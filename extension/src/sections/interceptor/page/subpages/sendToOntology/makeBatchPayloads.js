@@ -379,7 +379,11 @@ function pickResponseBodyBase64(res) {
  *   { items: Array<NormalizedItem> }
  */
 export function convertItemsToApiPayload(items, opts = {}) {
-  const { graph = 'http://example.com/graphs/http-requests', idFn, forceHttpVersion } = opts;
+  const {
+    graph = import.meta.env.EXTENSION_PUBLIC_CONNECT_HTTP_REQUESTS_NAME_GRAPH || `http://localhost/graphs/http-requests`,
+    idFn,
+    forceHttpVersion,
+  } = opts;
 
   const mapped = [];
   const makeId = typeof idFn === 'function' ? idFn : defaultId;

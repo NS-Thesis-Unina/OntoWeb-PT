@@ -10,11 +10,11 @@ const CONTENT =
 
 const G_HTTP =
   process.env.HTTP_REQUESTS_NAME_GRAPH ||
-  'http://example.com/graphs/http-requests';
+  'http://localhost/graphs/http-requests';
 
 // Dedicated named graph for security findings (Techstack/HTTP/Analyzer).
 const G_FINDINGS =
   process.env.FINDINGS_NAME_GRAPH ||
-  'http://example.com/graphs/findings';
+  'http://localhost/graphs/findings';
 
 module.exports = { EX, CONTENT, G_HTTP, G_FINDINGS };

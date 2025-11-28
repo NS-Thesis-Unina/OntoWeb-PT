@@ -34,6 +34,20 @@ services:
     networks:
       - backend
 
+  graphdb-init:
+    image: curlimages/curl:latest
+    container_name: graphdb-init
+    depends_on:
+      - graphdb
+    volumes:
+      - ./graphdb:/graphdb:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    entrypoint: ["/graphdb/init-graphdb.sh"]
+    networks:
+      - backend
+    restart: "no"
+
   nginx:
     image: nginx:alpine
     container_name: nginx

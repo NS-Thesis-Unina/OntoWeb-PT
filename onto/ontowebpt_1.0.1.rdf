@@ -8,13 +8,8 @@
      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
     <owl:Ontology rdf:about="http://localhost/onto/ontowebpt">
         <owl:versionIRI rdf:resource="http://localhost/onto/ontowebpt/1.0.1"/>
-        <rdfs:comment>
-            HTTP ontology extended with resolver-based security findings for:
-            - Techstack analysis
-            - Static HTML/JS analysis
-            - HTTP traffic analysis.
-            Existing HTTP modeling is preserved; new concepts are added on top.
-        </rdfs:comment>
+        <rdfs:comment>OntoWebPT 1.0.1</rdfs:comment>
+        <rdfs:label>OntoWebPT</rdfs:label>
     </owl:Ontology>
     
 
@@ -32,8 +27,11 @@
 
     <!-- http://www.w3.org/2008/content#ContentAsBase64 -->
 
-    <rdfs:Datatype rdf:about="http://www.w3.org/2008/content#ContentAsBase64"/>
-    
+    <rdfs:Datatype rdf:about="http://www.w3.org/2008/content#ContentAsBase64">
+        <rdfs:comment>Datatype used to store binary HTTP message bodies encoded in Base64.</rdfs:comment>
+        <rdfs:label>Content as Base64</rdfs:label>
+    </rdfs:Datatype>
+
 
 
     <!-- 
