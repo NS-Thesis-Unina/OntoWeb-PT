@@ -5,9 +5,10 @@ module.exports = {
   testMatch: ['**/?(*.)+(test).[jt]s'],
   collectCoverageFrom: [
     'src/**/*.js',
-    '!src/**/index.js'
+    '!src/**/index.js',
   ],
   coverageDirectory: 'coverage',
   verbose: true,
-  maxWorkers: 1
+  maxWorkers: 1,
+  setupFilesAfterEnv: ['<rootDir>/_tests/jest.setup.js'],
 };
