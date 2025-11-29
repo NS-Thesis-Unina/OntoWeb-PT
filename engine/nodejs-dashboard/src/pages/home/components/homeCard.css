@@ -1,0 +1,22 @@
+.homecard {
+  height: 100%;               
+  display: flex;
+}
+
+.homecard .title {
+  display: flex;
+  width: 100%;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.homecard .title svg {
+  font-size: 32px;            
+}
+
+/* Optional per un hover più bello */
+.homecard:hover {
+  transform: translateY(-2px);
+  transition: 0.2s ease;
+}

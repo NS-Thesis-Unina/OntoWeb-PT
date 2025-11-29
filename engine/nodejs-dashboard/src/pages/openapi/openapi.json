@@ -1,0 +1,3435 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "OntoWebPT",
+    "description": "",
+    "version": "1.0.0"
+  },
+  "tags": [],
+  "paths": {
+    "/http-requests/ingest-http": {
+      "post": {
+        "summary": "Ingest Multi Http Request",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "application/json",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "method": {
+                          "type": "string"
+                        },
+                        "httpVersion": {
+                          "type": "string"
+                        },
+                        "bodyBase64": {
+                          "type": "string"
+                        },
+                        "graph": {
+                          "type": "string"
+                        },
+                        "uri": {
+                          "type": "object",
+                          "properties": {
+                            "full": {
+                              "type": "string"
+                            },
+                            "scheme": {
+                              "type": "string"
+                            },
+                            "authority": {
+                              "type": "string"
+                            },
+                            "path": {
+                              "type": "string"
+                            },
+                            "queryRaw": {
+                              "type": "string"
+                            },
+                            "params": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "name": {
+                                    "type": "string"
+                                  },
+                                  "value": {
+                                    "type": "string"
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "required": [
+                            "full",
+                            "scheme",
+                            "authority",
+                            "path",
+                            "params"
+                          ]
+                        },
+                        "requestHeaders": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "name": {
+                                "type": "string"
+                              },
+                              "value": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "name",
+                              "value"
+                            ]
+                          }
+                        },
+                        "connection": {
+                          "type": "object",
+                          "properties": {
+                            "authority": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "authority"
+                          ]
+                        },
+                        "response": {
+                          "type": "object",
+                          "properties": {
+                            "httpVersion": {
+                              "type": "string"
+                            },
+                            "status": {
+                              "type": "integer"
+                            },
+                            "reason": {
+                              "type": "string"
+                            },
+                            "headers": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "name": {
+                                    "type": "string"
+                                  },
+                                  "value": {
+                                    "type": "string"
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "required": [
+                            "status",
+                            "reason"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "method",
+                        "uri",
+                        "requestHeaders",
+                        "response"
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "items"
+                ]
+              },
+              "example": {
+                "items": [
+                  {
+                    "id": "req-002",
+                    "method": "POST",
+                    "httpVersion": "HTTP/2",
+                    "bodyBase64": "SGVsbG8gYm9keQ==",
+                    "graph": "http://example.com/graphs/http-requests",
+                    "uri": {
+                      "full": "https://api.example.com/v1/items",
+                      "scheme": "https",
+                      "authority": "api.example.com",
+                      "path": "/v1/items",
+                      "queryRaw": "page=1&size=20"
+                    },
+                    "requestHeaders": [
+                      {
+                        "name": "Content-Type",
+                        "value": "application/json"
+                      }
+                    ],
+                    "connection": {
+                      "authority": "api.example.com"
+                    },
+                    "response": {
+                      "httpVersion": "HTTP/2",
+                      "status": 201,
+                      "reason": "Created",
+                      "headers": [
+                        {
+                          "name": "Location",
+                          "value": "/v1/items/123"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "req-003",
+                    "method": "PUT",
+                    "uri": {
+                      "full": "https://api.example.com/v1/items/123?soft=true",
+                      "scheme": "https",
+                      "authority": "api.example.com",
+                      "path": "/v1/items/123",
+                      "params": [
+                        {
+                          "name": "soft",
+                          "value": "true"
+                        }
+                      ]
+                    },
+                    "requestHeaders": [
+                      {
+                        "name": "Accept",
+                        "value": "application/json"
+                      }
+                    ],
+                    "response": {
+                      "status": 204,
+                      "reason": "No Content"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/http-requests/list": {
+      "get": {
+        "summary": "Get Http Requests List",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "",
+            "required": true,
+            "example": "100",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "",
+            "required": true,
+            "example": "0",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "application/json",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/http-requests/req-1764159622733-235": {
+      "get": {
+        "summary": "Get Http Request By ID",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "application/json",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/http-requests/results/1": {
+      "get": {
+        "summary": "GetJob",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/http-requests/finding/list": {
+      "get": {
+        "summary": "Findings List",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "",
+            "required": true,
+            "example": "100",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "",
+            "required": true,
+            "example": "200",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "application/json",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "cookies": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "domain": {
+                          "type": "string"
+                        },
+                        "httpOnly": {
+                          "type": "boolean"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "value": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "domain",
+                        "httpOnly",
+                        "name",
+                        "value"
+                      ]
+                    }
+                  },
+                  "raw": {
+                    "type": "object",
+                    "properties": {
+                      "resolved": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "categories": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "groups": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "integer"
+                                    }
+                                  },
+                                  "id": {
+                                    "type": "integer"
+                                  },
+                                  "name": {
+                                    "type": "string"
+                                  },
+                                  "priority": {
+                                    "type": "integer"
+                                  },
+                                  "slug": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "groups",
+                                  "id",
+                                  "name",
+                                  "priority",
+                                  "slug"
+                                ]
+                              }
+                            },
+                            "confidence": {
+                              "type": "integer"
+                            },
+                            "cpe": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "description": {
+                              "type": "string"
+                            },
+                            "icon": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "pricing": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            },
+                            "slug": {
+                              "type": "string"
+                            },
+                            "version": {
+                              "type": "string"
+                            },
+                            "website": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "categories",
+                            "confidence",
+                            "cpe",
+                            "description",
+                            "icon",
+                            "name",
+                            "pricing",
+                            "slug",
+                            "version",
+                            "website"
+                          ]
+                        }
+                      },
+                      "wafResolved": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "categories": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "id": {
+                                    "type": "integer"
+                                  },
+                                  "name": {
+                                    "type": "string"
+                                  },
+                                  "priority": {
+                                    "type": "integer"
+                                  },
+                                  "slug": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "id",
+                                  "name",
+                                  "priority",
+                                  "slug"
+                                ]
+                              }
+                            },
+                            "confidence": {
+                              "type": "integer"
+                            },
+                            "cpe": {
+                              "type": "null"
+                            },
+                            "description": {
+                              "type": "null"
+                            },
+                            "icon": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "pricing": {
+                              "type": "array",
+                              "items": {}
+                            },
+                            "slug": {
+                              "type": "string"
+                            },
+                            "version": {
+                              "type": "string"
+                            },
+                            "website": {
+                              "type": "null"
+                            }
+                          },
+                          "required": [
+                            "categories",
+                            "confidence",
+                            "cpe",
+                            "description",
+                            "icon",
+                            "name",
+                            "pricing",
+                            "slug",
+                            "version",
+                            "website"
+                          ]
+                        }
+                      }
+                    },
+                    "required": [
+                      "resolved",
+                      "wafResolved"
+                    ]
+                  },
+                  "secureHeaders": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "description": {
+                          "type": "string"
+                        },
+                        "header": {
+                          "type": "string"
+                        },
+                        "urls": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "required": [
+                        "description",
+                        "header",
+                        "urls"
+                      ]
+                    }
+                  },
+                  "storage": {
+                    "type": "object",
+                    "properties": {
+                      "localStorage": {
+                        "type": "array",
+                        "items": {}
+                      },
+                      "sessionStorage": {
+                        "type": "array",
+                        "items": {}
+                      }
+                    },
+                    "required": [
+                      "localStorage",
+                      "sessionStorage"
+                    ]
+                  },
+                  "technologies": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "version": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "version"
+                      ]
+                    }
+                  },
+                  "waf": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "version": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "version"
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "cookies",
+                  "raw",
+                  "secureHeaders",
+                  "storage",
+                  "technologies",
+                  "waf"
+                ]
+              },
+              "example": {
+                "cookies": [
+                  {
+                    "domain": ".it.linkedin.com",
+                    "httpOnly": false,
+                    "name": "JSESSIONID",
+                    "value": "ajax:8480182616414958243"
+                  },
+                  {
+                    "domain": ".linkedin.com",
+                    "httpOnly": false,
+                    "name": "lang",
+                    "value": "v=2&lang=it-it"
+                  },
+                  {
+                    "domain": ".linkedin.com",
+                    "httpOnly": false,
+                    "name": "bcookie",
+                    "value": "\"v=2&aa8bc417-dd50-4112-8c3c-ccc41f01632c\""
+                  },
+                  {
+                    "domain": ".it.linkedin.com",
+                    "httpOnly": true,
+                    "name": "bscookie",
+                    "value": "\"v=1&202511111157463041dc5f-d121-4ebf-86ba-0fda95885d2dAQGybM6b6X6umxJhyDVqn2JzpMykKm0r\""
+                  },
+                  {
+                    "domain": ".linkedin.com",
+                    "httpOnly": false,
+                    "name": "li_gc",
+                    "value": "MTswOzE3NjI4NjIyNjY7MjswMjGiHIKgANn4nk/qaM4rcGq598w1KWy3Xy7RRQdHk83VYg=="
+                  },
+                  {
+                    "domain": ".linkedin.com",
+                    "httpOnly": false,
+                    "name": "lidc",
+                    "value": "\"b=VGST01:s=V:r=V:a=V:p=V:g=3688:u=1:x=1:i=1762862267:t=1762948667:v=2:sig=AQHVuB6NFyN37aY7Is-j_vOIlYM7ndb2\""
+                  },
+                  {
+                    "domain": "it.linkedin.com",
+                    "httpOnly": false,
+                    "name": "li_alerts",
+                    "value": "e30="
+                  },
+                  {
+                    "domain": ".linkedin.com",
+                    "httpOnly": true,
+                    "name": "__cf_bm",
+                    "value": "C30or0DaYPZPo9K_CrzQnZZaqeu40.grX7e4p5aYsK4-1762862267-1.0.1.1-ObGLRTiIpL1FTYb6baY75SyoBzBsNIzlwLK7IC4I9zEza_dvz9jLZNSoQL2fZ15Cx5xrKBwCYEkyvekr_gJp.P.O3Fs0EiMAIvOCBUI12lU"
+                  },
+                  {
+                    "domain": ".linkedin.com",
+                    "httpOnly": false,
+                    "name": "lang",
+                    "value": "v=2&lang=it-it"
+                  },
+                  {
+                    "domain": ".linkedin.com",
+                    "httpOnly": false,
+                    "name": "bcookie",
+                    "value": "\"v=2&aa8bc417-dd50-4112-8c3c-ccc41f01632c\""
+                  },
+                  {
+                    "domain": ".linkedin.com",
+                    "httpOnly": false,
+                    "name": "li_gc",
+                    "value": "MTswOzE3NjI4NjIyNjY7MjswMjGiHIKgANn4nk/qaM4rcGq598w1KWy3Xy7RRQdHk83VYg=="
+                  },
+                  {
+                    "domain": ".linkedin.com",
+                    "httpOnly": false,
+                    "name": "lidc",
+                    "value": "\"b=VGST01:s=V:r=V:a=V:p=V:g=3688:u=1:x=1:i=1762862267:t=1762948667:v=2:sig=AQHVuB6NFyN37aY7Is-j_vOIlYM7ndb2\""
+                  },
+                  {
+                    "domain": ".linkedin.com",
+                    "httpOnly": true,
+                    "name": "__cf_bm",
+                    "value": "C30or0DaYPZPo9K_CrzQnZZaqeu40.grX7e4p5aYsK4-1762862267-1.0.1.1-ObGLRTiIpL1FTYb6baY75SyoBzBsNIzlwLK7IC4I9zEza_dvz9jLZNSoQL2fZ15Cx5xrKBwCYEkyvekr_gJp.P.O3Fs0EiMAIvOCBUI12lU"
+                  },
+                  {
+                    "domain": ".linkedin.com",
+                    "httpOnly": false,
+                    "name": "lang",
+                    "value": "v=2&lang=it-it"
+                  },
+                  {
+                    "domain": ".linkedin.com",
+                    "httpOnly": false,
+                    "name": "bcookie",
+                    "value": "\"v=2&aa8bc417-dd50-4112-8c3c-ccc41f01632c\""
+                  },
+                  {
+                    "domain": ".linkedin.com",
+                    "httpOnly": false,
+                    "name": "li_gc",
+                    "value": "MTswOzE3NjI4NjIyNjY7MjswMjGiHIKgANn4nk/qaM4rcGq598w1KWy3Xy7RRQdHk83VYg=="
+                  },
+                  {
+                    "domain": ".linkedin.com",
+                    "httpOnly": false,
+                    "name": "lidc",
+                    "value": "\"b=VGST01:s=V:r=V:a=V:p=V:g=3688:u=1:x=1:i=1762862267:t=1762948667:v=2:sig=AQHVuB6NFyN37aY7Is-j_vOIlYM7ndb2\""
+                  },
+                  {
+                    "domain": ".www.linkedin.com",
+                    "httpOnly": false,
+                    "name": "JSESSIONID",
+                    "value": "ajax:5015200226827290925"
+                  },
+                  {
+                    "domain": ".www.linkedin.com",
+                    "httpOnly": true,
+                    "name": "bscookie",
+                    "value": "\"v=1&20251111115747829c4a13-c6d1-4fb4-8654-754e6b69751cAQG6_nAiqtoqeWgH983PuZg-flRtGcrc\""
+                  },
+                  {
+                    "domain": ".linkedin.com",
+                    "httpOnly": true,
+                    "name": "__cf_bm",
+                    "value": "C30or0DaYPZPo9K_CrzQnZZaqeu40.grX7e4p5aYsK4-1762862267-1.0.1.1-ObGLRTiIpL1FTYb6baY75SyoBzBsNIzlwLK7IC4I9zEza_dvz9jLZNSoQL2fZ15Cx5xrKBwCYEkyvekr_gJp.P.O3Fs0EiMAIvOCBUI12lU"
+                  }
+                ],
+                "raw": {
+                  "resolved": [
+                    {
+                      "categories": [
+                        {
+                          "groups": [
+                            9
+                          ],
+                          "id": 27,
+                          "name": "Programming languages",
+                          "priority": 5,
+                          "slug": "programming-languages"
+                        }
+                      ],
+                      "confidence": 100,
+                      "cpe": "cpe:2.3:a:oracle:jre:*:*:*:*:*:*:*:*",
+                      "description": "Java is a class-based, object-oriented programming language that is designed to have as few implementation dependencies as possible.",
+                      "icon": "Java.svg",
+                      "name": "Java",
+                      "pricing": [],
+                      "slug": "java",
+                      "version": "",
+                      "website": "https://java.com"
+                    },
+                    {
+                      "categories": [
+                        {
+                          "groups": [
+                            7
+                          ],
+                          "id": 23,
+                          "name": "Caching",
+                          "priority": 7,
+                          "slug": "caching"
+                        }
+                      ],
+                      "confidence": 100,
+                      "cpe": "cpe:2.3:a:varnish-software:varnish_cache:*:*:*:*:*:*:*:*",
+                      "description": "Varnish is a reverse caching proxy.",
+                      "icon": "Varnish.svg",
+                      "name": "Varnish",
+                      "pricing": [],
+                      "slug": "varnish",
+                      "version": "",
+                      "website": "https://www.varnish-cache.org"
+                    },
+                    {
+                      "categories": [
+                        {
+                          "groups": [
+                            7
+                          ],
+                          "id": 65,
+                          "name": "Load balancers",
+                          "priority": 7,
+                          "slug": "load-balancers"
+                        }
+                      ],
+                      "confidence": 100,
+                      "cpe": null,
+                      "description": "Azure Front Door is a scalable and secure entry point for fast delivery of your global web applications.",
+                      "icon": "Azure.svg",
+                      "name": "Azure Front Door",
+                      "pricing": [],
+                      "slug": "azure-front-door",
+                      "version": "",
+                      "website": "https://docs.microsoft.com/en-us/azure/frontdoor/"
+                    },
+                    {
+                      "categories": [
+                        {
+                          "groups": [
+                            7
+                          ],
+                          "id": 63,
+                          "name": "IaaS",
+                          "priority": 8,
+                          "slug": "iaas"
+                        }
+                      ],
+                      "confidence": 100,
+                      "cpe": "cpe:2.3:a:google:cloud_platform:*:*:*:*:*:*:*:*",
+                      "description": "Google Cloud is a suite of cloud computing services.",
+                      "icon": "Google Cloud.svg",
+                      "name": "Google Cloud",
+                      "pricing": [],
+                      "slug": "google-cloud",
+                      "version": "",
+                      "website": "https://cloud.google.com"
+                    },
+                    {
+                      "categories": [
+                        {
+                          "groups": [
+                            7
+                          ],
+                          "id": 62,
+                          "name": "PaaS",
+                          "priority": 8,
+                          "slug": "paas"
+                        }
+                      ],
+                      "confidence": 100,
+                      "cpe": null,
+                      "description": "Azure is a cloud computing service for building, testing, deploying, and managing applications and services through Microsoft-managed data centers.",
+                      "icon": "Azure.svg",
+                      "name": "Azure",
+                      "pricing": [],
+                      "slug": "azure",
+                      "version": "",
+                      "website": "https://azure.microsoft.com"
+                    },
+                    {
+                      "categories": [
+                        {
+                          "groups": [
+                            8
+                          ],
+                          "id": 10,
+                          "name": "Analytics",
+                          "priority": 9,
+                          "slug": "analytics"
+                        }
+                      ],
+                      "confidence": 100,
+                      "cpe": null,
+                      "description": "Naver Analytics is a Korean based analytics service.",
+                      "icon": "Naver Analytics.svg",
+                      "name": "Naver Analytics",
+                      "pricing": [
+                        "freemium",
+                        "payg"
+                      ],
+                      "slug": "naver-analytics",
+                      "version": "",
+                      "website": "https://analytics.naver.com"
+                    },
+                    {
+                      "categories": [
+                        {
+                          "groups": [
+                            11
+                          ],
+                          "id": 16,
+                          "name": "Security",
+                          "priority": 9,
+                          "slug": "security"
+                        }
+                      ],
+                      "confidence": 100,
+                      "cpe": null,
+                      "description": "HTTP Strict Transport Security (HSTS) informs browsers that the site should only be accessed using HTTPS.",
+                      "icon": "default.svg",
+                      "name": "HSTS",
+                      "pricing": [],
+                      "slug": "hsts",
+                      "version": "",
+                      "website": "https://www.rfc-editor.org/rfc/rfc6797#section-6.1"
+                    },
+                    {
+                      "categories": [
+                        {
+                          "groups": [
+                            7
+                          ],
+                          "id": 31,
+                          "name": "CDN",
+                          "priority": 9,
+                          "slug": "cdn"
+                        }
+                      ],
+                      "confidence": 100,
+                      "cpe": null,
+                      "description": "Cloud CDN uses Google's global edge network to serve content closer to users.",
+                      "icon": "google-cloud-cdn.svg",
+                      "name": "Google Cloud CDN",
+                      "pricing": [],
+                      "slug": "google-cloud-cdn",
+                      "version": "",
+                      "website": "https://cloud.google.com/cdn"
+                    },
+                    {
+                      "categories": [
+                        {
+                          "groups": [
+                            11
+                          ],
+                          "id": 16,
+                          "name": "Security",
+                          "priority": 9,
+                          "slug": "security"
+                        }
+                      ],
+                      "confidence": 100,
+                      "cpe": null,
+                      "description": "Cloudflare bot management solution identifies and mitigates automated traffic to protect websites from bad bots.",
+                      "icon": "CloudFlare.svg",
+                      "name": "Cloudflare Bot Management",
+                      "pricing": [],
+                      "slug": "cloudflare-bot-management",
+                      "version": "",
+                      "website": "https://www.cloudflare.com/en-gb/products/bot-management/"
+                    },
+                    {
+                      "categories": [
+                        {
+                          "groups": [
+                            7
+                          ],
+                          "id": 31,
+                          "name": "CDN",
+                          "priority": 9,
+                          "slug": "cdn"
+                        }
+                      ],
+                      "confidence": 100,
+                      "cpe": null,
+                      "description": "Cloudflare is a web-infrastructure and website-security company, providing content-delivery-network services, DDoS mitigation, Internet security, and distributed domain-name-server services.",
+                      "icon": "CloudFlare.svg",
+                      "name": "Cloudflare",
+                      "pricing": [],
+                      "slug": "cloudflare",
+                      "version": "",
+                      "website": "https://www.cloudflare.com"
+                    },
+                    {
+                      "categories": [
+                        {
+                          "groups": [
+                            6
+                          ],
+                          "id": 19,
+                          "name": "Miscellaneous",
+                          "priority": 10,
+                          "slug": "miscellaneous"
+                        }
+                      ],
+                      "confidence": 100,
+                      "cpe": null,
+                      "description": "HTTP/3 is the third major version of the Hypertext Transfer Protocol used to exchange information on the World Wide Web.",
+                      "icon": "HTTP3.svg",
+                      "name": "HTTP/3",
+                      "pricing": [],
+                      "slug": "http-3",
+                      "version": "",
+                      "website": "https://httpwg.org/"
+                    },
+                    {
+                      "categories": [
+                        {
+                          "groups": [
+                            6
+                          ],
+                          "id": 19,
+                          "name": "Miscellaneous",
+                          "priority": 10,
+                          "slug": "miscellaneous"
+                        }
+                      ],
+                      "confidence": 100,
+                      "cpe": null,
+                      "description": "Google Cloud Storage allows world-wide storage and retrieval of any amount of data at any time.",
+                      "icon": "google-cloud-storage.svg",
+                      "name": "Google Cloud Storage",
+                      "pricing": [],
+                      "slug": "google-cloud-storage",
+                      "version": "",
+                      "website": "https://cloud.google.com/storage"
+                    }
+                  ],
+                  "wafResolved": [
+                    {
+                      "categories": [
+                        {
+                          "id": 100,
+                          "name": "WAF",
+                          "priority": 1,
+                          "slug": "waf"
+                        }
+                      ],
+                      "confidence": 100,
+                      "cpe": null,
+                      "description": null,
+                      "icon": "default.svg",
+                      "name": "FortiWeb (Fortinet)",
+                      "pricing": [],
+                      "slug": "fortiweb-fortinet",
+                      "version": "",
+                      "website": null
+                    },
+                    {
+                      "categories": [
+                        {
+                          "id": 100,
+                          "name": "WAF",
+                          "priority": 1,
+                          "slug": "waf"
+                        }
+                      ],
+                      "confidence": 100,
+                      "cpe": null,
+                      "description": null,
+                      "icon": "default.svg",
+                      "name": "Cloudflare (Cloudflare Inc.)",
+                      "pricing": [],
+                      "slug": "cloudflare-cloudflare-inc",
+                      "version": "",
+                      "website": null
+                    }
+                  ]
+                },
+                "secureHeaders": [
+                  {
+                    "description": "X-Content-Type-Options header not found or wrong value",
+                    "header": "X-Content-Type-Options",
+                    "urls": [
+                      "https://li.protechts.net/index.html?ts=1762862267560&r_id=AAZDUFs2DY8hMqg0%2FpesZA%3D%3D&app_id=PXdOjV695v&uc=scraping&d_id=2818f25c0e74e4e68afe02f2db65be474439ec1cdd83804fd945b3e0d08f1356",
+                      "https://tzm.protechts.net/ns?c=a4180d30-bef5-11f0-8771-3799cba0bae6"
+                    ]
+                  },
+                  {
+                    "description": "Strict-Transport-Security header not found",
+                    "header": "HSTS",
+                    "urls": [
+                      "https://accounts.google.com/gsi/status?client_id=990339570472-k6nqn1tpmitg8pui82bfaun3jrpmiuhs.apps.googleusercontent.com&as=vp1we82e3QihF3s%2BWH98KQ&has_opted_out_fedcm=true",
+                      "https://accounts.google.com/gsi/button?logo_alignment=center&shape=pill&size=large&text=continue_with&theme=filled_blue&type=undefined&width=400px&client_id=990339570472-k6nqn1tpmitg8pui82bfaun3jrpmiuhs.apps.googleusercontent.com&iframe_id=gsi_267662_324897&as=vp1we82e3QihF3s%2BWH98KQ&hl=it_IT",
+                      "https://tzm.protechts.net/ns?c=a4180d30-bef5-11f0-8771-3799cba0bae6"
+                    ]
+                  },
+                  {
+                    "description": "X-Frame-Options header is deprecated",
+                    "header": "X-Frame-Options",
+                    "urls": [
+                      "https://it.linkedin.com/?utm_source=edge_ntp&utm_medium=top&utm_campaign=it",
+                      "https://www.linkedin.com/litms/api/events/tms-load"
+                    ]
+                  },
+                  {
+                    "description": "X-XSS-Protection header is deprecated",
+                    "header": "X-XSS-Protection",
+                    "urls": [
+                      "https://accounts.google.com/gsi/status?client_id=990339570472-k6nqn1tpmitg8pui82bfaun3jrpmiuhs.apps.googleusercontent.com&as=vp1we82e3QihF3s%2BWH98KQ&has_opted_out_fedcm=true",
+                      "https://accounts.google.com/gsi/button?logo_alignment=center&shape=pill&size=large&text=continue_with&theme=filled_blue&type=undefined&width=400px&client_id=990339570472-k6nqn1tpmitg8pui82bfaun3jrpmiuhs.apps.googleusercontent.com&iframe_id=gsi_267662_324897&as=vp1we82e3QihF3s%2BWH98KQ&hl=it_IT"
+                    ]
+                  }
+                ],
+                "storage": {
+                  "localStorage": [],
+                  "sessionStorage": []
+                },
+                "technologies": [
+                  {
+                    "name": "Java",
+                    "version": ""
+                  },
+                  {
+                    "name": "Varnish",
+                    "version": ""
+                  },
+                  {
+                    "name": "Azure Front Door",
+                    "version": ""
+                  },
+                  {
+                    "name": "Google Cloud",
+                    "version": ""
+                  },
+                  {
+                    "name": "Azure",
+                    "version": ""
+                  },
+                  {
+                    "name": "Naver Analytics",
+                    "version": ""
+                  },
+                  {
+                    "name": "HSTS",
+                    "version": ""
+                  },
+                  {
+                    "name": "Google Cloud CDN",
+                    "version": ""
+                  },
+                  {
+                    "name": "Cloudflare Bot Management",
+                    "version": ""
+                  },
+                  {
+                    "name": "Cloudflare",
+                    "version": ""
+                  },
+                  {
+                    "name": "HTTP/3",
+                    "version": ""
+                  },
+                  {
+                    "name": "Google Cloud Storage",
+                    "version": ""
+                  }
+                ],
+                "waf": [
+                  {
+                    "name": "FortiWeb (Fortinet)",
+                    "version": ""
+                  },
+                  {
+                    "name": "Cloudflare (Cloudflare Inc.)",
+                    "version": ""
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/http-requests/finding/urn:finding:http:cors-misconfig:req-1764159622733-235": {
+      "get": {
+        "summary": "Finding by ID",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/sparql/query": {
+      "post": {
+        "summary": "Simple Query",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "application/json",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "sparql": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "sparql"
+                ]
+              },
+              "example": {
+                "sparql": "SELECT ?s ?p ?o WHERE { GRAPH <http://example.com/graphs/http-requests> { ?s ?p ?o } } LIMIT 10000"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/sparql/update": {
+      "post": {
+        "summary": "Simple Update (edit uri)",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "application/json",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "sparqlUpdate": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "sparqlUpdate"
+                ]
+              },
+              "example": {
+                "sparqlUpdate": "PREFIX ex: <http://www.semanticweb.org/nda/ontologies/2025/8/untitled-ontology-18#>\nDELETE { GRAPH <http://example.com/graphs/http-requests> { <urn:req:req-001:uri> ex:uri ?oldUri . } }\nINSERT { GRAPH <http://example.com/graphs/http-requests> { <urn:req:req-001:uri> ex:uri \"https://www.editeduri.com\" . } }\nWHERE { GRAPH <http://example.com/graphs/http-requests> { <urn:req:req-001:uri> ex:uri ?oldUri . } }"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/techstack/analyze": {
+      "post": {
+        "summary": "Analyze",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "application/json",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "cookies": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "domain": {
+                          "type": "string"
+                        },
+                        "httpOnly": {
+                          "type": "boolean"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "value": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "domain",
+                        "httpOnly",
+                        "name",
+                        "value"
+                      ]
+                    }
+                  },
+                  "raw": {
+                    "type": "object",
+                    "properties": {
+                      "resolved": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "categories": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "groups": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "integer"
+                                    }
+                                  },
+                                  "id": {
+                                    "type": "integer"
+                                  },
+                                  "name": {
+                                    "type": "string"
+                                  },
+                                  "priority": {
+                                    "type": "integer"
+                                  },
+                                  "slug": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "groups",
+                                  "id",
+                                  "name",
+                                  "priority",
+                                  "slug"
+                                ]
+                              }
+                            },
+                            "confidence": {
+                              "type": "integer"
+                            },
+                            "cpe": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "description": {
+                              "type": "string"
+                            },
+                            "icon": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "pricing": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            },
+                            "slug": {
+                              "type": "string"
+                            },
+                            "version": {
+                              "type": "string"
+                            },
+                            "website": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "categories",
+                            "confidence",
+                            "cpe",
+                            "description",
+                            "icon",
+                            "name",
+                            "pricing",
+                            "slug",
+                            "version",
+                            "website"
+                          ]
+                        }
+                      },
+                      "wafResolved": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "categories": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "id": {
+                                    "type": "integer"
+                                  },
+                                  "name": {
+                                    "type": "string"
+                                  },
+                                  "priority": {
+                                    "type": "integer"
+                                  },
+                                  "slug": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "id",
+                                  "name",
+                                  "priority",
+                                  "slug"
+                                ]
+                              }
+                            },
+                            "confidence": {
+                              "type": "integer"
+                            },
+                            "cpe": {
+                              "type": "null"
+                            },
+                            "description": {
+                              "type": "null"
+                            },
+                            "icon": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "pricing": {
+                              "type": "array",
+                              "items": {}
+                            },
+                            "slug": {
+                              "type": "string"
+                            },
+                            "version": {
+                              "type": "string"
+                            },
+                            "website": {
+                              "type": "null"
+                            }
+                          },
+                          "required": [
+                            "categories",
+                            "confidence",
+                            "cpe",
+                            "description",
+                            "icon",
+                            "name",
+                            "pricing",
+                            "slug",
+                            "version",
+                            "website"
+                          ]
+                        }
+                      }
+                    },
+                    "required": [
+                      "resolved",
+                      "wafResolved"
+                    ]
+                  },
+                  "secureHeaders": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "description": {
+                          "type": "string"
+                        },
+                        "header": {
+                          "type": "string"
+                        },
+                        "urls": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "required": [
+                        "description",
+                        "header",
+                        "urls"
+                      ]
+                    }
+                  },
+                  "storage": {
+                    "type": "object",
+                    "properties": {
+                      "localStorage": {
+                        "type": "array",
+                        "items": {}
+                      },
+                      "sessionStorage": {
+                        "type": "array",
+                        "items": {}
+                      }
+                    },
+                    "required": [
+                      "localStorage",
+                      "sessionStorage"
+                    ]
+                  },
+                  "technologies": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "version": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "version"
+                      ]
+                    }
+                  },
+                  "waf": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "version": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "version"
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "cookies",
+                  "raw",
+                  "secureHeaders",
+                  "storage",
+                  "technologies",
+                  "waf"
+                ]
+              },
+              "example": {
+                "cookies": [
+                  {
+                    "domain": ".it.linkedin.com",
+                    "httpOnly": false,
+                    "name": "JSESSIONID",
+                    "value": "ajax:8480182616414958243"
+                  },
+                  {
+                    "domain": ".linkedin.com",
+                    "httpOnly": false,
+                    "name": "lang",
+                    "value": "v=2&lang=it-it"
+                  },
+                  {
+                    "domain": ".linkedin.com",
+                    "httpOnly": false,
+                    "name": "bcookie",
+                    "value": "\"v=2&aa8bc417-dd50-4112-8c3c-ccc41f01632c\""
+                  },
+                  {
+                    "domain": ".it.linkedin.com",
+                    "httpOnly": true,
+                    "name": "bscookie",
+                    "value": "\"v=1&202511111157463041dc5f-d121-4ebf-86ba-0fda95885d2dAQGybM6b6X6umxJhyDVqn2JzpMykKm0r\""
+                  },
+                  {
+                    "domain": ".linkedin.com",
+                    "httpOnly": false,
+                    "name": "li_gc",
+                    "value": "MTswOzE3NjI4NjIyNjY7MjswMjGiHIKgANn4nk/qaM4rcGq598w1KWy3Xy7RRQdHk83VYg=="
+                  },
+                  {
+                    "domain": ".linkedin.com",
+                    "httpOnly": false,
+                    "name": "lidc",
+                    "value": "\"b=VGST01:s=V:r=V:a=V:p=V:g=3688:u=1:x=1:i=1762862267:t=1762948667:v=2:sig=AQHVuB6NFyN37aY7Is-j_vOIlYM7ndb2\""
+                  },
+                  {
+                    "domain": "it.linkedin.com",
+                    "httpOnly": false,
+                    "name": "li_alerts",
+                    "value": "e30="
+                  },
+                  {
+                    "domain": ".linkedin.com",
+                    "httpOnly": true,
+                    "name": "__cf_bm",
+                    "value": "C30or0DaYPZPo9K_CrzQnZZaqeu40.grX7e4p5aYsK4-1762862267-1.0.1.1-ObGLRTiIpL1FTYb6baY75SyoBzBsNIzlwLK7IC4I9zEza_dvz9jLZNSoQL2fZ15Cx5xrKBwCYEkyvekr_gJp.P.O3Fs0EiMAIvOCBUI12lU"
+                  },
+                  {
+                    "domain": ".linkedin.com",
+                    "httpOnly": false,
+                    "name": "lang",
+                    "value": "v=2&lang=it-it"
+                  },
+                  {
+                    "domain": ".linkedin.com",
+                    "httpOnly": false,
+                    "name": "bcookie",
+                    "value": "\"v=2&aa8bc417-dd50-4112-8c3c-ccc41f01632c\""
+                  },
+                  {
+                    "domain": ".linkedin.com",
+                    "httpOnly": false,
+                    "name": "li_gc",
+                    "value": "MTswOzE3NjI4NjIyNjY7MjswMjGiHIKgANn4nk/qaM4rcGq598w1KWy3Xy7RRQdHk83VYg=="
+                  },
+                  {
+                    "domain": ".linkedin.com",
+                    "httpOnly": false,
+                    "name": "lidc",
+                    "value": "\"b=VGST01:s=V:r=V:a=V:p=V:g=3688:u=1:x=1:i=1762862267:t=1762948667:v=2:sig=AQHVuB6NFyN37aY7Is-j_vOIlYM7ndb2\""
+                  },
+                  {
+                    "domain": ".linkedin.com",
+                    "httpOnly": true,
+                    "name": "__cf_bm",
+                    "value": "C30or0DaYPZPo9K_CrzQnZZaqeu40.grX7e4p5aYsK4-1762862267-1.0.1.1-ObGLRTiIpL1FTYb6baY75SyoBzBsNIzlwLK7IC4I9zEza_dvz9jLZNSoQL2fZ15Cx5xrKBwCYEkyvekr_gJp.P.O3Fs0EiMAIvOCBUI12lU"
+                  },
+                  {
+                    "domain": ".linkedin.com",
+                    "httpOnly": false,
+                    "name": "lang",
+                    "value": "v=2&lang=it-it"
+                  },
+                  {
+                    "domain": ".linkedin.com",
+                    "httpOnly": false,
+                    "name": "bcookie",
+                    "value": "\"v=2&aa8bc417-dd50-4112-8c3c-ccc41f01632c\""
+                  },
+                  {
+                    "domain": ".linkedin.com",
+                    "httpOnly": false,
+                    "name": "li_gc",
+                    "value": "MTswOzE3NjI4NjIyNjY7MjswMjGiHIKgANn4nk/qaM4rcGq598w1KWy3Xy7RRQdHk83VYg=="
+                  },
+                  {
+                    "domain": ".linkedin.com",
+                    "httpOnly": false,
+                    "name": "lidc",
+                    "value": "\"b=VGST01:s=V:r=V:a=V:p=V:g=3688:u=1:x=1:i=1762862267:t=1762948667:v=2:sig=AQHVuB6NFyN37aY7Is-j_vOIlYM7ndb2\""
+                  },
+                  {
+                    "domain": ".www.linkedin.com",
+                    "httpOnly": false,
+                    "name": "JSESSIONID",
+                    "value": "ajax:5015200226827290925"
+                  },
+                  {
+                    "domain": ".www.linkedin.com",
+                    "httpOnly": true,
+                    "name": "bscookie",
+                    "value": "\"v=1&20251111115747829c4a13-c6d1-4fb4-8654-754e6b69751cAQG6_nAiqtoqeWgH983PuZg-flRtGcrc\""
+                  },
+                  {
+                    "domain": ".linkedin.com",
+                    "httpOnly": true,
+                    "name": "__cf_bm",
+                    "value": "C30or0DaYPZPo9K_CrzQnZZaqeu40.grX7e4p5aYsK4-1762862267-1.0.1.1-ObGLRTiIpL1FTYb6baY75SyoBzBsNIzlwLK7IC4I9zEza_dvz9jLZNSoQL2fZ15Cx5xrKBwCYEkyvekr_gJp.P.O3Fs0EiMAIvOCBUI12lU"
+                  }
+                ],
+                "raw": {
+                  "resolved": [
+                    {
+                      "categories": [
+                        {
+                          "groups": [
+                            9
+                          ],
+                          "id": 27,
+                          "name": "Programming languages",
+                          "priority": 5,
+                          "slug": "programming-languages"
+                        }
+                      ],
+                      "confidence": 100,
+                      "cpe": "cpe:2.3:a:oracle:jre:*:*:*:*:*:*:*:*",
+                      "description": "Java is a class-based, object-oriented programming language that is designed to have as few implementation dependencies as possible.",
+                      "icon": "Java.svg",
+                      "name": "Java",
+                      "pricing": [],
+                      "slug": "java",
+                      "version": "",
+                      "website": "https://java.com"
+                    },
+                    {
+                      "categories": [
+                        {
+                          "groups": [
+                            7
+                          ],
+                          "id": 23,
+                          "name": "Caching",
+                          "priority": 7,
+                          "slug": "caching"
+                        }
+                      ],
+                      "confidence": 100,
+                      "cpe": "cpe:2.3:a:varnish-software:varnish_cache:*:*:*:*:*:*:*:*",
+                      "description": "Varnish is a reverse caching proxy.",
+                      "icon": "Varnish.svg",
+                      "name": "Varnish",
+                      "pricing": [],
+                      "slug": "varnish",
+                      "version": "",
+                      "website": "https://www.varnish-cache.org"
+                    },
+                    {
+                      "categories": [
+                        {
+                          "groups": [
+                            7
+                          ],
+                          "id": 65,
+                          "name": "Load balancers",
+                          "priority": 7,
+                          "slug": "load-balancers"
+                        }
+                      ],
+                      "confidence": 100,
+                      "cpe": null,
+                      "description": "Azure Front Door is a scalable and secure entry point for fast delivery of your global web applications.",
+                      "icon": "Azure.svg",
+                      "name": "Azure Front Door",
+                      "pricing": [],
+                      "slug": "azure-front-door",
+                      "version": "",
+                      "website": "https://docs.microsoft.com/en-us/azure/frontdoor/"
+                    },
+                    {
+                      "categories": [
+                        {
+                          "groups": [
+                            7
+                          ],
+                          "id": 63,
+                          "name": "IaaS",
+                          "priority": 8,
+                          "slug": "iaas"
+                        }
+                      ],
+                      "confidence": 100,
+                      "cpe": "cpe:2.3:a:google:cloud_platform:*:*:*:*:*:*:*:*",
+                      "description": "Google Cloud is a suite of cloud computing services.",
+                      "icon": "Google Cloud.svg",
+                      "name": "Google Cloud",
+                      "pricing": [],
+                      "slug": "google-cloud",
+                      "version": "",
+                      "website": "https://cloud.google.com"
+                    },
+                    {
+                      "categories": [
+                        {
+                          "groups": [
+                            7
+                          ],
+                          "id": 62,
+                          "name": "PaaS",
+                          "priority": 8,
+                          "slug": "paas"
+                        }
+                      ],
+                      "confidence": 100,
+                      "cpe": null,
+                      "description": "Azure is a cloud computing service for building, testing, deploying, and managing applications and services through Microsoft-managed data centers.",
+                      "icon": "Azure.svg",
+                      "name": "Azure",
+                      "pricing": [],
+                      "slug": "azure",
+                      "version": "",
+                      "website": "https://azure.microsoft.com"
+                    },
+                    {
+                      "categories": [
+                        {
+                          "groups": [
+                            8
+                          ],
+                          "id": 10,
+                          "name": "Analytics",
+                          "priority": 9,
+                          "slug": "analytics"
+                        }
+                      ],
+                      "confidence": 100,
+                      "cpe": null,
+                      "description": "Naver Analytics is a Korean based analytics service.",
+                      "icon": "Naver Analytics.svg",
+                      "name": "Naver Analytics",
+                      "pricing": [
+                        "freemium",
+                        "payg"
+                      ],
+                      "slug": "naver-analytics",
+                      "version": "",
+                      "website": "https://analytics.naver.com"
+                    },
+                    {
+                      "categories": [
+                        {
+                          "groups": [
+                            11
+                          ],
+                          "id": 16,
+                          "name": "Security",
+                          "priority": 9,
+                          "slug": "security"
+                        }
+                      ],
+                      "confidence": 100,
+                      "cpe": null,
+                      "description": "HTTP Strict Transport Security (HSTS) informs browsers that the site should only be accessed using HTTPS.",
+                      "icon": "default.svg",
+                      "name": "HSTS",
+                      "pricing": [],
+                      "slug": "hsts",
+                      "version": "",
+                      "website": "https://www.rfc-editor.org/rfc/rfc6797#section-6.1"
+                    },
+                    {
+                      "categories": [
+                        {
+                          "groups": [
+                            7
+                          ],
+                          "id": 31,
+                          "name": "CDN",
+                          "priority": 9,
+                          "slug": "cdn"
+                        }
+                      ],
+                      "confidence": 100,
+                      "cpe": null,
+                      "description": "Cloud CDN uses Google's global edge network to serve content closer to users.",
+                      "icon": "google-cloud-cdn.svg",
+                      "name": "Google Cloud CDN",
+                      "pricing": [],
+                      "slug": "google-cloud-cdn",
+                      "version": "",
+                      "website": "https://cloud.google.com/cdn"
+                    },
+                    {
+                      "categories": [
+                        {
+                          "groups": [
+                            11
+                          ],
+                          "id": 16,
+                          "name": "Security",
+                          "priority": 9,
+                          "slug": "security"
+                        }
+                      ],
+                      "confidence": 100,
+                      "cpe": null,
+                      "description": "Cloudflare bot management solution identifies and mitigates automated traffic to protect websites from bad bots.",
+                      "icon": "CloudFlare.svg",
+                      "name": "Cloudflare Bot Management",
+                      "pricing": [],
+                      "slug": "cloudflare-bot-management",
+                      "version": "",
+                      "website": "https://www.cloudflare.com/en-gb/products/bot-management/"
+                    },
+                    {
+                      "categories": [
+                        {
+                          "groups": [
+                            7
+                          ],
+                          "id": 31,
+                          "name": "CDN",
+                          "priority": 9,
+                          "slug": "cdn"
+                        }
+                      ],
+                      "confidence": 100,
+                      "cpe": null,
+                      "description": "Cloudflare is a web-infrastructure and website-security company, providing content-delivery-network services, DDoS mitigation, Internet security, and distributed domain-name-server services.",
+                      "icon": "CloudFlare.svg",
+                      "name": "Cloudflare",
+                      "pricing": [],
+                      "slug": "cloudflare",
+                      "version": "",
+                      "website": "https://www.cloudflare.com"
+                    },
+                    {
+                      "categories": [
+                        {
+                          "groups": [
+                            6
+                          ],
+                          "id": 19,
+                          "name": "Miscellaneous",
+                          "priority": 10,
+                          "slug": "miscellaneous"
+                        }
+                      ],
+                      "confidence": 100,
+                      "cpe": null,
+                      "description": "HTTP/3 is the third major version of the Hypertext Transfer Protocol used to exchange information on the World Wide Web.",
+                      "icon": "HTTP3.svg",
+                      "name": "HTTP/3",
+                      "pricing": [],
+                      "slug": "http-3",
+                      "version": "",
+                      "website": "https://httpwg.org/"
+                    },
+                    {
+                      "categories": [
+                        {
+                          "groups": [
+                            6
+                          ],
+                          "id": 19,
+                          "name": "Miscellaneous",
+                          "priority": 10,
+                          "slug": "miscellaneous"
+                        }
+                      ],
+                      "confidence": 100,
+                      "cpe": null,
+                      "description": "Google Cloud Storage allows world-wide storage and retrieval of any amount of data at any time.",
+                      "icon": "google-cloud-storage.svg",
+                      "name": "Google Cloud Storage",
+                      "pricing": [],
+                      "slug": "google-cloud-storage",
+                      "version": "",
+                      "website": "https://cloud.google.com/storage"
+                    }
+                  ],
+                  "wafResolved": [
+                    {
+                      "categories": [
+                        {
+                          "id": 100,
+                          "name": "WAF",
+                          "priority": 1,
+                          "slug": "waf"
+                        }
+                      ],
+                      "confidence": 100,
+                      "cpe": null,
+                      "description": null,
+                      "icon": "default.svg",
+                      "name": "FortiWeb (Fortinet)",
+                      "pricing": [],
+                      "slug": "fortiweb-fortinet",
+                      "version": "",
+                      "website": null
+                    },
+                    {
+                      "categories": [
+                        {
+                          "id": 100,
+                          "name": "WAF",
+                          "priority": 1,
+                          "slug": "waf"
+                        }
+                      ],
+                      "confidence": 100,
+                      "cpe": null,
+                      "description": null,
+                      "icon": "default.svg",
+                      "name": "Cloudflare (Cloudflare Inc.)",
+                      "pricing": [],
+                      "slug": "cloudflare-cloudflare-inc",
+                      "version": "",
+                      "website": null
+                    }
+                  ]
+                },
+                "secureHeaders": [
+                  {
+                    "description": "X-Content-Type-Options header not found or wrong value",
+                    "header": "X-Content-Type-Options",
+                    "urls": [
+                      "https://li.protechts.net/index.html?ts=1762862267560&r_id=AAZDUFs2DY8hMqg0%2FpesZA%3D%3D&app_id=PXdOjV695v&uc=scraping&d_id=2818f25c0e74e4e68afe02f2db65be474439ec1cdd83804fd945b3e0d08f1356",
+                      "https://tzm.protechts.net/ns?c=a4180d30-bef5-11f0-8771-3799cba0bae6"
+                    ]
+                  },
+                  {
+                    "description": "Strict-Transport-Security header not found",
+                    "header": "HSTS",
+                    "urls": [
+                      "https://accounts.google.com/gsi/status?client_id=990339570472-k6nqn1tpmitg8pui82bfaun3jrpmiuhs.apps.googleusercontent.com&as=vp1we82e3QihF3s%2BWH98KQ&has_opted_out_fedcm=true",
+                      "https://accounts.google.com/gsi/button?logo_alignment=center&shape=pill&size=large&text=continue_with&theme=filled_blue&type=undefined&width=400px&client_id=990339570472-k6nqn1tpmitg8pui82bfaun3jrpmiuhs.apps.googleusercontent.com&iframe_id=gsi_267662_324897&as=vp1we82e3QihF3s%2BWH98KQ&hl=it_IT",
+                      "https://tzm.protechts.net/ns?c=a4180d30-bef5-11f0-8771-3799cba0bae6"
+                    ]
+                  },
+                  {
+                    "description": "X-Frame-Options header is deprecated",
+                    "header": "X-Frame-Options",
+                    "urls": [
+                      "https://it.linkedin.com/?utm_source=edge_ntp&utm_medium=top&utm_campaign=it",
+                      "https://www.linkedin.com/litms/api/events/tms-load"
+                    ]
+                  },
+                  {
+                    "description": "X-XSS-Protection header is deprecated",
+                    "header": "X-XSS-Protection",
+                    "urls": [
+                      "https://accounts.google.com/gsi/status?client_id=990339570472-k6nqn1tpmitg8pui82bfaun3jrpmiuhs.apps.googleusercontent.com&as=vp1we82e3QihF3s%2BWH98KQ&has_opted_out_fedcm=true",
+                      "https://accounts.google.com/gsi/button?logo_alignment=center&shape=pill&size=large&text=continue_with&theme=filled_blue&type=undefined&width=400px&client_id=990339570472-k6nqn1tpmitg8pui82bfaun3jrpmiuhs.apps.googleusercontent.com&iframe_id=gsi_267662_324897&as=vp1we82e3QihF3s%2BWH98KQ&hl=it_IT"
+                    ]
+                  }
+                ],
+                "storage": {
+                  "localStorage": [],
+                  "sessionStorage": []
+                },
+                "technologies": [
+                  {
+                    "name": "Java",
+                    "version": ""
+                  },
+                  {
+                    "name": "Varnish",
+                    "version": ""
+                  },
+                  {
+                    "name": "Azure Front Door",
+                    "version": ""
+                  },
+                  {
+                    "name": "Google Cloud",
+                    "version": ""
+                  },
+                  {
+                    "name": "Azure",
+                    "version": ""
+                  },
+                  {
+                    "name": "Naver Analytics",
+                    "version": ""
+                  },
+                  {
+                    "name": "HSTS",
+                    "version": ""
+                  },
+                  {
+                    "name": "Google Cloud CDN",
+                    "version": ""
+                  },
+                  {
+                    "name": "Cloudflare Bot Management",
+                    "version": ""
+                  },
+                  {
+                    "name": "Cloudflare",
+                    "version": ""
+                  },
+                  {
+                    "name": "HTTP/3",
+                    "version": ""
+                  },
+                  {
+                    "name": "Google Cloud Storage",
+                    "version": ""
+                  }
+                ],
+                "waf": [
+                  {
+                    "name": "FortiWeb (Fortinet)",
+                    "version": ""
+                  },
+                  {
+                    "name": "Cloudflare (Cloudflare Inc.)",
+                    "version": ""
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/techstack/results/1": {
+      "get": {
+        "summary": "GetJob",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "application/json",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "cookies": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "domain": {
+                          "type": "string"
+                        },
+                        "httpOnly": {
+                          "type": "boolean"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "value": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "domain",
+                        "httpOnly",
+                        "name",
+                        "value"
+                      ]
+                    }
+                  },
+                  "raw": {
+                    "type": "object",
+                    "properties": {
+                      "resolved": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "categories": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "groups": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "integer"
+                                    }
+                                  },
+                                  "id": {
+                                    "type": "integer"
+                                  },
+                                  "name": {
+                                    "type": "string"
+                                  },
+                                  "priority": {
+                                    "type": "integer"
+                                  },
+                                  "slug": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "groups",
+                                  "id",
+                                  "name",
+                                  "priority",
+                                  "slug"
+                                ]
+                              }
+                            },
+                            "confidence": {
+                              "type": "integer"
+                            },
+                            "cpe": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "description": {
+                              "type": "string"
+                            },
+                            "icon": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "pricing": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            },
+                            "slug": {
+                              "type": "string"
+                            },
+                            "version": {
+                              "type": "string"
+                            },
+                            "website": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "categories",
+                            "confidence",
+                            "cpe",
+                            "description",
+                            "icon",
+                            "name",
+                            "pricing",
+                            "slug",
+                            "version",
+                            "website"
+                          ]
+                        }
+                      },
+                      "wafResolved": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "categories": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "id": {
+                                    "type": "integer"
+                                  },
+                                  "name": {
+                                    "type": "string"
+                                  },
+                                  "priority": {
+                                    "type": "integer"
+                                  },
+                                  "slug": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "id",
+                                  "name",
+                                  "priority",
+                                  "slug"
+                                ]
+                              }
+                            },
+                            "confidence": {
+                              "type": "integer"
+                            },
+                            "cpe": {
+                              "type": "null"
+                            },
+                            "description": {
+                              "type": "null"
+                            },
+                            "icon": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "pricing": {
+                              "type": "array",
+                              "items": {}
+                            },
+                            "slug": {
+                              "type": "string"
+                            },
+                            "version": {
+                              "type": "string"
+                            },
+                            "website": {
+                              "type": "null"
+                            }
+                          },
+                          "required": [
+                            "categories",
+                            "confidence",
+                            "cpe",
+                            "description",
+                            "icon",
+                            "name",
+                            "pricing",
+                            "slug",
+                            "version",
+                            "website"
+                          ]
+                        }
+                      }
+                    },
+                    "required": [
+                      "resolved",
+                      "wafResolved"
+                    ]
+                  },
+                  "secureHeaders": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "description": {
+                          "type": "string"
+                        },
+                        "header": {
+                          "type": "string"
+                        },
+                        "urls": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "required": [
+                        "description",
+                        "header",
+                        "urls"
+                      ]
+                    }
+                  },
+                  "storage": {
+                    "type": "object",
+                    "properties": {
+                      "localStorage": {
+                        "type": "array",
+                        "items": {}
+                      },
+                      "sessionStorage": {
+                        "type": "array",
+                        "items": {}
+                      }
+                    },
+                    "required": [
+                      "localStorage",
+                      "sessionStorage"
+                    ]
+                  },
+                  "technologies": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "version": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "version"
+                      ]
+                    }
+                  },
+                  "waf": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "version": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "version"
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "cookies",
+                  "raw",
+                  "secureHeaders",
+                  "storage",
+                  "technologies",
+                  "waf"
+                ]
+              },
+              "example": {
+                "cookies": [
+                  {
+                    "domain": ".it.linkedin.com",
+                    "httpOnly": false,
+                    "name": "JSESSIONID",
+                    "value": "ajax:8480182616414958243"
+                  },
+                  {
+                    "domain": ".linkedin.com",
+                    "httpOnly": false,
+                    "name": "lang",
+                    "value": "v=2&lang=it-it"
+                  },
+                  {
+                    "domain": ".linkedin.com",
+                    "httpOnly": false,
+                    "name": "bcookie",
+                    "value": "\"v=2&aa8bc417-dd50-4112-8c3c-ccc41f01632c\""
+                  },
+                  {
+                    "domain": ".it.linkedin.com",
+                    "httpOnly": true,
+                    "name": "bscookie",
+                    "value": "\"v=1&202511111157463041dc5f-d121-4ebf-86ba-0fda95885d2dAQGybM6b6X6umxJhyDVqn2JzpMykKm0r\""
+                  },
+                  {
+                    "domain": ".linkedin.com",
+                    "httpOnly": false,
+                    "name": "li_gc",
+                    "value": "MTswOzE3NjI4NjIyNjY7MjswMjGiHIKgANn4nk/qaM4rcGq598w1KWy3Xy7RRQdHk83VYg=="
+                  },
+                  {
+                    "domain": ".linkedin.com",
+                    "httpOnly": false,
+                    "name": "lidc",
+                    "value": "\"b=VGST01:s=V:r=V:a=V:p=V:g=3688:u=1:x=1:i=1762862267:t=1762948667:v=2:sig=AQHVuB6NFyN37aY7Is-j_vOIlYM7ndb2\""
+                  },
+                  {
+                    "domain": "it.linkedin.com",
+                    "httpOnly": false,
+                    "name": "li_alerts",
+                    "value": "e30="
+                  },
+                  {
+                    "domain": ".linkedin.com",
+                    "httpOnly": true,
+                    "name": "__cf_bm",
+                    "value": "C30or0DaYPZPo9K_CrzQnZZaqeu40.grX7e4p5aYsK4-1762862267-1.0.1.1-ObGLRTiIpL1FTYb6baY75SyoBzBsNIzlwLK7IC4I9zEza_dvz9jLZNSoQL2fZ15Cx5xrKBwCYEkyvekr_gJp.P.O3Fs0EiMAIvOCBUI12lU"
+                  },
+                  {
+                    "domain": ".linkedin.com",
+                    "httpOnly": false,
+                    "name": "lang",
+                    "value": "v=2&lang=it-it"
+                  },
+                  {
+                    "domain": ".linkedin.com",
+                    "httpOnly": false,
+                    "name": "bcookie",
+                    "value": "\"v=2&aa8bc417-dd50-4112-8c3c-ccc41f01632c\""
+                  },
+                  {
+                    "domain": ".linkedin.com",
+                    "httpOnly": false,
+                    "name": "li_gc",
+                    "value": "MTswOzE3NjI4NjIyNjY7MjswMjGiHIKgANn4nk/qaM4rcGq598w1KWy3Xy7RRQdHk83VYg=="
+                  },
+                  {
+                    "domain": ".linkedin.com",
+                    "httpOnly": false,
+                    "name": "lidc",
+                    "value": "\"b=VGST01:s=V:r=V:a=V:p=V:g=3688:u=1:x=1:i=1762862267:t=1762948667:v=2:sig=AQHVuB6NFyN37aY7Is-j_vOIlYM7ndb2\""
+                  },
+                  {
+                    "domain": ".linkedin.com",
+                    "httpOnly": true,
+                    "name": "__cf_bm",
+                    "value": "C30or0DaYPZPo9K_CrzQnZZaqeu40.grX7e4p5aYsK4-1762862267-1.0.1.1-ObGLRTiIpL1FTYb6baY75SyoBzBsNIzlwLK7IC4I9zEza_dvz9jLZNSoQL2fZ15Cx5xrKBwCYEkyvekr_gJp.P.O3Fs0EiMAIvOCBUI12lU"
+                  },
+                  {
+                    "domain": ".linkedin.com",
+                    "httpOnly": false,
+                    "name": "lang",
+                    "value": "v=2&lang=it-it"
+                  },
+                  {
+                    "domain": ".linkedin.com",
+                    "httpOnly": false,
+                    "name": "bcookie",
+                    "value": "\"v=2&aa8bc417-dd50-4112-8c3c-ccc41f01632c\""
+                  },
+                  {
+                    "domain": ".linkedin.com",
+                    "httpOnly": false,
+                    "name": "li_gc",
+                    "value": "MTswOzE3NjI4NjIyNjY7MjswMjGiHIKgANn4nk/qaM4rcGq598w1KWy3Xy7RRQdHk83VYg=="
+                  },
+                  {
+                    "domain": ".linkedin.com",
+                    "httpOnly": false,
+                    "name": "lidc",
+                    "value": "\"b=VGST01:s=V:r=V:a=V:p=V:g=3688:u=1:x=1:i=1762862267:t=1762948667:v=2:sig=AQHVuB6NFyN37aY7Is-j_vOIlYM7ndb2\""
+                  },
+                  {
+                    "domain": ".www.linkedin.com",
+                    "httpOnly": false,
+                    "name": "JSESSIONID",
+                    "value": "ajax:5015200226827290925"
+                  },
+                  {
+                    "domain": ".www.linkedin.com",
+                    "httpOnly": true,
+                    "name": "bscookie",
+                    "value": "\"v=1&20251111115747829c4a13-c6d1-4fb4-8654-754e6b69751cAQG6_nAiqtoqeWgH983PuZg-flRtGcrc\""
+                  },
+                  {
+                    "domain": ".linkedin.com",
+                    "httpOnly": true,
+                    "name": "__cf_bm",
+                    "value": "C30or0DaYPZPo9K_CrzQnZZaqeu40.grX7e4p5aYsK4-1762862267-1.0.1.1-ObGLRTiIpL1FTYb6baY75SyoBzBsNIzlwLK7IC4I9zEza_dvz9jLZNSoQL2fZ15Cx5xrKBwCYEkyvekr_gJp.P.O3Fs0EiMAIvOCBUI12lU"
+                  }
+                ],
+                "raw": {
+                  "resolved": [
+                    {
+                      "categories": [
+                        {
+                          "groups": [
+                            9
+                          ],
+                          "id": 27,
+                          "name": "Programming languages",
+                          "priority": 5,
+                          "slug": "programming-languages"
+                        }
+                      ],
+                      "confidence": 100,
+                      "cpe": "cpe:2.3:a:oracle:jre:*:*:*:*:*:*:*:*",
+                      "description": "Java is a class-based, object-oriented programming language that is designed to have as few implementation dependencies as possible.",
+                      "icon": "Java.svg",
+                      "name": "Java",
+                      "pricing": [],
+                      "slug": "java",
+                      "version": "",
+                      "website": "https://java.com"
+                    },
+                    {
+                      "categories": [
+                        {
+                          "groups": [
+                            7
+                          ],
+                          "id": 23,
+                          "name": "Caching",
+                          "priority": 7,
+                          "slug": "caching"
+                        }
+                      ],
+                      "confidence": 100,
+                      "cpe": "cpe:2.3:a:varnish-software:varnish_cache:*:*:*:*:*:*:*:*",
+                      "description": "Varnish is a reverse caching proxy.",
+                      "icon": "Varnish.svg",
+                      "name": "Varnish",
+                      "pricing": [],
+                      "slug": "varnish",
+                      "version": "",
+                      "website": "https://www.varnish-cache.org"
+                    },
+                    {
+                      "categories": [
+                        {
+                          "groups": [
+                            7
+                          ],
+                          "id": 65,
+                          "name": "Load balancers",
+                          "priority": 7,
+                          "slug": "load-balancers"
+                        }
+                      ],
+                      "confidence": 100,
+                      "cpe": null,
+                      "description": "Azure Front Door is a scalable and secure entry point for fast delivery of your global web applications.",
+                      "icon": "Azure.svg",
+                      "name": "Azure Front Door",
+                      "pricing": [],
+                      "slug": "azure-front-door",
+                      "version": "",
+                      "website": "https://docs.microsoft.com/en-us/azure/frontdoor/"
+                    },
+                    {
+                      "categories": [
+                        {
+                          "groups": [
+                            7
+                          ],
+                          "id": 63,
+                          "name": "IaaS",
+                          "priority": 8,
+                          "slug": "iaas"
+                        }
+                      ],
+                      "confidence": 100,
+                      "cpe": "cpe:2.3:a:google:cloud_platform:*:*:*:*:*:*:*:*",
+                      "description": "Google Cloud is a suite of cloud computing services.",
+                      "icon": "Google Cloud.svg",
+                      "name": "Google Cloud",
+                      "pricing": [],
+                      "slug": "google-cloud",
+                      "version": "",
+                      "website": "https://cloud.google.com"
+                    },
+                    {
+                      "categories": [
+                        {
+                          "groups": [
+                            7
+                          ],
+                          "id": 62,
+                          "name": "PaaS",
+                          "priority": 8,
+                          "slug": "paas"
+                        }
+                      ],
+                      "confidence": 100,
+                      "cpe": null,
+                      "description": "Azure is a cloud computing service for building, testing, deploying, and managing applications and services through Microsoft-managed data centers.",
+                      "icon": "Azure.svg",
+                      "name": "Azure",
+                      "pricing": [],
+                      "slug": "azure",
+                      "version": "",
+                      "website": "https://azure.microsoft.com"
+                    },
+                    {
+                      "categories": [
+                        {
+                          "groups": [
+                            8
+                          ],
+                          "id": 10,
+                          "name": "Analytics",
+                          "priority": 9,
+                          "slug": "analytics"
+                        }
+                      ],
+                      "confidence": 100,
+                      "cpe": null,
+                      "description": "Naver Analytics is a Korean based analytics service.",
+                      "icon": "Naver Analytics.svg",
+                      "name": "Naver Analytics",
+                      "pricing": [
+                        "freemium",
+                        "payg"
+                      ],
+                      "slug": "naver-analytics",
+                      "version": "",
+                      "website": "https://analytics.naver.com"
+                    },
+                    {
+                      "categories": [
+                        {
+                          "groups": [
+                            11
+                          ],
+                          "id": 16,
+                          "name": "Security",
+                          "priority": 9,
+                          "slug": "security"
+                        }
+                      ],
+                      "confidence": 100,
+                      "cpe": null,
+                      "description": "HTTP Strict Transport Security (HSTS) informs browsers that the site should only be accessed using HTTPS.",
+                      "icon": "default.svg",
+                      "name": "HSTS",
+                      "pricing": [],
+                      "slug": "hsts",
+                      "version": "",
+                      "website": "https://www.rfc-editor.org/rfc/rfc6797#section-6.1"
+                    },
+                    {
+                      "categories": [
+                        {
+                          "groups": [
+                            7
+                          ],
+                          "id": 31,
+                          "name": "CDN",
+                          "priority": 9,
+                          "slug": "cdn"
+                        }
+                      ],
+                      "confidence": 100,
+                      "cpe": null,
+                      "description": "Cloud CDN uses Google's global edge network to serve content closer to users.",
+                      "icon": "google-cloud-cdn.svg",
+                      "name": "Google Cloud CDN",
+                      "pricing": [],
+                      "slug": "google-cloud-cdn",
+                      "version": "",
+                      "website": "https://cloud.google.com/cdn"
+                    },
+                    {
+                      "categories": [
+                        {
+                          "groups": [
+                            11
+                          ],
+                          "id": 16,
+                          "name": "Security",
+                          "priority": 9,
+                          "slug": "security"
+                        }
+                      ],
+                      "confidence": 100,
+                      "cpe": null,
+                      "description": "Cloudflare bot management solution identifies and mitigates automated traffic to protect websites from bad bots.",
+                      "icon": "CloudFlare.svg",
+                      "name": "Cloudflare Bot Management",
+                      "pricing": [],
+                      "slug": "cloudflare-bot-management",
+                      "version": "",
+                      "website": "https://www.cloudflare.com/en-gb/products/bot-management/"
+                    },
+                    {
+                      "categories": [
+                        {
+                          "groups": [
+                            7
+                          ],
+                          "id": 31,
+                          "name": "CDN",
+                          "priority": 9,
+                          "slug": "cdn"
+                        }
+                      ],
+                      "confidence": 100,
+                      "cpe": null,
+                      "description": "Cloudflare is a web-infrastructure and website-security company, providing content-delivery-network services, DDoS mitigation, Internet security, and distributed domain-name-server services.",
+                      "icon": "CloudFlare.svg",
+                      "name": "Cloudflare",
+                      "pricing": [],
+                      "slug": "cloudflare",
+                      "version": "",
+                      "website": "https://www.cloudflare.com"
+                    },
+                    {
+                      "categories": [
+                        {
+                          "groups": [
+                            6
+                          ],
+                          "id": 19,
+                          "name": "Miscellaneous",
+                          "priority": 10,
+                          "slug": "miscellaneous"
+                        }
+                      ],
+                      "confidence": 100,
+                      "cpe": null,
+                      "description": "HTTP/3 is the third major version of the Hypertext Transfer Protocol used to exchange information on the World Wide Web.",
+                      "icon": "HTTP3.svg",
+                      "name": "HTTP/3",
+                      "pricing": [],
+                      "slug": "http-3",
+                      "version": "",
+                      "website": "https://httpwg.org/"
+                    },
+                    {
+                      "categories": [
+                        {
+                          "groups": [
+                            6
+                          ],
+                          "id": 19,
+                          "name": "Miscellaneous",
+                          "priority": 10,
+                          "slug": "miscellaneous"
+                        }
+                      ],
+                      "confidence": 100,
+                      "cpe": null,
+                      "description": "Google Cloud Storage allows world-wide storage and retrieval of any amount of data at any time.",
+                      "icon": "google-cloud-storage.svg",
+                      "name": "Google Cloud Storage",
+                      "pricing": [],
+                      "slug": "google-cloud-storage",
+                      "version": "",
+                      "website": "https://cloud.google.com/storage"
+                    }
+                  ],
+                  "wafResolved": [
+                    {
+                      "categories": [
+                        {
+                          "id": 100,
+                          "name": "WAF",
+                          "priority": 1,
+                          "slug": "waf"
+                        }
+                      ],
+                      "confidence": 100,
+                      "cpe": null,
+                      "description": null,
+                      "icon": "default.svg",
+                      "name": "FortiWeb (Fortinet)",
+                      "pricing": [],
+                      "slug": "fortiweb-fortinet",
+                      "version": "",
+                      "website": null
+                    },
+                    {
+                      "categories": [
+                        {
+                          "id": 100,
+                          "name": "WAF",
+                          "priority": 1,
+                          "slug": "waf"
+                        }
+                      ],
+                      "confidence": 100,
+                      "cpe": null,
+                      "description": null,
+                      "icon": "default.svg",
+                      "name": "Cloudflare (Cloudflare Inc.)",
+                      "pricing": [],
+                      "slug": "cloudflare-cloudflare-inc",
+                      "version": "",
+                      "website": null
+                    }
+                  ]
+                },
+                "secureHeaders": [
+                  {
+                    "description": "X-Content-Type-Options header not found or wrong value",
+                    "header": "X-Content-Type-Options",
+                    "urls": [
+                      "https://li.protechts.net/index.html?ts=1762862267560&r_id=AAZDUFs2DY8hMqg0%2FpesZA%3D%3D&app_id=PXdOjV695v&uc=scraping&d_id=2818f25c0e74e4e68afe02f2db65be474439ec1cdd83804fd945b3e0d08f1356",
+                      "https://tzm.protechts.net/ns?c=a4180d30-bef5-11f0-8771-3799cba0bae6"
+                    ]
+                  },
+                  {
+                    "description": "Strict-Transport-Security header not found",
+                    "header": "HSTS",
+                    "urls": [
+                      "https://accounts.google.com/gsi/status?client_id=990339570472-k6nqn1tpmitg8pui82bfaun3jrpmiuhs.apps.googleusercontent.com&as=vp1we82e3QihF3s%2BWH98KQ&has_opted_out_fedcm=true",
+                      "https://accounts.google.com/gsi/button?logo_alignment=center&shape=pill&size=large&text=continue_with&theme=filled_blue&type=undefined&width=400px&client_id=990339570472-k6nqn1tpmitg8pui82bfaun3jrpmiuhs.apps.googleusercontent.com&iframe_id=gsi_267662_324897&as=vp1we82e3QihF3s%2BWH98KQ&hl=it_IT",
+                      "https://tzm.protechts.net/ns?c=a4180d30-bef5-11f0-8771-3799cba0bae6"
+                    ]
+                  },
+                  {
+                    "description": "X-Frame-Options header is deprecated",
+                    "header": "X-Frame-Options",
+                    "urls": [
+                      "https://it.linkedin.com/?utm_source=edge_ntp&utm_medium=top&utm_campaign=it",
+                      "https://www.linkedin.com/litms/api/events/tms-load"
+                    ]
+                  },
+                  {
+                    "description": "X-XSS-Protection header is deprecated",
+                    "header": "X-XSS-Protection",
+                    "urls": [
+                      "https://accounts.google.com/gsi/status?client_id=990339570472-k6nqn1tpmitg8pui82bfaun3jrpmiuhs.apps.googleusercontent.com&as=vp1we82e3QihF3s%2BWH98KQ&has_opted_out_fedcm=true",
+                      "https://accounts.google.com/gsi/button?logo_alignment=center&shape=pill&size=large&text=continue_with&theme=filled_blue&type=undefined&width=400px&client_id=990339570472-k6nqn1tpmitg8pui82bfaun3jrpmiuhs.apps.googleusercontent.com&iframe_id=gsi_267662_324897&as=vp1we82e3QihF3s%2BWH98KQ&hl=it_IT"
+                    ]
+                  }
+                ],
+                "storage": {
+                  "localStorage": [],
+                  "sessionStorage": []
+                },
+                "technologies": [
+                  {
+                    "name": "Java",
+                    "version": ""
+                  },
+                  {
+                    "name": "Varnish",
+                    "version": ""
+                  },
+                  {
+                    "name": "Azure Front Door",
+                    "version": ""
+                  },
+                  {
+                    "name": "Google Cloud",
+                    "version": ""
+                  },
+                  {
+                    "name": "Azure",
+                    "version": ""
+                  },
+                  {
+                    "name": "Naver Analytics",
+                    "version": ""
+                  },
+                  {
+                    "name": "HSTS",
+                    "version": ""
+                  },
+                  {
+                    "name": "Google Cloud CDN",
+                    "version": ""
+                  },
+                  {
+                    "name": "Cloudflare Bot Management",
+                    "version": ""
+                  },
+                  {
+                    "name": "Cloudflare",
+                    "version": ""
+                  },
+                  {
+                    "name": "HTTP/3",
+                    "version": ""
+                  },
+                  {
+                    "name": "Google Cloud Storage",
+                    "version": ""
+                  }
+                ],
+                "waf": [
+                  {
+                    "name": "FortiWeb (Fortinet)",
+                    "version": ""
+                  },
+                  {
+                    "name": "Cloudflare (Cloudflare Inc.)",
+                    "version": ""
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/techstack/finding/list": {
+      "get": {
+        "summary": "Findings List",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "",
+            "required": true,
+            "example": "100",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "",
+            "required": true,
+            "example": "0",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/techstack/finding/urn:finding:cookie:.amazon-adsystem.com:ad-id:missing_samesite": {
+      "get": {
+        "summary": "Finding by ID",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/analyzer/analyze": {
+      "post": {
+        "summary": "Analyze",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "example": "application/json",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string"
+                  },
+                  "forms": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "action": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "inputs": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "name": {
+                                "type": "string"
+                              },
+                              "tag": {
+                                "type": "string"
+                              },
+                              "type": {
+                                "type": "string"
+                              },
+                              "value": {
+                                "type": "string"
+                              },
+                              "placeholder": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "name",
+                              "tag",
+                              "type",
+                              "value"
+                            ]
+                          }
+                        },
+                        "method": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "action",
+                        "inputs",
+                        "method"
+                      ]
+                    }
+                  },
+                  "iframes": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "src": {
+                          "type": "string"
+                        },
+                        "title": {
+                          "type": "null"
+                        }
+                      },
+                      "required": [
+                        "src",
+                        "title"
+                      ]
+                    }
+                  },
+                  "scripts": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "src": {
+                          "type": "string",
+                          "nullable": true
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "src"
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "url",
+                  "forms",
+                  "iframes",
+                  "scripts"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/analyzer/results/1": {
+      "get": {
+        "summary": "GetJob",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/analyzer/finding/list": {
+      "get": {
+        "summary": "Findings List",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "",
+            "required": true,
+            "example": "100",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "",
+            "required": true,
+            "example": "0",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/analyzer/finding/urn:finding:no-appendchild:https://images-na.ssl-images-amazon.com/images/I/51uzajfXDXL._RC|71JXTDVPVuL.js,41TE9TzlKkL.js,01jkKbRkZjL.js,01ufnKlIuIL.js,712AY4t-uhL.js,41jBieyCvYL.js,01wXnKULArL.js,01+pnQJuQ0L.js,21gBwAAfnjL.js,41VTG6+rBqL.js,414stvo6DvL.js,315752VbrdL.js,11lw6J7z8iL.js,31oU344KFDL.js,01VYGE8lGhL.js_.js": {
+      "get": {
+        "summary": "Finding by ID",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    }
+  },
+  "components": {
+    "schemas": {},
+    "securitySchemes": {}
+  },
+  "servers": [],
+  "security": []
+}

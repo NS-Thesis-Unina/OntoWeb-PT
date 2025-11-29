@@ -1,62 +1,113 @@
-import { Paper, Stack, Typography, Button, Divider } from '@mui/material';
-import BuildIcon from '@mui/icons-material/Build';
-import SearchIcon from '@mui/icons-material/Search';
-import LanIcon from '@mui/icons-material/Lan';
-
 import './home.css';
+import Typography from '@mui/material/Typography';
+import { useEffect, useState } from 'react';
+import { Paper, Zoom } from '@mui/material';
 
-export default function Home() {
+import HomeCard from './components/homeCard';
+
+// Icons
+import HttpIcon from '@mui/icons-material/Http';
+import BugReportIcon from '@mui/icons-material/BugReport';
+import SendIcon from '@mui/icons-material/Send';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import ApiIcon from '@mui/icons-material/Api';
+
+function Home() {
+  const [showCards, setShowCards] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setShowCards(true), 200);
+    return () => clearTimeout(t);
+  }, []);
 
   return (
-    <div className="home-container">
-
-      {/* Intro */}
-      <Paper className="home-section intro-section" elevation={3}>
-        <Typography variant="h4" className="title">
-          OntoWeb-PT
-        </Typography>
-
-        <Typography variant="body1" className="description">
-          OntoWeb-PT è uno strumento progettato per supportare attività di penetration testing. 
-          Raccoglie automaticamente informazioni dalle pagine web, utilizza un'ontologia dedicata 
-          per arricchire i dati e genera report strutturati per supportare l’analisi.
-        </Typography>
-
-        <Typography variant="body2" className="warning">
-          ⚠️ Utilizzare solo su target autorizzati.
-        </Typography>
+    <div className="home-div">
+      
+      {/* INTRO */}
+      <Paper className="description">
+        <Zoom in={true}>
+          <Typography variant="body2">
+            <strong>OntoWeb-PT</strong> è uno strumento progettato per supportare 
+            attività di penetration testing raccogliendo informazioni dalle pagine web,
+            analizzandole tramite un’ontologia dedicata e producendo risultati strutturati.
+            <br />
+            Questa console permette di consultare e gestire i dati elaborati dal backend:
+            richieste HTTP, findings, PCAP, stato dei servizi e API.
+            <br />
+            <u>Use only on authorized targets.</u>
+          </Typography>
+        </Zoom>
       </Paper>
 
+      {/* CARDS */}
+      <div className="cards">
 
-      {/* Cards principali */}
-      <Stack direction="row" spacing={3} className="cards-row">
-        
-        <Paper className="feature-card" onClick={() => window.location.href='/findings/techstack'}>
-          <BuildIcon className="feature-icon" />
-          <Typography variant="h6">Technology Stack</Typography>
-          <Typography variant="body2">
-            Analizza librerie, framework, CMS, server e WAF rilevati nelle pagine.
-          </Typography>
-        </Paper>
+        {/* HTTP REQUESTS */}
+        <HomeCard
+          title="HTTP Requests"
+          content={
+            'Visualizza tutte le richieste HTTP catturate dall’estensione e memorizzate ' +
+            'nell’ontologia, includendo headers, metodi, corpi, status code e timing.'
+          }
+          show={showCards}
+          icon={<HttpIcon />}
+          pathname="/http-requests"
+        />
 
-        <Paper className="feature-card" onClick={() => window.location.href='/findings/analyzer'}>
-          <SearchIcon className="feature-icon" />
-          <Typography variant="h6">Analyzer</Typography>
-          <Typography variant="body2">
-            Estrae DOM, metadata, headings, forms, links, script e anomalie.
-          </Typography>
-        </Paper>
+        {/* FINDINGS */}
+        <HomeCard
+          title="Findings"
+          content={
+            'Raccoglie tutti i rilevamenti individuati: vulnerabilità HTTP, anomalie DOM ' +
+            'dell’Analyzer e rischi del Technology Stack, suddivisi in tre sottosezioni.'
+          }
+          show={showCards}
+          delay={30}
+          icon={<BugReportIcon />}
+          pathname="/findings"
+        />
 
-        <Paper className="feature-card" onClick={() => window.location.href='/http-requests'}>
-          <LanIcon className="feature-icon" />
-          <Typography variant="h6">Interceptor</Typography>
-          <Typography variant="body2">
-            Registra richieste HTTP, headers, corpo e tempi di risposta.
-          </Typography>
-        </Paper>
+        {/* SEND PCAP */}
+        <HomeCard
+          title="Send PCAP"
+          content={
+            'Permette di caricare file PCAP, estrarre le richieste HTTP presenti e inviarle ' +
+            'all’ontologia per eseguire analisi anche su traffico offline.'
+          }
+          show={showCards}
+          delay={60}
+          icon={<SendIcon />}
+          pathname="/send-pcap"
+        />
 
-      </Stack>
+        {/* TOOL STATUS */}
+        <HomeCard
+          title="Tool Status"
+          content={
+            'Offre una panoramica sullo stato dei servizi del backend e della connessione ' +
+            'con il WebSocket dell’estensione, utile per diagnosticare problemi operativi.'
+          }
+          show={showCards}
+          delay={90}
+          icon={<CheckCircleIcon />}
+          pathname="/server-status"
+        />
 
+        {/* API EXPLORER */}
+        <HomeCard
+          title="OpenAPI"
+          content={
+            'Interfaccia interattiva per esplorare gli endpoint del backend, testare richieste ' +
+            'e consultare la documentazione generata automaticamente.'
+          }
+          show={showCards}
+          delay={120}
+          icon={<ApiIcon />}
+          pathname="/openapi"
+        />
+      </div>
     </div>
   );
 }
+
+export default Home;

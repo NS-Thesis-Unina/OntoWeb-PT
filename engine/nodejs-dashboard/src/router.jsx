@@ -1,5 +1,6 @@
 import { Routes, Route } from 'react-router-dom';
 import Home from './pages/home/home';
+import OpenAPI from './pages/openapi/openapi';
 import App from './app';
 import HttpRequests from './pages/httpRequests/httpRequests';
 
@@ -26,7 +27,7 @@ function Router() {
 
         <Route path="send-pcap" element={<h1>Send PCAP</h1>} />
 
-        <Route path="openapi" element={<h1>OpenAPI</h1>} />
+        <Route path="openapi" element={<OpenAPI />} />
       </Route>
     </Routes>
   );

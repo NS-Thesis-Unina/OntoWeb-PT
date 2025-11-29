@@ -1,0 +1,50 @@
+.openapi-container {
+  width: 100%;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.intro {
+  padding: 20px;
+}
+
+.endpoints-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.endpoint-card {
+  padding: 15px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.endpoint-card:hover {
+  transform: translateY(-2px);
+  transition: 0.2s ease;
+}
+
+.endpoint-details {
+  padding: 20px;
+  margin-top: 20px;
+}
+
+.json-box {
+  background: #111;
+  padding: 10px;
+  border-radius: 5px;
+  overflow-x: auto;
+  font-size: 13px;
+  color: #ccc;
+}
+
+.openapi-loading {
+  padding: 40px;
+  display: flex;
+  justify-content: center;
+}

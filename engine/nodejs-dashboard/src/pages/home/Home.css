@@ -1,49 +1,26 @@
-.home-container {
-  padding: 30px;
+.home-div {
+  width: 100%;
+  padding: 20px;
+  padding-top: 10px;
   display: flex;
   flex-direction: column;
-  gap: 30px;
+  gap: 15px;
 }
 
-.intro-section {
-  padding: 25px;
-}
 
-.title {
-  font-weight: 700;
-  margin-bottom: 15px;
-}
-
-.description {
+.home-div .description {
+  padding: 15px 20px;
+  border-radius: 10px;
   margin-bottom: 10px;
 }
 
-.warning {
-  margin-top: 10px;
-  font-style: italic;
-  color: #ff5555;
+
+.home-div .cards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  width: 100%;
+  align-items: stretch;   
 }
 
-.cards-row {
-  display: flex;
-  justify-content: space-between;
-}
 
-.feature-card {
-  cursor: pointer;
-  width: 30%;
-  padding: 25px;
-  transition: 0.2s ease;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.feature-card:hover {
-  transform: scale(1.02);
-}
-
-.feature-icon {
-  font-size: 40px;
-  opacity: 0.8;
-}
