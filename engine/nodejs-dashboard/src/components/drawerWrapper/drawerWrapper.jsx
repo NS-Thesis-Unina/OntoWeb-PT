@@ -6,9 +6,9 @@ function DrawerWrapper({children, open, setOpen, loading, title}){
 
   if(loading){
     return(
-    <Backdrop open={loading}>
-      <CircularProgress />
-    </Backdrop>
+      <Backdrop open={loading}>
+        <CircularProgress />
+      </Backdrop>
     )
   }
 

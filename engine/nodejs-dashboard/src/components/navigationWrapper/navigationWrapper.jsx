@@ -276,7 +276,6 @@ function NavigationWrapper({ children }) {
         </Paper>
 
         <div className="right-div">
-          <Divider className="divider" orientation="vertical" />
           {children}
         </div>
       </div>

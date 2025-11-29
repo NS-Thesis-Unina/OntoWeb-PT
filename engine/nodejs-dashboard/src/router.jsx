@@ -1,12 +1,10 @@
 import { Routes, Route } from 'react-router-dom';
-import Home from './pages/home/Home';
+import Home from './pages/home/home';
 import App from './app';
-import DrawerWrapper from './components/drawerWrapper/drawerWrapper';
-import { useState } from 'react';
+import HttpRequests from './pages/httpRequests/httpRequests';
 
 function Router() {
 
-  const [open, setOpen] = useState(true);
   return (
     <Routes>
       <Route path="/" element={<App />}>
@@ -15,7 +13,7 @@ function Router() {
         <Route path="home" element={<Home />} />
 
 
-        <Route path="http-requests" element={<DrawerWrapper open={open} setOpen={setOpen} loading={false} title={"Request details"} ><h1>Http Reqs</h1></DrawerWrapper>} />
+        <Route path="http-requests" element={<HttpRequests />} />
 
 
         <Route path="findings">
