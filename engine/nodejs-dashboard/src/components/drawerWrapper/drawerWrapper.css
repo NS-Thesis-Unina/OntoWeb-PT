@@ -1,0 +1,34 @@
+.drawerwrapper .MuiDrawer-paper {
+  height: calc(100vh - 66px);
+  top: auto;
+  bottom: 0;
+}
+
+.drawerwrapper .content {
+  display: flex;
+  flex-direction: column;
+  width: calc(100vw - 244px);
+}
+
+.drawerwrapper .content .title-div {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 100%;
+}
+
+.drawerwrapper .content .title-div .title {
+  margin-left: 10px;
+}
+
+.drawerwrapper .content .title-div .actions {
+  display: flex;
+  margin-left: auto;
+  padding: 5px;
+}
+
+@media (max-width: 900px) {
+  .drawerwrapper .content {
+    width: calc(100vw - 78px);
+  }
+}

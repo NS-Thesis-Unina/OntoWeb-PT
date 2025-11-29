@@ -1,8 +1,12 @@
 import { Routes, Route } from 'react-router-dom';
 import Home from './pages/home/Home';
 import App from './app';
+import DrawerWrapper from './components/drawerWrapper/drawerWrapper';
+import { useState } from 'react';
 
 function Router() {
+
+  const [open, setOpen] = useState(true);
   return (
     <Routes>
       <Route path="/" element={<App />}>
@@ -11,7 +15,7 @@ function Router() {
         <Route path="home" element={<Home />} />
 
 
-        <Route path="http-requests" element={<h1>Http Requests</h1>} />
+        <Route path="http-requests" element={<DrawerWrapper open={open} setOpen={setOpen} loading={false} title={"Request details"} ><h1>Http Reqs</h1></DrawerWrapper>} />
 
 
         <Route path="findings">
