@@ -1,4 +1,5 @@
 import { Routes, Route } from 'react-router-dom';
+import Home from './pages/home/Home';
 import App from './app';
 
 function Router() {
@@ -6,8 +7,8 @@ function Router() {
     <Routes>
       <Route path="/" element={<App />}>
 
-        <Route index element={<h1>Home</h1>} />
-        <Route path="home" element={<h1>Home</h1>} />
+        <Route index element={<Home />} />
+        <Route path="home" element={<Home />} />
 
 
         <Route path="http-requests" element={<h1>Http Requests</h1>} />
