@@ -4,14 +4,6 @@ import CloseIcon from '@mui/icons-material/Close';
 
 function DrawerWrapper({children, open, setOpen, loading, title}){
 
-  if(loading){
-    return(
-      <Backdrop open={loading}>
-        <CircularProgress />
-      </Backdrop>
-    )
-  }
-
   return(
    <Drawer open={open} anchor='right' className='drawerwrapper' onClose={() => setOpen(false)}>
     <div className="content">
@@ -26,7 +18,8 @@ function DrawerWrapper({children, open, setOpen, loading, title}){
         </div>
       </div>
       <Divider style={{width: "100%"}} />
-      {children}
+      {!loading && children}
+      {loading && <div className="loading"><CircularProgress /></div>}
     </div>
   </Drawer>
   )

@@ -1,110 +1,134 @@
-import './home.css';
-import Typography from '@mui/material/Typography';
-import { useEffect, useState } from 'react';
-import { Paper, Zoom } from '@mui/material';
+import { Paper, Typography } from "@mui/material";
+import HttpIcon from "@mui/icons-material/Http";
+import BugReportIcon from "@mui/icons-material/BugReport";
+import SendIcon from "@mui/icons-material/Send";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import ApiIcon from "@mui/icons-material/Api";
+import { useNavigate } from 'react-router-dom';
 
-import HomeCard from './components/homeCard';
-
-// Icons
-import HttpIcon from '@mui/icons-material/Http';
-import BugReportIcon from '@mui/icons-material/BugReport';
-import SendIcon from '@mui/icons-material/Send';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import ApiIcon from '@mui/icons-material/Api';
+import "./home.css";
 
 function Home() {
-  const [showCards, setShowCards] = useState(false);
 
-  useEffect(() => {
-    const t = setTimeout(() => setShowCards(true), 200);
-    return () => clearTimeout(t);
-  }, []);
+  const navigate = useNavigate();
+
+  const navigateTo = (path) => {
+    navigate(path);
+  };
 
   return (
     <div className="home-div">
-      
-      {/* INTRO */}
-      <Paper className="description">
-        <Zoom in={true}>
-          <Typography variant="body2">
-            <strong>OntoWeb-PT</strong> è uno strumento progettato per supportare 
-            attività di penetration testing raccogliendo informazioni dalle pagine web,
-            analizzandole tramite un’ontologia dedicata e producendo risultati strutturati.
-            <br />
-            Questa console permette di consultare e gestire i dati elaborati dal backend:
-            richieste HTTP, findings, PCAP, stato dei servizi e API.
-            <br />
-            <u>Use only on authorized targets.</u>
-          </Typography>
-        </Zoom>
+      <Paper className="home-section intro-section" elevation={3}>
+        <Typography variant="h4" className="title">
+          OntoWeb-PT
+        </Typography>
+
+        <Typography variant="body1" className="description">
+          OntoWeb-PT is a web penetration testing assistant that collects HTTP
+          traffic and metadata, maps them into a dedicated security ontology,
+          and turns raw noise into structured, queryable knowledge. It is
+          designed to sit alongside your existing toolkit and give you a clear,
+          navigable view of how a target application behaves over the wire.
+        </Typography>
+
+        <Typography variant="body1" className="description">
+          From low-level HTTP requests to high-level findings, OntoWeb-PT helps
+          you explore technologies, detect weak configurations, and document
+          your assessments in a consistent way. Use it as a companion during
+          manual testing sessions or as a backend for automated pipelines.
+        </Typography>
+
+        <Typography variant="body2" className="warning">
+          ⚠️ Use OntoWeb-PT only against systems and targets you are explicitly
+          authorized to test.
+        </Typography>
       </Paper>
 
-      {/* CARDS */}
-      <div className="cards">
+      <div className="cards-row">
+        <Paper
+          className="feature-card"
+          elevation={2}
+          onClick={() => navigateTo("/http-requests")}
+        >
+          <div className="title-card">
+            <HttpIcon className="feature-icon" />
+            <Typography variant="h1">Requests</Typography>
+          </div>
+          <Typography variant="body2">
+            Browse all HTTP requests stored in GraphDB. Filter by method, URL,
+            scheme, authority, or full-text search, and open the detailed view
+            to inspect request and response headers, bodies, and connection
+            metadata.
+          </Typography>
+        </Paper>
 
-        {/* HTTP REQUESTS */}
-        <HomeCard
-          title="HTTP Requests"
-          content={
-            'Visualizza tutte le richieste HTTP catturate dall’estensione e memorizzate ' +
-            'nell’ontologia, includendo headers, metodi, corpi, status code e timing.'
-          }
-          show={showCards}
-          icon={<HttpIcon />}
-          pathname="/http-requests"
-        />
+        <Paper
+          className="feature-card"
+          elevation={2}
+          onClick={() => navigateTo("/findings")}
+        >
+          <div className="title-card">
+            <BugReportIcon className="feature-icon" />
+            <Typography variant="h1">Findings</Typography>
+          </div>
+          <Typography variant="body2">
+            Explore potential vulnerabilities and misconfigurations inferred
+            from your traffic. Techstack findings highlight technology and
+            security-header issues, while analyzer findings focus on HTML
+            components and interceptor findings are tied directly to captured
+            HTTP requests.
+          </Typography>
+        </Paper>
 
-        {/* FINDINGS */}
-        <HomeCard
-          title="Findings"
-          content={
-            'Raccoglie tutti i rilevamenti individuati: vulnerabilità HTTP, anomalie DOM ' +
-            'dell’Analyzer e rischi del Technology Stack, suddivisi in tre sottosezioni.'
-          }
-          show={showCards}
-          delay={30}
-          icon={<BugReportIcon />}
-          pathname="/findings"
-        />
+        <Paper
+          className="feature-card"
+          elevation={2}
+          onClick={() => navigateTo("/send-pcap")}
+        >
+          <div className="title-card">
+            <SendIcon className="feature-icon" />
+            <Typography variant="h1">Send PCAP</Typography>
+          </div>
+          <Typography variant="body2">
+            Upload PCAP files, extract HTTP flows, and selectively import the
+            requests you care about. Optionally push them through the resolver
+            to enrich data and surface suspicious behaviors or weak spots in the
+            observed traffic.
+          </Typography>
+        </Paper>
 
-        {/* SEND PCAP */}
-        <HomeCard
-          title="Send PCAP"
-          content={
-            'Permette di caricare file PCAP, estrarre le richieste HTTP presenti e inviarle ' +
-            'all’ontologia per eseguire analisi anche su traffico offline.'
-          }
-          show={showCards}
-          delay={60}
-          icon={<SendIcon />}
-          pathname="/send-pcap"
-        />
+        <Paper
+          className="feature-card"
+          elevation={2}
+          onClick={() => navigateTo("/server-status")}
+        >
+          <div className="title-card">
+            <CheckCircleIcon className="feature-icon" />
+            <Typography variant="h1">Tool Status</Typography>
+          </div>
+          <Typography variant="body2">
+            Monitor the overall health of the platform, including the Node.js
+            backend, GraphDB, and the real-time socket connection. Quickly
+            verify that everything is up and running before starting a new
+            analysis or sending fresh traffic.
+          </Typography>
+        </Paper>
 
-        {/* TOOL STATUS */}
-        <HomeCard
-          title="Tool Status"
-          content={
-            'Offre una panoramica sullo stato dei servizi del backend e della connessione ' +
-            'con il WebSocket dell’estensione, utile per diagnosticare problemi operativi.'
-          }
-          show={showCards}
-          delay={90}
-          icon={<CheckCircleIcon />}
-          pathname="/server-status"
-        />
-
-        {/* API EXPLORER */}
-        <HomeCard
-          title="OpenAPI"
-          content={
-            'Interfaccia interattiva per esplorare gli endpoint del backend, testare richieste ' +
-            'e consultare la documentazione generata automaticamente.'
-          }
-          show={showCards}
-          delay={120}
-          icon={<ApiIcon />}
-          pathname="/openapi"
-        />
+        <Paper
+          className="feature-card"
+          elevation={2}
+          onClick={() => navigateTo("/openapi")}
+        >
+          <div className="title-card">
+            <ApiIcon className="feature-icon" />
+            <Typography variant="h1">OpenAPI</Typography>
+          </div>
+          <Typography variant="body2">
+            Discover the REST APIs exposed by OntoWeb-PT. Inspect endpoints,
+            payload structures, and example calls so you can integrate the tool
+            into your own scripts, CI pipelines, or custom dashboards.
+          </Typography>
+        </Paper>
       </div>
     </div>
   );

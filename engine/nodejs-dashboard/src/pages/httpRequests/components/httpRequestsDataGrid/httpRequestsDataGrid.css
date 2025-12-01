@@ -2,3 +2,138 @@
   width: 100%;
   height: 100%;
 }
+
+.httprequestsdatagrid-drawer {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.httprequestsdatagrid-header {
+}
+
+.httprequestsdatagrid-header-chips {
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.httprequestsdatagrid-method-chip {
+  font-weight: 600;
+}
+
+.httprequestsdatagrid-header-urlrow {
+  margin-top: 4px;
+}
+
+.httprequestsdatagrid-header-url {
+  flex: 1;
+  font-family: monospace;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.httprequestsdatagrid-header-meta {
+  margin-top: 4px;
+  display: block;
+}
+
+.httprequestsdatagrid-section {
+}
+
+.httprequestsdatagrid-section-title {
+  margin-bottom: 8px;
+}
+
+.httprequestsdatagrid-labelrow {
+  margin-bottom: 4px;
+  display: flex;
+  align-items: flex-start;
+}
+
+.httprequestsdatagrid-labelrow-label {
+  min-width: 120px;
+  font-weight: 500;
+  color: #666666;
+}
+
+.httprequestsdatagrid-labelrow-value {
+  flex: 1;
+  word-break: break-all;
+}
+
+.httprequestsdatagrid-queryparams {
+  margin-top: 8px;
+}
+
+.httprequestsdatagrid-queryparams-title {
+  margin-bottom: 4px;
+}
+
+.httprequestsdatagrid-queryparams-paper {
+  padding: 8px;
+  background-color: #f5f5f5;
+}
+
+.httprequestsdatagrid-queryparam {
+  font-family: monospace;
+}
+
+.httprequestsdatagrid-headers {
+  margin-top: 8px;
+  max-height: 220px;
+  overflow: auto;
+  padding: 8px;
+  background-color: #f5f5f5;
+}
+
+.httprequestsdatagrid-header-row {
+  display: flex;
+  margin-bottom: 4px;
+}
+
+.httprequestsdatagrid-header-row:last-child {
+  margin-bottom: 0;
+}
+
+.httprequestsdatagrid-header-name {
+  font-weight: 500;
+  margin-right: 4px;
+  white-space: nowrap;
+}
+
+.httprequestsdatagrid-header-value {
+  flex: 1;
+  font-family: monospace;
+  white-space: pre-wrap;
+}
+
+.httprequestsdatagrid-requestheaders {
+  margin-top: 16px;
+}
+
+.httprequestsdatagrid-responseheaders {
+  margin-top: 16px;
+}
+
+.httprequestsdatagrid-bodysection {
+  margin-top: 16px;
+}
+
+.httprequestsdatagrid-bodyheader {
+  margin-bottom: 4px;
+}
+
+.httprequestsdatagrid-bodybox {
+  padding: 8px;
+  max-height: 200px;
+  overflow: auto;
+  background-color: #f5f5f5;
+}
+
+.httprequestsdatagrid-bodytext {
+  font-family: monospace;
+  white-space: pre-wrap;
+  word-break: break-all;
+}

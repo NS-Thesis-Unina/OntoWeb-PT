@@ -1,26 +1,71 @@
 .home-div {
-  width: 100%;
-  padding: 20px;
-  padding-top: 10px;
+  padding: 30px;
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 30px;
+  box-sizing: border-box;
 }
 
+.home-div .intro-section {
+  padding: 25px;
+}
+
+.home-div .title {
+  font-weight: 700;
+  margin-bottom: 15px;
+}
 
 .home-div .description {
-  padding: 15px 20px;
-  border-radius: 10px;
   margin-bottom: 10px;
 }
 
-
-.home-div .cards {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  width: 100%;
-  align-items: stretch;   
+.home-div .warning {
+  margin-top: 10px;
+  font-style: italic;
+  color: #ff5555;
 }
 
+.home-div .cards-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+}
 
+.home-div .feature-card {
+  cursor: pointer;
+  padding: 25px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-sizing: border-box;
+}
+
+.home-div .feature-card .title-card {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 5px;
+}
+
+.home-div .feature-card:hover {
+  transform: scale(1.02);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.home-div .feature-icon {
+  font-size: 40px;
+  margin-top: 3px;
+}
+
+@media (max-width: 1100px) {
+  .home-div .cards-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .home-div .cards-row {
+    grid-template-columns: 1fr;
+  }
+}

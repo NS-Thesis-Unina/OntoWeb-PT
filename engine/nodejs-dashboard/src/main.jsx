@@ -7,7 +7,7 @@ import { BrowserRouter, Routes } from 'react-router-dom';
 
 createRoot(document.getElementById('root')).render(
   <ThemeModeProvider defaultMode='dark'>
-    <SnackbarProvider maxSnack={1} anchorOrigin={{ horizontal: 'center', vertical: 'bottom' }}>
+    <SnackbarProvider maxSnack={1} anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}>
       <BrowserRouter>
         <Router />
       </BrowserRouter>
