@@ -1,0 +1,28 @@
+.httpFindings-div {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+}
+
+.httpFindings-div .title {
+  display: flex;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 30px;
+}
+
+.httpFindings-div .description {
+  display: flex;
+  padding: 10px;
+  margin-top: 10px;
+  margin-bottom: 15px;
+}
+
+.httpFindings-div .httpFindings-grid {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+}

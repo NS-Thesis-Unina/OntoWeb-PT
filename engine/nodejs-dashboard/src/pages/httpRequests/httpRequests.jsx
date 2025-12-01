@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import "./httpRequests.css";
-import { Backdrop, CircularProgress, Paper, Typography } from "@mui/material";
+import { Backdrop, CircularProgress, Paper, Typography, Zoom } from "@mui/material";
 import { httpRequestsService } from "../../services";
 import HttpRequestsDataGrid from "./components/httpRequestsDataGrid/httpRequestsDataGrid";
 import HttpRequestsFilters from "./components/httpRequestsFilters/httpRequestsFilters";
@@ -112,12 +112,14 @@ function HttpRequests() {
     <div className="httpRequests-div">
       <Typography className="title">Http Requests</Typography>
 
-      <Paper className="description">
-        This section displays the HTTP requests stored in GraphDB. 
-        Use the filters above to narrow down the traffic by method, URL, headers, or free-text search, 
-        and open any row to inspect the full request and response details.
-      </Paper>
-
+      <Zoom in={true}>
+        <Paper className="description">
+          This section displays the HTTP requests stored in GraphDB. 
+          Use the filters above to narrow down the traffic by method, URL, headers, or free-text search, 
+          and open any row to inspect the full request and response details.
+        </Paper>
+      </Zoom>
+      
       <HttpRequestsFilters
         filters={filters}
         onChange={handleFiltersChange}
@@ -133,7 +135,7 @@ function HttpRequests() {
             loading={loading}
             onPageChange={handlePageChange}
           />
-        ): (<Typography variant="h1" textAlign={"center"}>"No requests to show."</Typography>)}
+        ): (<Typography variant="h1" textAlign={"center"}>No requests to show.</Typography>)}
       </div>
     </div>
   );

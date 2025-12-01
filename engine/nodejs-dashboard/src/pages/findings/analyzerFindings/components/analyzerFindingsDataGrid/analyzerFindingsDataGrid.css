@@ -1,0 +1,107 @@
+.analyzerfindingsdatagrid {
+  width: 100%;
+  height: 100%;
+}
+
+.analyzerfindingsdatagrid-drawer {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.analyzerfindingsdatagrid-header {
+}
+
+.analyzerfindingsdatagrid-header-chips {
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.analyzerfindingsdatagrid-rule-chip {
+  font-weight: 600;
+}
+
+.analyzerfindingsdatagrid-header-description {
+  margin-top: 4px;
+}
+
+.analyzerfindingsdatagrid-header-meta {
+  margin-top: 4px;
+  display: block;
+}
+
+.analyzerfindingsdatagrid-section {
+}
+
+.analyzerfindingsdatagrid-section-title {
+  margin-bottom: 8px;
+}
+
+.analyzerfindingsdatagrid-labelrow {
+  margin-bottom: 4px;
+  display: flex;
+  align-items: flex-start;
+}
+
+.analyzerfindingsdatagrid-labelrow-label {
+  min-width: 140px;
+  font-weight: 500;
+  color: #666666;
+}
+
+.analyzerfindingsdatagrid-labelrow-value {
+  flex: 1;
+  word-break: break-all;
+}
+
+.analyzerfindingsdatagrid-contextsrc {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.analyzerfindingsdatagrid-contextsrc-text {
+  flex: 1;
+  font-family: monospace;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.analyzerfindingsdatagrid-htmlbox {
+  margin-top: 8px;
+  max-height: 260px;
+  overflow: auto;
+  padding: 8px;
+}
+
+.analyzerfindingsdatagrid-htmlrow {
+  margin-bottom: 8px;
+}
+
+.analyzerfindingsdatagrid-htmlrow:last-child {
+  margin-bottom: 0;
+}
+
+.analyzerfindingsdatagrid-html-iri {
+  display: block;
+  font-family: monospace;
+  margin-bottom: 2px;
+}
+
+.analyzerfindingsdatagrid-html-source {
+  font-family: monospace;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.analyzerfindingsdatagrid-idcell {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: monospace;
+}

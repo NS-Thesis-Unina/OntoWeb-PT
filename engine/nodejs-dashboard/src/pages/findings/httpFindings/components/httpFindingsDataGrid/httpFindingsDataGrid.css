@@ -1,0 +1,80 @@
+.httpfindingsdatagrid {
+  width: 100%;
+  height: 100%;
+}
+
+.httpfindingsdatagrid-drawer {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.httpfindingsdatagrid-header {
+}
+
+.httpfindingsdatagrid-header-chips {
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.httpfindingsdatagrid-rule-chip {
+  font-weight: 600;
+}
+
+.httpfindingsdatagrid-header-description {
+  margin-top: 4px;
+}
+
+.httpfindingsdatagrid-header-meta {
+  margin-top: 4px;
+  display: block;
+}
+
+.httpfindingsdatagrid-section {
+}
+
+.httpfindingsdatagrid-section-title {
+  margin-bottom: 8px;
+}
+
+.httpfindingsdatagrid-labelrow {
+  margin-bottom: 4px;
+  display: flex;
+  align-items: flex-start;
+}
+
+.httpfindingsdatagrid-labelrow-label {
+  min-width: 140px;
+  font-weight: 500;
+  color: #666666;
+}
+
+.httpfindingsdatagrid-labelrow-value {
+  flex: 1;
+  word-break: break-all;
+}
+
+.httpfindingsdatagrid-httpurl {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.httpfindingsdatagrid-httpurl-text {
+  flex: 1;
+  font-family: monospace;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.httpfindingsdatagrid-idcell {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: monospace;
+}

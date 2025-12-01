@@ -148,17 +148,6 @@ export function createNeutralTheme(mode = 'dark') {
         },
       },
 
-      // Chip
-      MuiChip: {
-        styleOverrides: {
-          root: {
-            '&.httprequestsdatagrid-method-chip': {
-              color: isDark ? '#000000' : '#ffffff',
-            },
-          },
-        },
-      },
-
       // Accordion: compact spacing and no pseudo divider line
       MuiAccordion: {
         styleOverrides: {

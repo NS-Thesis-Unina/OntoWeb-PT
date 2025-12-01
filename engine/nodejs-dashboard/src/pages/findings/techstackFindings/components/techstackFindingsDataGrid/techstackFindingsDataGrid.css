@@ -1,0 +1,86 @@
+.techstackfindingsdatagrid {
+  width: 100%;
+  height: 100%;
+}
+
+.techstackfindingsdatagrid-drawer {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.techstackfindingsdatagrid-header {
+}
+
+.techstackfindingsdatagrid-header-chips {
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.techstackfindingsdatagrid-rule-chip {
+  font-weight: 600;
+}
+
+.techstackfindingsdatagrid-header-description {
+  margin-top: 4px;
+}
+
+.techstackfindingsdatagrid-header-meta {
+  margin-top: 4px;
+  display: block;
+}
+
+.techstackfindingsdatagrid-section {
+}
+
+.techstackfindingsdatagrid-section-title {
+  margin-bottom: 8px;
+}
+
+.techstackfindingsdatagrid-labelrow {
+  margin-bottom: 4px;
+  display: flex;
+  align-items: flex-start;
+}
+
+.techstackfindingsdatagrid-labelrow-label {
+  min-width: 140px;
+  font-weight: 500;
+  color: #666666;
+}
+
+.techstackfindingsdatagrid-labelrow-value {
+  flex: 1;
+  word-break: break-all;
+}
+
+.techstackfindingsdatagrid-evidencebox {
+  margin-top: 8px;
+  max-height: 260px;
+  overflow: auto;
+  padding: 8px;
+}
+
+.techstackfindingsdatagrid-evidencerow {
+  margin-bottom: 8px;
+}
+
+.techstackfindingsdatagrid-evidencerow:last-child {
+  margin-bottom: 0;
+}
+
+.techstackfindingsdatagrid-evidence-iri {
+  display: block;
+  font-family: monospace;
+  margin-bottom: 2px;
+}
+
+.techstackfindingsdatagrid-idcell {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: monospace;
+}

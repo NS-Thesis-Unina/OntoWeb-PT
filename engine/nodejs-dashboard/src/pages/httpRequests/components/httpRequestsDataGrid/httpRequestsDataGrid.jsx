@@ -258,7 +258,6 @@ function HttpRequestsDataGrid({ rows, page, loading, onPageChange }) {
                   <Chip
                     label={method}
                     size="small"
-                    color="primary"
                     className="httprequestsdatagrid-method-chip"
                   />
                 )}

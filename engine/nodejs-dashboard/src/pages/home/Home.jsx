@@ -44,6 +44,7 @@ function Home() {
       <div className="cards-row">
         <HomeCard
           show={true}
+          delay={0}
           path="/http-requests"
           icon={<HttpIcon className="feature-icon" />}
           title="Requests"
@@ -52,6 +53,7 @@ function Home() {
 
         <HomeCard
           show={true}
+          delay={100}
           path="/findings"
           icon={<BugReportIcon className="feature-icon" />}
           title="Findings"
@@ -60,6 +62,7 @@ function Home() {
 
         <HomeCard
           show={true}
+          delay={200}
           path="/send-pcap"
           icon={<SendIcon className="feature-icon" />}
           title="Send PCAP"
@@ -68,6 +71,7 @@ function Home() {
 
         <HomeCard
           show={true}
+          delay={300}
           path="/server-status"
           icon={<CheckCircleIcon className="feature-icon" />}
           title="Tool Status"
@@ -76,6 +80,7 @@ function Home() {
 
         <HomeCard
           show={true}
+          delay={400}
           path="/openapi"
           icon={<ApiIcon className="feature-icon" />}
           title="OpenAPI"

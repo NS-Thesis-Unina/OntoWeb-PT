@@ -3,6 +3,9 @@ import Home from './pages/home/home';
 import OpenAPI from './pages/openapi/openapi';
 import App from './app';
 import HttpRequests from './pages/httpRequests/httpRequests';
+import HttpFindings from './pages/findings/httpFindings/httpFindings';
+import AnalyzerFindings from './pages/findings/analyzerFindings/analyzerFindings';
+import TechstackFindings from './pages/findings/techstackFindings/techstackFindings';
 
 function Router() {
 
@@ -18,9 +21,9 @@ function Router() {
 
 
         <Route path="findings">
-          <Route index element={<h1>Http Findings</h1>} />
-          <Route path="analyzer" element={<h1>Analyzer Findings</h1>} />
-          <Route path="techstack" element={<h1>Techstack Findings</h1>} />
+          <Route index element={<HttpFindings />} />
+          <Route path="analyzer" element={<AnalyzerFindings />} />
+          <Route path="techstack" element={<TechstackFindings />} />
         </Route>
 
         <Route path="server-status" element={<h1>Server Status</h1>} />
