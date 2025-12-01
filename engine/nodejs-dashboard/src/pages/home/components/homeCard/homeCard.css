@@ -1,0 +1,22 @@
+.feature-card {
+  cursor: pointer;
+  padding: 25px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-sizing: border-box;
+}
+
+.feature-card .title-card {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+.feature-card:hover {
+  transform: scale(1.02) !important;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
