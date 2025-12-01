@@ -1,106 +1,53 @@
 import { useEffect, useState } from "react";
-import { Paper, Typography, CircularProgress, Button, Chip } from "@mui/material";
-import "./openapi.css";
+import OpenAPIGroup from "./components/openApiGroup";
+import { CircularProgress, Box, Typography } from "@mui/material";
 
-export default function OpenAPI() {
-  const [loading, setLoading] = useState(true);
+export default function OpenAPIExplorer() {
   const [schema, setSchema] = useState(null);
-  const [selected, setSelected] = useState(null);
 
   useEffect(() => {
-    async function loadLocalSchema() {
-      try {
-        // IMPORT DINAMICO DEL JSON LOCALE
-        const json = await import("./openapi.json");
-        setSchema(json.default || json);
-      } catch (err) {
-        console.error("Errore caricando la OpenAPI:", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadLocalSchema();
+    import("./openapi.json").then(mod => {
+      setSchema(mod.default || mod);
+    });
   }, []);
 
-  if (loading) {
+  if (!schema) {
     return (
-      <div className="openapi-loading">
+      <Box sx={{ textAlign: "center", mt: 5 }}>
         <CircularProgress />
-      </div>
+      </Box>
     );
   }
 
-  if (!schema) {
-    return <Typography>Impossibile caricare il file OpenAPI.</Typography>;
-  }
 
-  const endpoints = Object.entries(schema.paths);
+  const groups = {};
+
+  Object.entries(schema.paths).forEach(([path, methods]) => {
+    Object.entries(methods).forEach(([method, info]) => {
+      const tag = info.tags?.[0] || "General";
+
+      if (!groups[tag]) groups[tag] = [];
+
+      groups[tag].push({
+        method,
+        path,
+        summary: info.summary,
+        description: info.description,
+        requestBody: info.requestBody,
+        responses: info.responses,
+      });
+    });
+  });
 
   return (
-    <div className="openapi-container">
+    <Box sx={{ maxWidth: 900, margin: "0 auto", mt: 4 }}>
+      <Typography variant="h4" fontWeight={800} sx={{ mb: 3 }}>
+        OntoWeb API Explorer
+      </Typography>
 
-      {/* INTRO */}
-      <Paper className="intro">
-        <Typography variant="h5" fontWeight={700}>OpenAPI Explorer</Typography>
-        <Typography variant="body1">
-          Questa pagina mostra tutti gli endpoint REST del backend OntoWeb-PT.
-          Lo schema è caricato localmente da un file <strong>openapi.json</strong>.
-        </Typography>
-      </Paper>
-
-      {/* LISTA ENDPOINT */}
-      <div className="endpoints-list">
-        {endpoints.map(([path, methods]) =>
-          Object.entries(methods).map(([method, info]) => (
-            <Paper
-              key={path + method}
-              className="endpoint-card"
-              onClick={() => setSelected({ path, method, info })}
-            >
-              <Chip label={method.toUpperCase()} color={method === "get" ? "primary" : "secondary"} />
-              <Typography variant="h6">{path}</Typography>
-              <Typography variant="body2" className="summary">
-                {info.summary || ""}
-              </Typography>
-            </Paper>
-          ))
-        )}
-      </div>
-
-      {/* DETTAGLI ENDPOINT */}
-      {selected && (
-        <Paper className="endpoint-details">
-          <Typography variant="h6">
-            {selected.method.toUpperCase()} — {selected.path}
-          </Typography>
-
-          <Typography variant="body1" style={{ marginTop: 10 }}>
-            {selected.info.description || "No description available."}
-          </Typography>
-
-          {/* Request Body */}
-          {selected.info.requestBody && (
-            <>
-              <Typography variant="h6" style={{ marginTop: 15 }}>Request Body</Typography>
-              <pre className="json-box">
-                {JSON.stringify(selected.info.requestBody, null, 2)}
-              </pre>
-            </>
-          )}
-
-          {/* Responses */}
-          <Typography variant="h6" style={{ marginTop: 15 }}>Responses</Typography>
-          <pre className="json-box">
-            {JSON.stringify(selected.info.responses, null, 2)}
-          </pre>
-
-          <Button variant="contained" color="primary" style={{ marginTop: 20 }}>
-            Esegui richiesta
-          </Button>
-        </Paper>
-      )}
-
-    </div>
+      {Object.entries(groups).map(([tag, endpoints]) => (
+        <OpenAPIGroup key={tag} tag={tag} endpoints={endpoints} />
+      ))}
+    </Box>
   );
 }
