@@ -1,42 +1,3 @@
-/**
- * HTTP Interceptor → Ontology API Payload Helpers (Hardened)
- * =====================================================================
- * Architectural Role:
- *   Interceptor → Ontology Ingestion Pipeline → Payload Preparation Layer
- *
- * Purpose:
- *   Provides safe and validated transformations from Interceptor “raw”
- *   captured request/response objects into *strict, size-limited, schema-
- *   conforming* payloads suitable for ingestion into the backend tool and
- *   ultimately GraphDB (Ontology).
- *
- * Responsibilities:
- *   - Normalize and sanitize all fields of a captured HTTP request
- *   - Validate and truncate URLs, headers, query parameters, fragments
- *   - Convert request/response bodies into Base64 respecting strict max sizes
- *   - Enforce RFC-valid header names and method names
- *   - Generate stable item IDs when missing or invalid
- *   - Provide batch-packing with precise byte accounting to comply with
- *     backend POST body limits
- *   - Provide a sequential POST helper guarding against empty batches
- *
- * Interactions:
- *   - Used by SendToOntologyInterceptor for preparing ingestion payloads
- *   - Aligns with backend validation logic (GraphDB ingestion microservice)
- *   - No filesystem/network interaction except in `postBatchesSequential`
- *
- * Security / Hardening Notes:
- *   - Rejects malformed URLs and non-http(s) schemes
- *   - Rejects unsafe header names
- *   - Enforces size caps to prevent overloading backend storage
- *   - Always truncates high-risk text fields (headers, URL parts)
- *   - Ensures internal metadata (id, URL parts) always meet expected format
- */
-
-/* ====================================================================== */
-/* Lookup tables, constants, validation regex                             */
-/* ====================================================================== */
-
 const REASON_BY_STATUS = new Map([
   [100, 'Continue'],
   [101, 'Switching Protocols'],
@@ -93,10 +54,8 @@ const REASON_BY_STATUS = new Map([
   [511, 'Network Authentication Required'],
 ]);
 
-/** Header-name safety (matches RFC token) */
 const HEADER_TOKEN_RE = /^[!#$%&'*+.^_`|~0-9A-Za-z-]+$/;
 
-/** Allowed HTTP methods accepted by the ingestion backend */
 const ALLOWED_METHODS = new Set([
   'GET',
   'HEAD',
@@ -109,10 +68,6 @@ const ALLOWED_METHODS = new Set([
   'PATCH',
 ]);
 
-/**
- * Size limits aligned with backend validator (Joi schema + DB limits).
- * These caps must not be violated — exceeding fields get truncated or dropped.
- */
 const MAX_ID_LEN = 256;
 const MAX_URL_LEN = 4000;
 const MAX_PATH_LEN = 2000;
@@ -121,17 +76,9 @@ const MAX_FRAGMENT_LEN = 200;
 const MAX_HDR_VALUE_LEN = 8000;
 const MAX_PARAM_VALUE_LEN = 2000;
 const MAX_PARAMS = 200;
-const MAX_REQ_B64 = 10 * 1024 * 1024; // request body max (10MB)
-const MAX_RES_B64 = 20 * 1024 * 1024; // response body max (20MB)
+const MAX_REQ_B64 = 10 * 1024 * 1024;
+const MAX_RES_B64 = 20 * 1024 * 1024;
 
-/* ====================================================================== */
-/* Encoding helpers                                                       */
-/* ====================================================================== */
-
-/**
- * UTF-8 → Base64
- * Used for converting textual bodies to backend-safe base64.
- */
 function toBase64Utf8(str) {
   if (typeof str !== 'string') return undefined;
   const bytes = new TextEncoder().encode(str);
@@ -140,10 +87,6 @@ function toBase64Utf8(str) {
   return btoa(bin);
 }
 
-/**
- * Returns decoded binary length of a base64 string.
- * This is required to enforce body-size limits pre-upload.
- */
 function base64DecodedBytesLen(b64) {
   if (typeof b64 !== 'string') return 0;
   const len = b64.length;
@@ -152,19 +95,6 @@ function base64DecodedBytesLen(b64) {
   return Math.floor((len * 3) / 4) - padding;
 }
 
-/* ====================================================================== */
-/* Header normalization                                                    */
-/* ====================================================================== */
-
-/**
- * Convert input headers (object or array) to:
- *   [{ name, value }]
- *
- * Ensures:
- *   - Lowercase header names
- *   - Only valid token names accepted
- *   - Values truncated to MAX_HDR_VALUE_LEN
- */
 function toHeaderArray(headers) {
   const out = [];
   if (!headers) return out;
@@ -192,14 +122,6 @@ function toHeaderArray(headers) {
   return out;
 }
 
-/* ====================================================================== */
-/* URL resolution + absolute parsing                                       */
-/* ====================================================================== */
-
-/**
- * Resolve possibly-relative URL using the pageUrl base.
- * Returns absolute string or null if invalid.
- */
 function resolveUrl(urlStr, base) {
   try {
     return new URL(urlStr, base || undefined).toString();
@@ -208,27 +130,12 @@ function resolveUrl(urlStr, base) {
   }
 }
 
-/**
- * Parse and normalize an absolute http/https URL.
- *
- * Returns:
- *   {
- *     full, scheme, authority, path,
- *     fragment?, queryRaw?, params?
- *   }
- *
- * Notes:
- *   - “full” must remain a valid URI; if too long, attempt a fallback
- *   - path/query/fragment truncated to safe limits
- *   - query parameters parsed and individually truncated
- */
 function parseUriAbsolute(urlStr) {
   try {
     const u = new URL(urlStr);
     const scheme = u.protocol.replace(':', '');
     if (!/^https?$/i.test(scheme)) return null;
 
-    // Full URL (validated length, fallback allowed)
     let full = u.toString();
     if (full.length > MAX_URL_LEN) {
       const shortFull = `${u.protocol}//${u.host}${u.pathname || '/'}`;
@@ -239,16 +146,13 @@ function parseUriAbsolute(urlStr) {
       }
     }
 
-    // Path normalization + truncation
     let path = u.pathname || '/';
     if (!path.startsWith('/')) path = `/${path}`;
     if (path.length > MAX_PATH_LEN) path = path.slice(0, MAX_PATH_LEN);
 
-    // Raw query (string) truncated
     const raw = u.search.startsWith('?') ? u.search.slice(1) : u.search;
     const queryRaw = raw ? raw.slice(0, MAX_QUERYRAW_LEN) : undefined;
 
-    // Structured params (limited count)
     const params = [];
     if (queryRaw) {
       const sp = new URLSearchParams(queryRaw);
@@ -260,7 +164,6 @@ function parseUriAbsolute(urlStr) {
       }
     }
 
-    // Fragment truncated
     const fragment = u.hash ? u.hash.replace(/^#/, '').slice(0, MAX_FRAGMENT_LEN) : undefined;
 
     return {
@@ -277,22 +180,13 @@ function parseUriAbsolute(urlStr) {
   }
 }
 
-/* ====================================================================== */
-/* ID normalization                                                        */
-/* ====================================================================== */
-
-/**
- * Valid ingestion id = /^[\w.\-:@/]+$/, max 256 chars.
- */
 const ID_RE = /^[[\w.\-:@/]+$/;
 
-/** Default auto-id if missing or invalid. */
 function defaultId(item, idx) {
   const ts = item?.meta?.ts ?? Date.now();
   return `req-${ts}-${idx}`;
 }
 
-/** Enforce ID rules; fallback if invalid. */
 function normalizeId(maybeId, fallback) {
   let id = (maybeId == null ? '' : String(maybeId)).trim();
   if (!ID_RE.test(id) || id.length > MAX_ID_LEN || id.length === 0) {
@@ -301,34 +195,20 @@ function normalizeId(maybeId, fallback) {
   return id;
 }
 
-/* ====================================================================== */
-/* Method normalization                                                    */
-/* ====================================================================== */
-
 function normalizeMethod(m) {
   const v = String(m || 'GET').toUpperCase();
   return ALLOWED_METHODS.has(v) ? v : null;
 }
 
-/* ====================================================================== */
-/* Body extraction (request/response)                                      */
-/* ====================================================================== */
-
-/**
- * Request body → base64 (text or already-base64).
- * Enforces MAX_REQ_B64.
- */
 function pickRequestBodyBase64(req) {
   if (!req) return undefined;
   if (req.body == null) return undefined;
 
-  // Already base64
   if (req.bodyEncoding === 'base64' && typeof req.body === 'string') {
     if (base64DecodedBytesLen(req.body) > MAX_REQ_B64) return undefined;
     return req.body;
   }
 
-  // Text → base64
   if (req.bodyEncoding === 'text' && typeof req.body === 'string') {
     const b64 = toBase64Utf8(req.body);
     if (base64DecodedBytesLen(b64) > MAX_REQ_B64) return undefined;
@@ -338,10 +218,6 @@ function pickRequestBodyBase64(req) {
   return undefined;
 }
 
-/**
- * Response body → base64 (text or already-base64).
- * Enforces MAX_RES_B64.
- */
 function pickResponseBodyBase64(res) {
   if (!res) return undefined;
   if (res.body == null) return undefined;
@@ -360,24 +236,6 @@ function pickResponseBodyBase64(res) {
   return undefined;
 }
 
-/* ====================================================================== */
-/* PUBLIC API – convertItemsToApiPayload                                   */
-/* ====================================================================== */
-
-/**
- * Convert raw intercepted items → uniform backend-ready API payload.
- *
- * Applies:
- *   - URL resolution + parse + truncate
- *   - Method filtering
- *   - Header normalization
- *   - Body base64 conversion with size limit
- *   - ID normalization
- *   - Removal of invalid or unsupported items
- *
- * Returns:
- *   { items: Array<NormalizedItem> }
- */
 export function convertItemsToApiPayload(items, opts = {}) {
   const {
     graph = import.meta.env.EXTENSION_PUBLIC_CONNECT_HTTP_REQUESTS_NAME_GRAPH || `http://localhost/graphs/http-requests`,
@@ -394,7 +252,6 @@ export function convertItemsToApiPayload(items, opts = {}) {
     const req = item.request || {};
     const res = item.response || {};
 
-    /* --- Resolve absolute URL --- */
     const base = item?.meta?.pageUrl || undefined;
     const absoluteUrl = resolveUrl(req.url || '', base);
     if (!absoluteUrl) continue;
@@ -402,14 +259,11 @@ export function convertItemsToApiPayload(items, opts = {}) {
     const uri = parseUriAbsolute(absoluteUrl);
     if (!uri) continue;
 
-    /* --- Validate method --- */
     const method = normalizeMethod(req.method);
     if (!method) continue;
 
-    /* --- Normalize ID --- */
     const _id = normalizeId(item?.id, makeId(item, idx));
 
-    /* --- Build response object (optional, only if any field present) --- */
     const response = {};
     if (forceHttpVersion) response.httpVersion = forceHttpVersion;
 
@@ -427,7 +281,6 @@ export function convertItemsToApiPayload(items, opts = {}) {
     const respHeaders = toHeaderArray(res.headers);
     if (respHeaders.length) response.headers = respHeaders;
 
-    /* --- Build main object --- */
     const obj = {
       id: _id,
       method,
@@ -441,7 +294,6 @@ export function convertItemsToApiPayload(items, opts = {}) {
     const reqBodyB64 = pickRequestBodyBase64(req);
     if (reqBodyB64) obj.bodyBase64 = reqBodyB64;
 
-    // Attach response only if meaningful
     if (
       response.httpVersion != null ||
       typeof response.status === 'number' ||
@@ -458,19 +310,6 @@ export function convertItemsToApiPayload(items, opts = {}) {
   return { items: mapped };
 }
 
-/* ====================================================================== */
-/* PUBLIC API – makeBatchPayloads                                         */
-/* ====================================================================== */
-
-/**
- * Split normalized items into POST-safe batches below a byte limit.
- *
- * - Precise byte accounting using TextEncoder
- * - Never returns empty batches
- * - Rejects single items exceeding limit
- *
- * @returns Array<{items:Array>}
- */
 export function makeBatchPayloads(rawItems, convertOpts = {}, packOpts = {}) {
   const { maxBytes = 2 * 1024 * 1024, safetyMargin = 8 * 1024 } = packOpts;
   const limit = Math.max(1024, maxBytes - safetyMargin);
@@ -482,9 +321,6 @@ export function makeBatchPayloads(rawItems, convertOpts = {}, packOpts = {}) {
   const itemJson = apiItems.map((it) => JSON.stringify(it));
   const itemBytes = itemJson.map((s) => encoder.encode(s).length);
 
-  // JSON envelope overhead:
-  // '{"items":[' = ~10 bytes
-  // ']}'        = ~2 bytes
   const WRAP_PREFIX = 10;
   const WRAP_SUFFIX = 2;
 
@@ -503,44 +339,26 @@ export function makeBatchPayloads(rawItems, convertOpts = {}, packOpts = {}) {
       continue;
     }
 
-    // If we can't add the current item even when the batch is empty → reject as too large
     if (added === 0) {
       const singleSize = WRAP_PREFIX + itemBytes[i] + WRAP_SUFFIX;
       const sampleId = apiItems[i]?.id ?? i;
       throw new Error(`Item exceeds size limit (${singleSize}B > ${limit}B). id=${sampleId}`);
     }
 
-    // Close previous batch and start a new one
     batches.push({ items: currentItems });
     currentItems = [apiItems[i]];
     currentBytes = WRAP_PREFIX + WRAP_SUFFIX + itemBytes[i];
     added = 1;
   }
 
-  // Final incomplete batch
   if (currentItems.length) batches.push({ items: currentItems });
 
   return batches;
 }
 
-/* ====================================================================== */
-/* PUBLIC API – postBatchesSequential                                    */
-/* ====================================================================== */
-
-/**
- * Sequential POST for all batches.
- *
- * Guarantees:
- *   - No empty POSTs
- *   - Proper JSON body
- *   - Detailed error text from backend
- *
- * @returns {Promise<{ batches: number }>}
- */
 export async function postBatchesSequential(url, rawItems, convertOpts, packOpts) {
   const payloads = makeBatchPayloads(rawItems, convertOpts, packOpts);
 
-  // Nothing to send
   if (!payloads.length) return { batches: 0 };
 
   for (const payload of payloads) {

@@ -69,11 +69,11 @@ function TechstackFindings() {
 
       <Zoom in={true}>
         <Paper className="description">
-          This section lists findings produced by the tech stack resolver. Each
-          entry represents evidence collected from technologies, security headers,
-          and cookies, such as missing Secure/HttpOnly flags or weak session
-          handling. Open any row to inspect the full finding details and the
-          underlying evidence.
+          This section shows all findings produced by the Techstack resolver after analysing detected
+          technologies, WAF signatures, security headers and cookies. Each entry represents a consolidated
+          issue, often enriched with CPE/CVE information when known vulnerabilities are involved. Open any
+          row to review the rule that fired, the affected technology, its severity and the concrete
+          evidence that led to the finding.
         </Paper>
       </Zoom>
 

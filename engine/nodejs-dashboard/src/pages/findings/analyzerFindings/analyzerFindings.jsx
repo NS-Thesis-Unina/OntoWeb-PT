@@ -69,11 +69,11 @@ function AnalyzerFindings() {
 
       <Zoom in={true}>
         <Paper className="description">
-          This section lists findings produced by the HTML analyzer. Each entry
-          highlights suspicious patterns in markup or scripts, such as inline
-          event handlers or potentially injectable content. Open any row to
-          inspect the full finding details, the analysis context, and the HTML
-          fragments associated with it.
+          This section displays findings produced by the HTML analyzer over captured pages and DOM
+          snapshots. Each entry points to suspicious markup or script patterns – for example inline event
+          handlers, dangerous sinks or untrusted content that may lead to injection issues. Open any row to
+          inspect the full finding details, including severity, OWASP mapping, analysis context and the
+          exact HTML fragments that were flagged.
         </Paper>
       </Zoom>
 

@@ -564,9 +564,11 @@ function SendPcap() {
       <Zoom in={true}>
         <Paper className="sendPcap-description">
           <Typography variant="body2">
-            This wizard lets you upload a PCAP file and a TLS key log file,
-            decode HTTP requests, review them, select the relevant ones, and
-            finally send them to the ontology.
+            This guided workflow lets you upload a PCAP capture and its TLS key log file, 
+            decrypt the traffic, and reconstruct HTTP requests and responses. You can inspect 
+            each interaction in detail, select the ones that matter, and send them to the ontology 
+            for storage and further analysis, optionally triggering the resolver to detect 
+            potential vulnerabilities.
           </Typography>
         </Paper>
       </Zoom>
@@ -594,7 +596,6 @@ function SendPcap() {
                   {step.description}
                 </Typography>
 
-                {/* STEP 0 - Upload PCAP */}
                 {index === 0 && (
                   <Box className="sendPcap-file-row">
                     <input
@@ -628,7 +629,6 @@ function SendPcap() {
                   </Box>
                 )}
 
-                {/* STEP 1 - Upload SSL keys */}
                 {index === 1 && (
                   <Box className="sendPcap-file-row">
                     <input
@@ -662,7 +662,6 @@ function SendPcap() {
                   </Box>
                 )}
 
-                {/* STEP 2 - Extract HTTP requests */}
                 {index === 2 && (
                   <Box className="sendPcap-extract">
                     {loadingExtract ? (
@@ -685,7 +684,6 @@ function SendPcap() {
                   </Box>
                 )}
 
-                {/* STEP 3 - Preview requests */}
                 {index === 3 && (
                   <>
                     {requests && requests.length > 0 ? (
@@ -705,7 +703,6 @@ function SendPcap() {
                   </>
                 )}
 
-                {/* STEP 4 - Select requests */}
                 {index === 4 && (
                   <Box className="sendPcap-grid">
                     {requests && requests.length > 0 ? (
@@ -726,7 +723,6 @@ function SendPcap() {
                   </Box>
                 )}
 
-                {/* STEP 5 - Confirm and send */}
                 {index === 5 && (
                   <>
                     {selectedRequests && selectedRequests.length > 0 ? (
@@ -769,7 +765,6 @@ function SendPcap() {
                       </Box>
                     )}
 
-                    {/* JOB SUMMARY DIALOG */}
                     <Dialog open={openJobsDialog} fullWidth>
                       <DialogTitle>Job Summaries</DialogTitle>
 
@@ -848,7 +843,6 @@ function SendPcap() {
                   </>
                 )}
 
-                {/* Actions */}
                 <Box className="sendPcap-actions">
                   <Button
                     variant="contained"

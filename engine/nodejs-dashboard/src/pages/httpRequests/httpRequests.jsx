@@ -114,9 +114,11 @@ function HttpRequests() {
 
       <Zoom in={true}>
         <Paper className="description">
-          This section displays the HTTP requests stored in GraphDB. 
-          Use the filters above to narrow down the traffic by method, URL, headers, or free-text search, 
-          and open any row to inspect the full request and response details.
+          This section gives you a searchable view of all HTTP requests stored in GraphDB 
+          after being ingested into the ontology. Use the filters above to narrow the traffic 
+          by method, scheme, authority, path, or full-text search across request and response 
+          data. Open any row to inspect the full request/response pair in detail, including 
+          URL breakdown, headers, query parameters, and the stored body payload.
         </Paper>
       </Zoom>
       
