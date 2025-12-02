@@ -1,8 +1,10 @@
 import { Card, CardContent, Typography, Box } from "@mui/material";
+import { connect } from "socket.io-client";
 
 export default function StatusCard({ name, status }) {
   const colorMap = {
     up: "#00c853",
+    connected: "#00c853",
     connecting: "#ffeb3b",
     down: "#d50000",
     disconnected: "#d50000",
@@ -34,7 +36,7 @@ export default function StatusCard({ name, status }) {
               background: colorMap[normalized],
               boxShadow: `0 0 12px ${colorMap[normalized]}`,
               animation:
-                normalized === "up"
+                normalized === "up" || normalized === "connected"
                   ? "pulseGreen 1.5s infinite"
                   : normalized === "connecting"
                   ? "pulseYellow 1.5s infinite"

@@ -28,6 +28,8 @@ export default function ServerStatusPage() {
         const h = await getHealth();
         setHealth(h);
         const st = deriveToolStatus(h, wsStatus);
+        console.log("Derived tool status:", st);
+        console.log("Websocket:", wsStatus);
         setToolStatus(st);
       } catch {
         setHealth(null);
