@@ -7,6 +7,7 @@ import HttpFindings from './pages/findings/httpFindings/httpFindings';
 import AnalyzerFindings from './pages/findings/analyzerFindings/analyzerFindings';
 import TechstackFindings from './pages/findings/techstackFindings/techstackFindings';
 import SendPcap from './pages/sendPcap/sendPcap';
+import ServerStatusPage from './pages/status/serverStatusPage';
 
 function Router() {
 
@@ -27,7 +28,7 @@ function Router() {
           <Route path="techstack" element={<TechstackFindings />} />
         </Route>
 
-        <Route path="server-status" element={<h1>Server Status</h1>} />
+        <Route path="server-status" element={<ServerStatusPage />} />
 
         <Route path="send-pcap" element={<SendPcap />} />
 
