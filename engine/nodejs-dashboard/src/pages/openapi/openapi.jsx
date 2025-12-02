@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import OpenAPIGroup from "./components/openApiGroup";
-import { CircularProgress, Box, Typography } from "@mui/material";
+import { CircularProgress, Box, Typography, Zoom, Paper } from "@mui/material";
+import "./openapi.css";
 
 export default function OpenAPIExplorer() {
   const [schema, setSchema] = useState(null);
@@ -40,14 +41,18 @@ export default function OpenAPIExplorer() {
   });
 
   return (
-    <Box sx={{ maxWidth: 900, margin: "0 auto", mt: 4 }}>
-      <Typography variant="h4" fontWeight={800} sx={{ mb: 3 }}>
-        OntoWeb API Explorer
-      </Typography>
+    <div className="openapi-div">
+      <Typography className="title">OntoWeb API Explorer</Typography>
+
+      <Zoom in={true}>
+        <Paper className="description">
+          This section displays the APIs of our nodejs backend.
+        </Paper>
+      </Zoom>
 
       {Object.entries(groups).map(([tag, endpoints]) => (
         <OpenAPIGroup key={tag} tag={tag} endpoints={endpoints} />
       ))}
-    </Box>
+    </div>
   );
 }

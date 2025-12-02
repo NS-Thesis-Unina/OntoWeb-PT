@@ -1,6 +1,6 @@
-
 import { Accordion, AccordionSummary, AccordionDetails, Chip, Typography, Box } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import "./openApiGroup.css";
 
 const METHOD_COLORS = {
   get: "info",
@@ -11,46 +11,58 @@ const METHOD_COLORS = {
 
 export default function OpenAPIGroup({ tag, endpoints }) {
   return (
-    <Box sx={{ marginBottom: 3 }}>
-      <Typography variant="h5" fontWeight="bold">{tag}</Typography>
+    <Box className="openapi-group-root">
+      <Typography variant="h5" className="openapi-group-title">
+        {tag}
+      </Typography>
 
       {endpoints.map((ep, i) => (
-        <Accordion key={i} sx={{ mt: 1 }}>
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+        <Accordion key={i} className="openapi-group-accordion">
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon />}
+            className="openapi-group-summary"
+          >
             <Chip
               label={ep.method.toUpperCase()}
               color={METHOD_COLORS[ep.method]}
-              sx={{ mr: 2, fontWeight: 700 }}
+              className="openapi-group-method-chip"
             />
 
-            <Typography sx={{ mr: 2 }} fontWeight={600}>
+            <Typography className="openapi-group-path">
               {ep.path}
             </Typography>
-
-            <Typography color="text.secondary">
+              -
+            <Typography color="text.secondary" className="openapi-group-summary-text">
               {ep.summary}
             </Typography>
           </AccordionSummary>
 
-          <AccordionDetails>
-            <Typography variant="subtitle1" fontWeight="bold">Description</Typography>
-            <Typography variant="body2" sx={{ mb: 2 }}>
+          <AccordionDetails className="openapi-group-details">
+            <Typography variant="subtitle1" className="openapi-group-section-title">
+              Description
+            </Typography>
+            <Typography variant="body2" className="openapi-group-description-text">
               {ep.description || "No description"}
             </Typography>
 
-            {/* Request Body */}
             {ep.requestBody && (
               <>
-                <Typography variant="subtitle1" fontWeight="bold">Request Body</Typography>
-                 <pre style={{ background: "#2a2a2a", padding: 10, color: "#eee", borderRadius: 4 }}>
+                <Typography variant="subtitle1" className="openapi-group-section-title">
+                  Request Body
+                </Typography>
+                <pre className="openapi-group-code-block">
                   {JSON.stringify(ep.requestBody, null, 2)}
                 </pre>
               </>
             )}
 
-            {/* Responses */}
-            <Typography variant="subtitle1" fontWeight="bold" sx={{ mt: 2 }}>Responses</Typography>
-            <pre style={{ background: "#2a2a2a", padding: 10, color: "#eee", borderRadius: 4 }}>
+            <Typography
+              variant="subtitle1"
+              className="openapi-group-section-title openapi-group-responses-title"
+            >
+              Responses
+            </Typography>
+            <pre className="openapi-group-code-block">
               {JSON.stringify(ep.responses, null, 2)}
             </pre>
           </AccordionDetails>

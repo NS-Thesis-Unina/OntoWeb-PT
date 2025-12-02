@@ -1,0 +1,61 @@
+.openapi-group-root {
+  margin-bottom: 24px;
+}
+
+.openapi-group-title {
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.openapi-group-accordion {
+  
+  margin-top: 8px;
+}
+
+.openapi-group-summary .MuiAccordionSummary-content {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 8px;
+}
+
+.openapi-group-method-chip {
+  font-weight: 700;
+}
+
+.openapi-group-path {
+  font-weight: 600;
+}
+
+.openapi-group-summary-text {
+  font-size: 0.9rem;
+}
+
+.openapi-group-details {
+  padding-top: 8px;
+}
+
+.openapi-group-section-title {
+  font-weight: 700;
+  margin-top: 8px;
+  margin-bottom: 4px;
+}
+
+.openapi-group-responses-title {
+  margin-top: 16px;
+}
+
+.openapi-group-description-text {
+  margin-bottom: 16px;
+}
+
+.openapi-group-code-block {
+  background: #2a2a2a;
+  padding: 10px;
+  color: #eeeeee;
+  border-radius: 4px;
+  font-family: "Roboto Mono", "Fira Code", monospace;
+  font-size: 0.8rem;
+  overflow: auto;
+  margin: 0;
+}
