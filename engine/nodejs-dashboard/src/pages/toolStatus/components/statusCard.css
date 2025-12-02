@@ -1,0 +1,97 @@
+.statuscard-root {
+  border-radius: 24px !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
+  color: #ffffff !important;
+  min-height: 120px !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.statuscard-content {
+  width: 100% !important;
+  min-width: 200px !important;
+}
+
+.statuscard-header {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+}
+
+.statuscard-title {
+  font-weight: 600 !important;
+}
+
+.statuscard-indicator {
+  width: 18px !important;
+  height: 18px !important;
+  border-radius: 50% !important;
+}
+
+.statuscard-status-text {
+  margin-top: 8px !important;
+  text-transform: lowercase !important;
+}
+
+@keyframes statuscard-pulse-green {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 12px rgba(0, 200, 83, 0.9);
+  }
+  50% {
+    transform: scale(1.15);
+    box-shadow: 0 0 20px rgba(0, 230, 118, 1);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 12px rgba(0, 200, 83, 0.9);
+  }
+}
+
+@keyframes statuscard-pulse-yellow {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 12px rgba(255, 235, 59, 0.9);
+  }
+  50% {
+    transform: scale(1.15);
+    box-shadow: 0 0 20px rgba(255, 241, 118, 1);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 12px rgba(255, 235, 59, 0.9);
+  }
+}
+
+@keyframes statuscard-pulse-red {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 12px rgba(213, 0, 0, 0.9);
+  }
+  50% {
+    transform: scale(1.15);
+    box-shadow: 0 0 20px rgba(255, 23, 68, 1);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 12px rgba(213, 0, 0, 0.9);
+  }
+}
+
+.statuscard-indicator--green {
+  background: #00c853;
+  box-shadow: 0 0 12px #00c853;
+  animation: statuscard-pulse-green 1.5s infinite;
+}
+
+.statuscard-indicator--yellow {
+  background: #ffeb3b;
+  box-shadow: 0 0 12px #ffeb3b;
+  animation: statuscard-pulse-yellow 1.5s infinite;
+}
+
+.statuscard-indicator--red {
+  background: #d50000;
+  box-shadow: 0 0 12px #d50000;
+  animation: statuscard-pulse-red 1.5s infinite;
+}

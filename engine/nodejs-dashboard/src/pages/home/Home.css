@@ -4,6 +4,8 @@
   flex-direction: column;
   gap: 30px;
   box-sizing: border-box;
+  max-width: 1200px;
+  margin: 0 auto 0;
 }
 
 .home-div .intro-section {

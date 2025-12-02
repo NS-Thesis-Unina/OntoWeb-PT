@@ -73,6 +73,7 @@
   overflow-y: auto;
   overflow-x: hidden;
   box-sizing: border-box;
+  justify-content: center;
   padding: 10px;
 }
 

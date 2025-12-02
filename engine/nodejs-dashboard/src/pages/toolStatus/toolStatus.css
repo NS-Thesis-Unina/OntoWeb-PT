@@ -1,0 +1,88 @@
+.toolstatus-root {
+  margin: 0 auto 0;
+  padding: 30px;
+  padding-bottom: 64px;
+  color: #ffffff;
+  box-sizing: border-box;
+  max-width: 1200px;
+}
+
+.toolstatus-main-card {
+  margin-bottom: 32px;
+  border-radius: 24px !important;
+  color: #ffffff;
+}
+
+.toolstatus-main-card--on {
+  background: linear-gradient(90deg, #00c853, #64dd17) !important;
+}
+
+.toolstatus-main-card--checking {
+  background: linear-gradient(90deg, #fbc02d, #ffeb3b) !important;
+}
+
+.toolstatus-main-card--off {
+  background: linear-gradient(90deg, #d50000, #ff1744) !important;
+}
+
+.toolstatus-main-title {
+  font-weight: 700;
+}
+
+.toolstatus-main-updated {
+  margin-top: 4px !important;
+  opacity: 0.9 !important;
+}
+
+.toolstatus-main-progress {
+  margin-top: 24px !important;
+}
+
+.toolstatus-divider {
+  margin-bottom: 24px !important;
+  background: none !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+}
+
+.toolstatus-components-grid {
+  justify-content: space-between !important;
+}
+
+.toolstatus-logs-card {
+  margin-top: 40px !important;
+  border-radius: 24px !important;
+}
+
+.toolstatus-logs-title {
+  font-weight: 600 !important;
+}
+
+.toolstatus-logs-container {
+  max-height: 250px !important;
+  overflow-y: auto !important;
+  font-family: monospace !important;
+  font-size: 0.85rem !important;
+  padding-right: 4px !important;
+}
+
+.toolstatus-logs-paper {
+  padding: 5px !important;
+}
+
+.toolstatus-log-row {
+  margin-bottom: 4px !important;
+  width: 100% !important;
+}
+
+.toolstatus-log-part {
+  display: inline !important;
+  margin-right: 5px !important;
+}
+
+.toolstatus-log-message {
+  display: inline !important;
+  margin-left: 5px !important;
+  white-space: pre-wrap !important;
+  word-break: break-word !important;
+}
