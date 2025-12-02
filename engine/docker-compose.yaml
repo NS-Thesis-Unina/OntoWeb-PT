@@ -143,6 +143,7 @@ services:
   #    GRAPHDB_BASE: "http://graphdb:7200"
   #    REDIS_HOST: "redis"
   #    TSHARK_BIN: "/usr/bin/tshark"
+  #    LOGS_WS_URL: "http://node-api:8081/logs"
   #  depends_on:
   #    - redis
   #    - graphdb

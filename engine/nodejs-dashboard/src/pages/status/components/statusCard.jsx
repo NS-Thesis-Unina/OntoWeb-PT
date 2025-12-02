@@ -1,5 +1,4 @@
 import { Card, CardContent, Typography, Box } from "@mui/material";
-import { connect } from "socket.io-client";
 
 export default function StatusCard({ name, status }) {
   const colorMap = {

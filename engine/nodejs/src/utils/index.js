@@ -19,7 +19,8 @@ module.exports = {
   ...require('./http/headers'),
 
   // Logger
-  ...require('./logs/logger'),
+  makeLogger: require('./logs/logger').makeLogger,
+  onLog: require('./logs/logger').onLog,
 
   // Builders
   httpBuilders: {

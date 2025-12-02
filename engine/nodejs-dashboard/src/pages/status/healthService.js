@@ -14,7 +14,6 @@ export function deriveToolStatus(health, wsStatus) {
   const allUp = values.length > 0 && values.every((v) => v === "up");
   const anyUp = values.some((v) => v === "up");
 
-  // Consider websocket as part of full health
   const wsOk = wsStatus === "connected";
 
   if (allUp && health.ok && wsOk) return "tool_on";

@@ -9,6 +9,9 @@ const {
   queueNameAnalyzerWrites,
 } = require('./queue');
 
+const { io } = require('socket.io-client');
+const { onLog } = require('./utils');
+
 const {
   graphdb: { runUpdate, runSelect },
   httpBuilders: {
@@ -35,6 +38,41 @@ const logHttp = makeLogger('worker:http');
 const logSp = makeLogger('worker:sparql');
 const logTech = makeLogger('worker:techstack');
 const logAnalyzer = makeLogger('worker:analyzer');
+
+const logForward = makeLogger('logs-forwarder');
+
+// URL del server che espone il namespace /logs
+const LOGS_WS_URL =
+  process.env.LOGS_WS_URL ||
+  `http://${process.env.SERVER_HOST || 'localhost'}:${process.env.SERVER_PORT || 8081}/logs`;
+
+// Socket client verso il server API (/logs)
+const logsSocket = io(LOGS_WS_URL, {
+  transports: ['websocket'],
+  reconnection: true,
+});
+
+logsSocket.on('connect', () => {
+  logForward.info('Connected to logs WebSocket', { url: LOGS_WS_URL });
+});
+
+logsSocket.on('disconnect', () => {
+  logForward.warn('Disconnected from logs WebSocket');
+});
+
+logsSocket.on('error', (err) => {
+  logForward.warn('Logs WebSocket error', err?.message || err);
+});
+
+// 🔵 inoltra TUTTI i log del processo worker verso il server
+onLog((entry) => {
+  try {
+    // entry: { ts, level, ns, msg }
+    logsSocket.emit('log', entry);
+  } catch {
+    // niente, se il socket è giù semplicemente si perde quel log
+  }
+});
 
 
 // === HTTP Requests worker ===

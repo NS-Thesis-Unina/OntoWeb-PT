@@ -6,6 +6,7 @@
  * - namespaces (e.g., "api", "worker", "bull", "redis", "graphdb")
  * - pretty output in dev, JSON in prod
  * - rate-limit/coalescing of repeated messages within a time window
+ * - 🔵 log listeners for realtime streaming (e.g. via WebSocket)
  */
 
 /** @typedef {import('../_types/logs/types').LogLevel} LogLevel */
@@ -69,8 +70,51 @@ const lastMsg = new Map();
 /** Coalescing window in milliseconds. */
 const WINDOW_MS = Number(process.env.LOG_COALESCE_WINDOW_MS || 3000);
 
+/* ========================================================================= */
+/* 🔵 Realtime log listeners                                                 */
+/* ========================================================================= */
+
 /**
- * Low-level emitter (pretty or json).
+ * @typedef {{ ts: string, level: LogLevel, ns: string, msg: any }} LogEntry
+ */
+
+/** @type {Set<(entry: LogEntry) => void>} */
+const logListeners = new Set();
+
+/**
+ * Register a listener that will be called for every emitted log
+ * (after coalescing, esattamente come va in console).
+ *
+ * @param {(entry: LogEntry) => void} fn
+ * @returns {() => void} unsubscribe function
+ */
+function onLog(fn) {
+  if (typeof fn !== 'function') return () => {};
+  logListeners.add(fn);
+  return () => logListeners.delete(fn);
+}
+
+/**
+ * Notify all listeners.
+ *
+ * @param {LogEntry} entry
+ */
+function notifyLogListeners(entry) {
+  for (const fn of logListeners) {
+    try {
+      fn(entry);
+    } catch {
+      // non facciamo esplodere il logger se un listener è buggato
+    }
+  }
+}
+
+/* ========================================================================= */
+/* Low-level emitter                                                         */
+/* ========================================================================= */
+
+/**
+ * Low-level emitter (pretty or json) + broadcast to listeners.
  *
  * @param {string} ns
  * @param {LogLevel} level
@@ -78,17 +122,30 @@ const WINDOW_MS = Number(process.env.LOG_COALESCE_WINDOW_MS || 3000);
  * @param {unknown[]} args
  */
 function emit(ns, level, timeIso, args) {
+  // Forma canonica del messaggio da inviare sia in console che via WS
+  let msg;
+
+  if (args.length === 1) {
+    const a = args[0];
+    msg =
+      a instanceof Error
+        ? { err: a.message, stack: a.stack }
+        : a;
+  } else {
+    msg = args.map((a) =>
+      a instanceof Error ? { err: a.message, stack: a.stack } : a
+    );
+  }
+
+  /** @type {LogEntry} */
+  const payload = {
+    ts: timeIso,
+    level,
+    ns,
+    msg,
+  };
+
   if (LOG_FORMAT === 'json') {
-    /** @type {any} */
-    const payload = {
-      ts: timeIso,
-      level,
-      ns,
-      msg:
-        args.length === 1
-          ? (args[0] instanceof Error ? { err: args[0].message, stack: args[0].stack } : args[0])
-          : args.map((a) => (a instanceof Error ? { err: a.message, stack: a.stack } : a)),
-    };
     // eslint-disable-next-line no-console
     (level === 'error' ? console.error : level === 'warn' ? console.warn : console.log)(
       JSON.stringify(payload)
@@ -98,10 +155,19 @@ function emit(ns, level, timeIso, args) {
     // eslint-disable-next-line no-console
     (level === 'error' ? console.error : level === 'warn' ? console.warn : console.log)(
       `[${timeIso}] ${tag} ${ns} —`,
-      ...args.map((a) => (a instanceof Error ? a.message : typeof a === 'string' ? a : JSON.stringify(a)))
+      ...args.map((a) =>
+        a instanceof Error ? a.message : typeof a === 'string' ? a : JSON.stringify(a)
+      )
     );
   }
+
+  // 🔵 manda il log anche ai listener (es. websocket /logs)
+  notifyLogListeners(payload);
 }
+
+/* ========================================================================= */
+/* High-level log with coalescing                                            */
+/* ========================================================================= */
 
 /**
  * High-level log with coalescing of repeated messages within WINDOW_MS.
@@ -152,4 +218,4 @@ const makeLogger = (ns) => ({
   debug: (...a) => log(ns, 'debug', ...a),
 });
 
-module.exports = { makeLogger };
+module.exports = { makeLogger, onLog };

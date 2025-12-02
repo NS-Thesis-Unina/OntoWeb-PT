@@ -7,7 +7,9 @@ const {
   queueNameTechstackWrites,
   queueNameAnalyzerWrites
 } = require('./queue');
-const { makeLogger } = require('./utils');
+
+// 🔵 ora importiamo direttamente dal logger
+const { makeLogger, onLog } = require('./utils');
 
 module.exports = async function attachSockets(httpServer) {
   const log = makeLogger('ws');
@@ -16,12 +18,43 @@ module.exports = async function attachSockets(httpServer) {
     cors: { origin: process.env.SOCKETS_CORS_ORIGIN || '*' },
   });
 
+  /* =======================================================================
+   * Namespace /logs per i log realtime
+   * ======================================================================= */
+  const logsNsp = io.of('/logs');
+
+  logsNsp.on('connection', (socket) => {
+    log.info('logs client connected', { sid: socket.id });
+
+    // 🔵 quando QUALCUNO (es. il worker) manda un log, lo ributtiamo a tutti i client
+    socket.on('log', (entry) => {
+      logsNsp.emit('log', entry);
+    });
+
+    socket.on('disconnect', () => {
+      log.info('logs client disconnected', { sid: socket.id });
+    });
+  });
+
+  // 🔵 i log del PROCESSO API passano qui e vengono emessi ai client
+  onLog((entry) => {
+    logsNsp.emit('log', entry);
+  });
+
+  /* =======================================================================
+   * Namespace principale per job events (già esistente)
+   * ======================================================================= */
   const qHttp = new QueueEvents(queueNameHttpRequestsWrites, { connection });
   const qSp = new QueueEvents(queueNameSparqlWrites, { connection });
-  const qTech = new QueueEvents(queueNameTechstackWrites, { connection }); 
-  const qAnaly = new QueueEvents(queueNameAnalyzerWrites, { connection }); 
+  const qTech = new QueueEvents(queueNameTechstackWrites, { connection });
+  const qAnaly = new QueueEvents(queueNameAnalyzerWrites, { connection });
 
-  await Promise.all([qHttp.waitUntilReady(), qSp.waitUntilReady(), qTech.waitUntilReady(), qAnaly.waitUntilReady()]);
+  await Promise.all([
+    qHttp.waitUntilReady(),
+    qSp.waitUntilReady(),
+    qTech.waitUntilReady(),
+    qAnaly.waitUntilReady()
+  ]);
   log.info('QueueEvents ready');
 
   io.on('connection', (socket) => {
@@ -62,7 +95,7 @@ module.exports = async function attachSockets(httpServer) {
 
   qHttp.on('failed', (p) => fHttp('failed', p));
   qSp.on('failed', (p) => fSp('failed', p));
-  qTech.on('failed', (p) => fTech('failed', p)); 
+  qTech.on('failed', (p) => fTech('failed', p));
   qAnaly.on('failed', (p) => fAnaly('failed', p));
 
   [qHttp, qSp, qTech, qAnaly].forEach((qe) =>

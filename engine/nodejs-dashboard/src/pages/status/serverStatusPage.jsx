@@ -19,7 +19,6 @@ export default function ServerStatusPage() {
   const [wsStatus, setWsStatus] = useState("disconnected");
   const [toolStatus, setToolStatus] = useState("tool_off");
 
-  // 🔵 AGGIUNTA: stato per i log realtime
   const [logs, setLogs] = useState([]);
 
   useEffect(() => {
@@ -42,9 +41,8 @@ export default function ServerStatusPage() {
     return () => clearInterval(interval);
   }, [wsStatus]);
 
-  // Socket principale (già esistente)
   useEffect(() => {
-    const socket = io("http://localhost:8081", {
+    const socket = io(import.meta.env.VITE_LOGS_WS_URL || "http://localhost:8081", {
       transports: ["websocket"],
     });
 
@@ -54,14 +52,13 @@ export default function ServerStatusPage() {
     return () => socket.disconnect();
   }, []);
 
-  // 🔵 AGGIUNTA: socket dedicato ai LOG realtime
   useEffect(() => {
-    const logSocket = io("http://localhost:8081/logs", {
+    const logSocket = io(import.meta.env.VITE_LOGS_WS_URL_LOGS || "http://localhost:8081/logs", {
       transports: ["websocket"],
     });
 
     logSocket.on("log", (entry) => {
-      setLogs((prev) => [...prev.slice(-80), entry]); // max 80 log
+      setLogs((prev) => [...prev.slice(-80), entry]);
     });
 
     return () => logSocket.disconnect();
@@ -130,7 +127,6 @@ export default function ServerStatusPage() {
         </Grid>
       </Grid>
 
-      {/* 🔵 AGGIUNTA: pannello log realtime */}
       <Card
         sx={{
           mt: 5,
@@ -167,6 +163,9 @@ export default function ServerStatusPage() {
                   }}
                 >
                   [{l.level}]
+                </span>{" "}
+                <span style={{ color: "#90caf9" }}>
+                  ({l.ns})
                 </span>{" "}
                 <span style={{ color: "#fff" }}>
                   {typeof l.msg === "string" ? l.msg : JSON.stringify(l.msg)}
