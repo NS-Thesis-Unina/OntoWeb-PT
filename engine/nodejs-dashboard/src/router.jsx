@@ -6,6 +6,7 @@ import HttpRequests from './pages/httpRequests/httpRequests';
 import HttpFindings from './pages/findings/httpFindings/httpFindings';
 import AnalyzerFindings from './pages/findings/analyzerFindings/analyzerFindings';
 import TechstackFindings from './pages/findings/techstackFindings/techstackFindings';
+import SendPcap from './pages/sendPcap/sendPcap';
 
 function Router() {
 
@@ -28,7 +29,7 @@ function Router() {
 
         <Route path="server-status" element={<h1>Server Status</h1>} />
 
-        <Route path="send-pcap" element={<h1>Send PCAP</h1>} />
+        <Route path="send-pcap" element={<SendPcap />} />
 
         <Route path="openapi" element={<OpenAPI />} />
       </Route>

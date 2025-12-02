@@ -1,0 +1,136 @@
+.pcaprequestsdatagrid-grid {
+  width: 100%;
+  height: 100%;
+}
+
+.pcaprequestsdatagrid-drawer {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.pcaprequestsdatagrid-header {
+}
+
+.pcaprequestsdatagrid-header-chips {
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.pcaprequestsdatagrid-method-chip {
+  font-weight: 600;
+}
+
+.pcaprequestsdatagrid-header-urlrow {
+  margin-top: 4px;
+}
+
+.pcaprequestsdatagrid-header-url {
+  flex: 1;
+  font-family: monospace;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pcaprequestsdatagrid-header-meta {
+  margin-top: 4px;
+  display: block;
+}
+
+.pcaprequestsdatagrid-section {
+}
+
+.pcaprequestsdatagrid-section-title {
+  margin-bottom: 8px;
+}
+
+.pcaprequestsdatagrid-labelrow {
+  margin-bottom: 4px;
+  display: flex;
+  align-items: flex-start;
+}
+
+.pcaprequestsdatagrid-labelrow-label {
+  min-width: 120px;
+  font-weight: 500;
+  color: #666666;
+}
+
+.pcaprequestsdatagrid-labelrow-value {
+  flex: 1;
+  word-break: break-all;
+}
+
+.pcaprequestsdatagrid-queryparams {
+  margin-top: 8px;
+}
+
+.pcaprequestsdatagrid-queryparams-title {
+  margin-bottom: 4px;
+}
+
+.pcaprequestsdatagrid-queryparams-paper {
+  padding: 8px;
+}
+
+.pcaprequestsdatagrid-queryparam {
+  font-family: monospace;
+}
+
+.pcaprequestsdatagrid-headers {
+  margin-top: 8px;
+  max-height: 220px;
+  overflow: auto;
+  padding: 8px;
+}
+
+.pcaprequestsdatagrid-header-row {
+  display: flex;
+  margin-bottom: 4px;
+}
+
+.pcaprequestsdatagrid-header-row:last-child {
+  margin-bottom: 0;
+}
+
+.pcaprequestsdatagrid-header-name {
+  font-weight: 500;
+  margin-right: 4px;
+  white-space: nowrap;
+}
+
+.pcaprequestsdatagrid-header-value {
+  flex: 1;
+  font-family: monospace;
+  white-space: pre-wrap;
+}
+
+.pcaprequestsdatagrid-requestheaders {
+  margin-top: 16px;
+}
+
+.pcaprequestsdatagrid-responseheaders {
+  margin-top: 16px;
+}
+
+.pcaprequestsdatagrid-bodysection {
+  margin-top: 16px;
+}
+
+.pcaprequestsdatagrid-bodyheader {
+  margin-bottom: 4px;
+}
+
+.pcaprequestsdatagrid-bodybox {
+  padding: 8px;
+  max-height: 200px;
+  overflow: auto;
+}
+
+.pcaprequestsdatagrid-bodytext {
+  font-family: monospace;
+  white-space: pre-wrap;
+  word-break: break-all;
+}

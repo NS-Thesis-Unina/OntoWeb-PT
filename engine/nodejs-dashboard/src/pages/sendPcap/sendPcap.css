@@ -1,0 +1,106 @@
+.sendPcap-div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px;
+  width: 100%;
+  height: 100%;
+}
+
+.sendPcap-title {
+  display: flex;
+  justify-content: center;
+  font-weight: bold !important;
+  font-size: 30px !important;
+}
+
+.sendPcap-description {
+  display: flex;
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  margin-bottom: 15px;
+}
+
+.sendPcap-alert {
+  width: 95%;
+  max-width: 1100px;
+  margin-bottom: 10px;
+}
+
+.sendPcap-content {
+  width: 95%;
+  max-width: 1100px;
+}
+
+.sendPcap-step {
+  width: 100%;
+}
+
+.sendPcap-step-description {
+  margin-bottom: 8px;
+}
+
+.sendPcap-file-row {
+  margin-top: 8px;
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+
+.sendPcap-file-label-text {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.sendPcap-file-input {
+  display: none;
+}
+
+.sendPcap-file-name {
+  font-size: 13px;
+  color: #555555;
+}
+
+.sendPcap-extract {
+  margin-top: 8px;
+}
+
+.sendPcap-loading {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.sendPcap-loading-inline {
+  margin-top: 12px;
+}
+
+.sendPcap-loading-text {
+  font-size: 13px;
+}
+
+.sendPcap-grid {
+  display: flex;
+  flex-direction: column;
+  margin-top: 8px;
+  height: 400px;
+}
+
+.sendPcap-empty {
+  margin-top: 8px;
+}
+
+.sendPcap-actions {
+  margin-top: 8px;
+  margin-bottom: 16px;
+}
+
+.sendPcap-btn {
+  margin-top: 8px !important;
+  margin-right: 8px !important;
+}

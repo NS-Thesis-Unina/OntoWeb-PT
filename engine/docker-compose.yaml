@@ -108,6 +108,46 @@ services:
     networks:
       - backend
     restart: "no"
+    
+  #node-api:
+  #  build:
+  #    context: ./nodejs
+  #    dockerfile: Dockerfile
+  #  container_name: node-api
+  #  command: ["npm", "run", "start:api"]
+  #  ports:
+  #    - "8081:8081"
+  #  env_file:
+  #    - ./nodejs/.env
+  #  environment:
+  #    SERVER_HOST: "0.0.0.0"
+  #    GRAPHDB_BASE: "http://graphdb:7200"
+  #    REDIS_HOST: "redis"
+  #
+  #    TSHARK_BIN: "/usr/bin/tshark"
+  #  depends_on:
+  #    - redis
+  #    - graphdb
+  #  networks:
+  #    - backend
+
+  #node-worker:
+  #  build:
+  #    context: ./nodejs
+  #    dockerfile: Dockerfile
+  #  container_name: node-worker
+  #  command: ["npm", "run", "start:worker"]
+  #  env_file:
+  #    - ./nodejs/.env
+  #  environment:
+  #    GRAPHDB_BASE: "http://graphdb:7200"
+  #    REDIS_HOST: "redis"
+  #    TSHARK_BIN: "/usr/bin/tshark"
+  #  depends_on:
+  #    - redis
+  #    - graphdb
+  #  networks:
+  #    - backend
 
   nginx:
     image: nginx:alpine

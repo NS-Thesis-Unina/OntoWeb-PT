@@ -26,6 +26,7 @@ const sparqlRoutes = require('./routes/sparql');
 const httpRequestRoutes = require('./routes/httpRequests');
 const techStackRoutes = require('./routes/techstack');
 const analyzerRoutes = require('./routes/analyzer');
+const pcapRoutes = require('./routes/pcap');
 
 const { connection } = require('./queue');
 
@@ -48,6 +49,7 @@ app.use('/sparql', sparqlRoutes);
 app.use('/http-requests', httpRequestRoutes);
 app.use('/techstack', techStackRoutes); 
 app.use('/analyzer', analyzerRoutes);
+app.use('/pcap', pcapRoutes);
 
 
 // Celebrate validation error handler (returns 400 with clean details)

@@ -1,0 +1,136 @@
+.pcaprequestsdatagridselectable-grid {
+  width: 100%;
+  height: 100%;
+}
+
+.pcaprequestsdatagridselectable-drawer {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.pcaprequestsdatagridselectable-header {
+}
+
+.pcaprequestsdatagridselectable-header-chips {
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.pcaprequestsdatagridselectable-method-chip {
+  font-weight: 600;
+}
+
+.pcaprequestsdatagridselectable-header-urlrow {
+  margin-top: 4px;
+}
+
+.pcaprequestsdatagridselectable-header-url {
+  flex: 1;
+  font-family: monospace;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pcaprequestsdatagridselectable-header-meta {
+  margin-top: 4px;
+  display: block;
+}
+
+.pcaprequestsdatagridselectable-section {
+}
+
+.pcaprequestsdatagridselectable-section-title {
+  margin-bottom: 8px;
+}
+
+.pcaprequestsdatagridselectable-labelrow {
+  margin-bottom: 4px;
+  display: flex;
+  align-items: flex-start;
+}
+
+.pcaprequestsdatagridselectable-labelrow-label {
+  min-width: 120px;
+  font-weight: 500;
+  color: #666666;
+}
+
+.pcaprequestsdatagridselectable-labelrow-value {
+  flex: 1;
+  word-break: break-all;
+}
+
+.pcaprequestsdatagridselectable-queryparams {
+  margin-top: 8px;
+}
+
+.pcaprequestsdatagridselectable-queryparams-title {
+  margin-bottom: 4px;
+}
+
+.pcaprequestsdatagridselectable-queryparams-paper {
+  padding: 8px;
+}
+
+.pcaprequestsdatagridselectable-queryparam {
+  font-family: monospace;
+}
+
+.pcaprequestsdatagridselectable-headers {
+  margin-top: 8px;
+  max-height: 220px;
+  overflow: auto;
+  padding: 8px;
+}
+
+.pcaprequestsdatagridselectable-header-row {
+  display: flex;
+  margin-bottom: 4px;
+}
+
+.pcaprequestsdatagridselectable-header-row:last-child {
+  margin-bottom: 0;
+}
+
+.pcaprequestsdatagridselectable-header-name {
+  font-weight: 500;
+  margin-right: 4px;
+  white-space: nowrap;
+}
+
+.pcaprequestsdatagridselectable-header-value {
+  flex: 1;
+  font-family: monospace;
+  white-space: pre-wrap;
+}
+
+.pcaprequestsdatagridselectable-requestheaders {
+  margin-top: 16px;
+}
+
+.pcaprequestsdatagridselectable-responseheaders {
+  margin-top: 16px;
+}
+
+.pcaprequestsdatagridselectable-bodysection {
+  margin-top: 16px;
+}
+
+.pcaprequestsdatagridselectable-bodyheader {
+  margin-bottom: 4px;
+}
+
+.pcaprequestsdatagridselectable-bodybox {
+  padding: 8px;
+  max-height: 200px;
+  overflow: auto;
+}
+
+.pcaprequestsdatagridselectable-bodytext {
+  font-family: monospace;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
