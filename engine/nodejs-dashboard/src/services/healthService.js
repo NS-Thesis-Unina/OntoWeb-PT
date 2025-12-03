@@ -1,7 +1,19 @@
+/**
+ * Health Service
+ *
+ * Retrieves overall health information for the backend and derives a compact
+ * UI status for the tool. Intended for status badges, headers, and diagnostics.
+ *
+ * Endpoint:
+ * - GET /health
+ */
+
 import httpClient from './httpClient';
 
 /**
+ * Fetch overall health from the backend.
  * GET /health
+ *
  * @returns {Promise<{ok: boolean, components: Record<string, string>}>}
  */
 export async function getHealth() {
@@ -10,9 +22,15 @@ export async function getHealth() {
 }
 
 /**
- * - tool_on      -> ok === true and all 'up'
- * - checking     -> almost one 'up' but is not all down
- * - tool_off     -> API not reachable or all down
+ * Derive a coarse-grained status for the UI given the /health payload.
+ *
+ * States:
+ * - "tool_on"   -> ok === true AND all components report 'up'
+ * - "checking"  -> not ok, but at least one component is up (partial availability)
+ * - "tool_off"  -> no health object, API unreachable, or all components down
+ *
+ * @param {{ok?: boolean, components?: Record<string,string>} | null} health
+ * @returns {'tool_on' | 'checking' | 'tool_off'}
  */
 export function deriveToolStatus(health) {
   if (!health) return 'tool_off';

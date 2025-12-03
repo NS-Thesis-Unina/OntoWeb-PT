@@ -1,87 +1,89 @@
-import { useState, useCallback } from "react";
-import {
-  Box,
-  IconButton,
-  Tooltip,
-  Stack,
-  Typography,
-  Chip,
-  Divider,
-  Paper,
-} from "@mui/material";
-import { DataGrid } from "@mui/x-data-grid";
-import VisibilityIcon from "@mui/icons-material/Visibility";
-import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import "./analyzerFindingsDataGrid.css";
-import { enqueueSnackbar } from "notistack";
-import { analyzerService } from "../../../../../services";
-import DrawerWrapper from "../../../../../components/drawerWrapper/drawerWrapper";
+import './analyzerFindingsDataGrid.css';
+import { useState, useCallback } from 'react';
+import { Box, IconButton, Tooltip, Stack, Typography, Chip, Divider, Paper } from '@mui/material';
+import { DataGrid } from '@mui/x-data-grid';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import { enqueueSnackbar } from 'notistack';
+import { analyzerService } from '../../../../../services';
+import DrawerWrapper from '../../../../../components/drawerWrapper/drawerWrapper';
 
+/** Label/value utility row used across drawer sections. */
 function LabelValueRow({ label, value }) {
   return (
-    <Stack
-      direction="row"
-      alignItems="flex-start"
-      className="analyzerfindingsdatagrid-labelrow"
-    >
-      <Typography
-        variant="body2"
-        className="analyzerfindingsdatagrid-labelrow-label"
-      >
+    <Stack direction="row" alignItems="flex-start" className="analyzerfindingsdatagrid-labelrow">
+      <Typography variant="body2" className="analyzerfindingsdatagrid-labelrow-label">
         {label}
       </Typography>
-      <Typography
-        variant="body2"
-        className="analyzerfindingsdatagrid-labelrow-value"
-      >
-        {value ?? "—"}
+      <Typography variant="body2" className="analyzerfindingsdatagrid-labelrow-value">
+        {value ?? '—'}
       </Typography>
     </Stack>
   );
 }
 
+/** Map textual severity to a MUI Chip color intent. */
 function severityChipColor(severity) {
-  const s = String(severity || "").toUpperCase();
-  if (s === "LOW") return "info";
-  if (s === "MEDIUM") return "warning";
-  if (s === "HIGH") return "error";
-  if (s === "CRITICAL") return "error";
-  return "default";
+  const s = String(severity || '').toUpperCase();
+  if (s === 'LOW') return 'info';
+  if (s === 'MEDIUM') return 'warning';
+  if (s === 'HIGH') return 'error';
+  if (s === 'CRITICAL') return 'error';
+  return 'default';
 }
 
+/** Extract the Analyzer rule from an encoded ID string. */
 function extractAnalyzerRule(id) {
-  if (!id) return "";
+  if (!id) return '';
   try {
     const decoded = decodeURIComponent(id);
-    const parts = decoded.split(":");
+    const parts = decoded.split(':');
     if (parts.length >= 3) {
-      return parts[2] || "";
+      return parts[2] || '';
     }
-    return "";
+    return '';
   } catch {
-    return "";
+    return '';
   }
 }
 
+/** Extract the source document from an encoded ID string. */
 function extractAnalyzerDocument(id) {
-  if (!id) return "";
+  if (!id) return '';
   try {
     const decoded = decodeURIComponent(id);
-    const parts = decoded.split(":");
+    const parts = decoded.split(':');
     if (parts.length >= 4) {
-      return parts[3] || "";
+      return parts[3] || '';
     }
-    return "";
+    return '';
   } catch {
-    return "";
+    return '';
   }
 }
 
+/**
+ * Component: AnalyzerFindingsDataGrid
+ *
+ * Architectural Role:
+ * - Renders a paginated grid of Analyzer finding IDs.
+ * - Loads full finding details on demand in a side drawer.
+ *
+ * Responsibilities:
+ * - Convert server paging (offset/limit) to MUI DataGrid pagination model.
+ * - Parse parts of the finding ID (rule/document) for quick at-a-glance columns.
+ * - Provide clipboard utilities and severity→chip color mapping.
+ *
+ * Assumptions:
+ * - Finding ID encoding: a colon-separated string from which rule/document can be extracted.
+ *   (E.g. "<ns>:<resolver>:<rule>:<document>:...").
+ */
 function AnalyzerFindingsDataGrid({ rows, page, loading, onPageChange }) {
   const [open, setOpen] = useState(false);
   const [loadingFinding, setLoadingFinding] = useState(true);
   const [finding, setFinding] = useState(null);
 
+  /** Best-effort clipboard writer. */
   const copyToClipboard = useCallback(async (text) => {
     if (!text) return;
     try {
@@ -91,6 +93,7 @@ function AnalyzerFindingsDataGrid({ rows, page, loading, onPageChange }) {
     }
   }, []);
 
+  /** Retrieve full finding details for the drawer. */
   const fetchFinding = async (id) => {
     try {
       setFinding(null);
@@ -98,8 +101,8 @@ function AnalyzerFindingsDataGrid({ rows, page, loading, onPageChange }) {
       const res = await analyzerService.getAnalyzerFindingById(id);
       setFinding(res);
     } catch (error) {
-      enqueueSnackbar("Error while retrieving finding details.", {
-        variant: "error",
+      enqueueSnackbar('Error while retrieving finding details.', {
+        variant: 'error',
       });
       setFinding(null);
       setOpen(false);
@@ -108,41 +111,40 @@ function AnalyzerFindingsDataGrid({ rows, page, loading, onPageChange }) {
     }
   };
 
+  /** Grid columns: show ID, derived rule & document, plus a details action. */
   const columns = [
     {
-      field: "id",
-      headerName: "Finding ID",
+      field: 'id',
+      headerName: 'Finding ID',
       flex: 1.4,
       minWidth: 260,
       renderCell: (params) => (
         <Tooltip title={params.row.id}>
-          <span className="analyzerfindingsdatagrid-idcell">
-            {params.row.id}
-          </span>
+          <span className="analyzerfindingsdatagrid-idcell">{params.row.id}</span>
         </Tooltip>
       ),
     },
     {
-      field: "rule",
-      headerName: "Rule",
+      field: 'rule',
+      headerName: 'Rule',
       width: 180,
       valueGetter: (_, row) => extractAnalyzerRule(row.id),
     },
     {
-      field: "document",
-      headerName: "Document",
+      field: 'document',
+      headerName: 'Document',
       flex: 1,
       minWidth: 220,
       valueGetter: (_, row) => extractAnalyzerDocument(row.id),
     },
     {
-      field: "actions",
-      headerName: "",
+      field: 'actions',
+      headerName: '',
       sortable: false,
       filterable: false,
       width: 70,
-      align: "center",
-      headerAlign: "center",
+      align: 'center',
+      headerAlign: 'center',
       renderCell: (params) => (
         <Tooltip title="View details">
           <IconButton
@@ -160,17 +162,20 @@ function AnalyzerFindingsDataGrid({ rows, page, loading, onPageChange }) {
     },
   ];
 
+  // Keep DataGrid controlled even if page is momentarily undefined.
   const safePage = page || {
     limit: 100,
     offset: 0,
     total: 0,
   };
 
+  // Translate offset/limit to DataGrid model.
   const paginationModel = {
     page: safePage.limit > 0 ? Math.floor(safePage.offset / safePage.limit) : 0,
     pageSize: safePage.limit,
   };
 
+  /** Server-side pagination callback. */
   const handlePaginationModelChange = (model) => {
     const newOffset = model.page * model.pageSize;
     const newLimit = model.pageSize;
@@ -180,6 +185,7 @@ function AnalyzerFindingsDataGrid({ rows, page, loading, onPageChange }) {
     }
   };
 
+  // Drawer header convenience.
   const severity = finding?.severity;
   const ruleId = finding?.ruleId;
   const description = finding?.description;
@@ -208,15 +214,12 @@ function AnalyzerFindingsDataGrid({ rows, page, loading, onPageChange }) {
       <DrawerWrapper
         open={open}
         setOpen={setOpen}
-        title={
-          finding
-            ? `Finding details - Id: ${finding.id}`
-            : "Finding details"
-        }
+        title={finding ? `Finding details - Id: ${finding.id}` : 'Finding details'}
         loading={loadingFinding}
       >
         {finding && (
           <Box className="analyzerfindingsdatagrid-drawer">
+            {/* Header: rule/severity chips + description + meta */}
             <Box className="analyzerfindingsdatagrid-header">
               <Stack
                 direction="row"
@@ -233,19 +236,12 @@ function AnalyzerFindingsDataGrid({ rows, page, loading, onPageChange }) {
                 )}
 
                 {severity && (
-                  <Chip
-                    label={severity}
-                    size="small"
-                    color={severityChipColor(severity)}
-                  />
+                  <Chip label={severity} size="small" color={severityChipColor(severity)} />
                 )}
               </Stack>
 
               {description && (
-                <Typography
-                  variant="body2"
-                  className="analyzerfindingsdatagrid-header-description"
-                >
+                <Typography variant="body2" className="analyzerfindingsdatagrid-header-description">
                   {description}
                 </Typography>
               )}
@@ -255,19 +251,16 @@ function AnalyzerFindingsDataGrid({ rows, page, loading, onPageChange }) {
                 color="text.secondary"
                 className="analyzerfindingsdatagrid-header-meta"
               >
-                Category: {finding.findingCategory || "—"} • OWASP:{" "}
-                {finding.owaspCategory || "—"} • Resolver:{" "}
-                {finding.resolver || "—"}
+                Category: {finding.findingCategory || '—'} • OWASP: {finding.owaspCategory || '—'} •
+                Resolver: {finding.resolver || '—'}
               </Typography>
             </Box>
 
             <Divider />
 
+            {/* Finding core attributes */}
             <Box className="analyzerfindingsdatagrid-section">
-              <Typography
-                variant="subtitle1"
-                className="analyzerfindingsdatagrid-section-title"
-              >
+              <Typography variant="subtitle1" className="analyzerfindingsdatagrid-section-title">
                 Finding
               </Typography>
 
@@ -277,25 +270,17 @@ function AnalyzerFindingsDataGrid({ rows, page, loading, onPageChange }) {
                 value={finding.ruleId || extractAnalyzerRule(finding.id)}
               />
               <LabelValueRow label="Severity" value={finding.severity} />
-              <LabelValueRow
-                label="Category"
-                value={finding.findingCategory}
-              />
-              <LabelValueRow
-                label="OWASP category"
-                value={finding.owaspCategory}
-              />
+              <LabelValueRow label="Category" value={finding.findingCategory} />
+              <LabelValueRow label="OWASP category" value={finding.owaspCategory} />
               <LabelValueRow label="Resolver" value={finding.resolver} />
               <LabelValueRow label="Description" value={finding.description} />
             </Box>
 
             <Divider />
 
+            {/* Context summary */}
             <Box className="analyzerfindingsdatagrid-section">
-              <Typography
-                variant="subtitle1"
-                className="analyzerfindingsdatagrid-section-title"
-              >
+              <Typography variant="subtitle1" className="analyzerfindingsdatagrid-section-title">
                 Context
               </Typography>
 
@@ -308,14 +293,11 @@ function AnalyzerFindingsDataGrid({ rows, page, loading, onPageChange }) {
                   className="analyzerfindingsdatagrid-contextsrc-text"
                   title={contextSrc}
                 >
-                  {contextSrc || "—"}
+                  {contextSrc || '—'}
                 </Typography>
                 {contextSrc && (
                   <Tooltip title="Copy source URL">
-                    <IconButton
-                      size="small"
-                      onClick={() => copyToClipboard(contextSrc)}
-                    >
+                    <IconButton size="small" onClick={() => copyToClipboard(contextSrc)}>
                       <ContentCopyIcon fontSize="inherit" />
                     </IconButton>
                   </Tooltip>
@@ -325,11 +307,9 @@ function AnalyzerFindingsDataGrid({ rows, page, loading, onPageChange }) {
 
             <Divider />
 
+            {/* HTML evidence */}
             <Box className="analyzerfindingsdatagrid-section">
-              <Typography
-                variant="subtitle1"
-                className="analyzerfindingsdatagrid-section-title"
-              >
+              <Typography variant="subtitle1" className="analyzerfindingsdatagrid-section-title">
                 HTML reference
               </Typography>
 
@@ -338,15 +318,9 @@ function AnalyzerFindingsDataGrid({ rows, page, loading, onPageChange }) {
                   No HTML reference available.
                 </Typography>
               ) : (
-                <Paper
-                  variant="outlined"
-                  className="analyzerfindingsdatagrid-htmlbox"
-                >
+                <Paper variant="outlined" className="analyzerfindingsdatagrid-htmlbox">
                   {htmlNodes.map((node, idx) => (
-                    <Box
-                      key={idx}
-                      className="analyzerfindingsdatagrid-htmlrow"
-                    >
+                    <Box key={idx} className="analyzerfindingsdatagrid-htmlrow">
                       <Typography
                         variant="caption"
                         color="text.secondary"
@@ -354,10 +328,7 @@ function AnalyzerFindingsDataGrid({ rows, page, loading, onPageChange }) {
                       >
                         {node.iri}
                       </Typography>
-                      <Typography
-                        variant="body2"
-                        className="analyzerfindingsdatagrid-html-source"
-                      >
+                      <Typography variant="body2" className="analyzerfindingsdatagrid-html-source">
                         {node.source}
                       </Typography>
                     </Box>

@@ -135,14 +135,34 @@
         "summary": "List HTTP requests (paginated)",
         "description": "Returns HTTP requests with optional pagination and filtering.\n\nSupported filters (query parameters):\n- method: HTTP method (e.g. GET, POST).\n- scheme: URL scheme (e.g. http, https).\n- authority: Hostname or host:port (e.g. example.com, example.com:443).\n- path: Request path (starting with \"/\"), e.g. \"/login\".\n- headerName: Request header name (lowercased), e.g. \"content-type\".\n- headerValue: Request header value (substring match).\n- text: Free-text search across URL, headers and other indexed fields.",
         "parameters": [
-          { "name": "limit", "in": "query", "schema": { "type": "integer", "minimum": 0, "maximum": 1000 }, "required": false },
-          { "name": "offset", "in": "query", "schema": { "type": "integer", "minimum": 0, "maximum": 1000000 }, "required": false },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": { "type": "integer", "minimum": 0, "maximum": 1000 },
+            "required": false
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": { "type": "integer", "minimum": 0, "maximum": 1000000 },
+            "required": false
+          },
           { "name": "method", "in": "query", "schema": { "type": "string" }, "required": false },
           { "name": "scheme", "in": "query", "schema": { "type": "string" }, "required": false },
           { "name": "authority", "in": "query", "schema": { "type": "string" }, "required": false },
           { "name": "path", "in": "query", "schema": { "type": "string" }, "required": false },
-          { "name": "headerName", "in": "query", "schema": { "type": "string" }, "required": false },
-          { "name": "headerValue", "in": "query", "schema": { "type": "string" }, "required": false },
+          {
+            "name": "headerName",
+            "in": "query",
+            "schema": { "type": "string" },
+            "required": false
+          },
+          {
+            "name": "headerValue",
+            "in": "query",
+            "schema": { "type": "string" },
+            "required": false
+          },
           { "name": "text", "in": "query", "schema": { "type": "string" }, "required": false }
         ],
         "responses": {
@@ -222,8 +242,18 @@
         "summary": "List HTTP findings",
         "description": "Paginated list of HttpScan findings detected by HttpResolverInstance. Returns finding IDs only (no details).",
         "parameters": [
-          { "name": "limit", "in": "query", "schema": { "type": "integer", "minimum": 0, "maximum": 1000, "default": 100 }, "required": false },
-          { "name": "offset", "in": "query", "schema": { "type": "integer", "minimum": 0, "maximum": 1000000, "default": 0 }, "required": false }
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": { "type": "integer", "minimum": 0, "maximum": 1000, "default": 100 },
+            "required": false
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": { "type": "integer", "minimum": 0, "maximum": 1000000, "default": 0 },
+            "required": false
+          }
         ],
         "responses": {
           "200": {
@@ -256,7 +286,12 @@
         "summary": "HTTP finding detail",
         "description": "Get detailed information about an HTTP finding, including related HTTP entities.",
         "parameters": [
-          { "name": "id", "in": "path", "required": true, "schema": { "type": "string", "maxLength": 256 } }
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "maxLength": 256 }
+          }
         ],
         "responses": {
           "200": {
@@ -324,7 +359,15 @@
                     "iframes": { "type": "integer", "description": "Number of iframes analyzed" },
                     "includeSnippets": { "type": "boolean" }
                   },
-                  "required": ["accepted", "jobId", "url", "scripts", "forms", "iframes", "includeSnippets"]
+                  "required": [
+                    "accepted",
+                    "jobId",
+                    "url",
+                    "scripts",
+                    "forms",
+                    "iframes",
+                    "includeSnippets"
+                  ]
                 }
               }
             }
@@ -513,12 +556,31 @@
                   "properties": {
                     "accepted": { "type": "boolean" },
                     "jobId": { "type": "string" },
-                    "technologies": { "type": "integer", "description": "Number of technologies in the payload" },
-                    "waf": { "type": "integer", "description": "Number of WAF entries in the payload" },
-                    "secureHeaders": { "type": "integer", "description": "Number of secureHeaders entries in the payload" },
-                    "cookies": { "type": "integer", "description": "Number of cookies in the payload" }
+                    "technologies": {
+                      "type": "integer",
+                      "description": "Number of technologies in the payload"
+                    },
+                    "waf": {
+                      "type": "integer",
+                      "description": "Number of WAF entries in the payload"
+                    },
+                    "secureHeaders": {
+                      "type": "integer",
+                      "description": "Number of secureHeaders entries in the payload"
+                    },
+                    "cookies": {
+                      "type": "integer",
+                      "description": "Number of cookies in the payload"
+                    }
                   },
-                  "required": ["accepted", "jobId", "technologies", "waf", "secureHeaders", "cookies"]
+                  "required": [
+                    "accepted",
+                    "jobId",
+                    "technologies",
+                    "waf",
+                    "secureHeaders",
+                    "cookies"
+                  ]
                 }
               }
             }

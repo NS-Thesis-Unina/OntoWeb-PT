@@ -16,7 +16,7 @@
 }
 
 .nw-div .toolbar .divider {
- height: auto;
+  height: auto;
 }
 
 .nw-div .toolbar .buttons {
@@ -63,7 +63,7 @@
   border-radius: 0;
   padding-top: 20px;
   padding-bottom: 20px;
-  gap: 20px
+  gap: 20px;
 }
 
 .nw-div .content-div .right-div {

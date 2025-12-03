@@ -1,45 +1,28 @@
-import { useState, useCallback } from "react";
-import {
-  Box,
-  IconButton,
-  Tooltip,
-  Stack,
-  Typography,
-  Chip,
-  Divider,
-  Paper,
-} from "@mui/material";
-import { DataGrid } from "@mui/x-data-grid";
-import VisibilityIcon from "@mui/icons-material/Visibility";
-import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import DrawerWrapper from "../../../../components/drawerWrapper/drawerWrapper";
-import "./httpRequestsDataGrid.css";
-import { httpRequestsService } from "../../../../services";
-import { enqueueSnackbar } from "notistack";
+import './httpRequestsDataGrid.css';
+import { useState, useCallback } from 'react';
+import { Box, IconButton, Tooltip, Stack, Typography, Chip, Divider, Paper } from '@mui/material';
+import { DataGrid } from '@mui/x-data-grid';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import DrawerWrapper from '../../../../components/drawerWrapper/drawerWrapper';
+import { httpRequestsService } from '../../../../services';
+import { enqueueSnackbar } from 'notistack';
 
+/** Simple label/value horizontal row used in the drawer. */
 function LabelValueRow({ label, value }) {
   return (
-    <Stack
-      direction="row"
-      alignItems="flex-start"
-      className="httprequestsdatagrid-labelrow"
-    >
-      <Typography
-        variant="body2"
-        className="httprequestsdatagrid-labelrow-label"
-      >
+    <Stack direction="row" alignItems="flex-start" className="httprequestsdatagrid-labelrow">
+      <Typography variant="body2" className="httprequestsdatagrid-labelrow-label">
         {label}
       </Typography>
-      <Typography
-        variant="body2"
-        className="httprequestsdatagrid-labelrow-value"
-      >
-        {value ?? "—"}
+      <Typography variant="body2" className="httprequestsdatagrid-labelrow-value">
+        {value ?? '—'}
       </Typography>
     </Stack>
   );
 }
 
+/** Render a vertical list of HTTP headers (name: value). */
 function HeadersList({ headers }) {
   if (!headers || !headers.length) {
     return (
@@ -53,16 +36,10 @@ function HeadersList({ headers }) {
     <Paper variant="outlined" className="httprequestsdatagrid-headers">
       {headers.map((h, idx) => (
         <Box key={idx} className="httprequestsdatagrid-header-row">
-          <Typography
-            variant="body2"
-            className="httprequestsdatagrid-header-name"
-          >
+          <Typography variant="body2" className="httprequestsdatagrid-header-name">
             {h.name}:
           </Typography>
-          <Typography
-            variant="body2"
-            className="httprequestsdatagrid-header-value"
-          >
+          <Typography variant="body2" className="httprequestsdatagrid-header-value">
             {h.value}
           </Typography>
         </Box>
@@ -71,27 +48,18 @@ function HeadersList({ headers }) {
   );
 }
 
+/** Optional block listing parsed query params, if present. */
 function QueryParamsList({ params }) {
   if (!params || !params.length) return null;
 
   return (
     <Box className="httprequestsdatagrid-queryparams">
-      <Typography
-        variant="subtitle2"
-        className="httprequestsdatagrid-queryparams-title"
-      >
+      <Typography variant="subtitle2" className="httprequestsdatagrid-queryparams-title">
         Query params
       </Typography>
-      <Paper
-        variant="outlined"
-        className="httprequestsdatagrid-queryparams-paper"
-      >
+      <Paper variant="outlined" className="httprequestsdatagrid-queryparams-paper">
         {params.map((p, idx) => (
-          <Typography
-            key={idx}
-            variant="body2"
-            className="httprequestsdatagrid-queryparam"
-          >
+          <Typography key={idx} variant="body2" className="httprequestsdatagrid-queryparam">
             {p.name} = {p.value}
           </Typography>
         ))}
@@ -100,19 +68,37 @@ function QueryParamsList({ params }) {
   );
 }
 
+/** Map numeric HTTP status to MUI Chip color intent. */
 function statusChipColor(status) {
-  if (status >= 200 && status < 300) return "success";
-  if (status >= 300 && status < 400) return "info";
-  if (status >= 400 && status < 500) return "warning";
-  if (status >= 500) return "error";
-  return "default";
+  if (status >= 200 && status < 300) return 'success';
+  if (status >= 300 && status < 400) return 'info';
+  if (status >= 400 && status < 500) return 'warning';
+  if (status >= 500) return 'error';
+  return 'default';
 }
 
+/**
+ * Component: HttpRequestsDataGrid
+ *
+ * Architectural Role:
+ * - Displays HTTP request rows with server-side pagination.
+ * - Provides a detail drawer to inspect a single request/response pair.
+ *
+ * Responsibilities:
+ * - Render MUI X DataGrid with stable columns and server-driven paging.
+ * - Fetch full request details on-demand and show them in a side drawer.
+ * - Offer small utilities (copy URL/body to clipboard, status coloring).
+ *
+ * Performance Notes:
+ * - Uses valueGetter for derived cell values to avoid data massaging upstream.
+ * - Drawer content renders only when a request is loaded.
+ */
 function HttpRequestsDataGrid({ rows, page, loading, onPageChange }) {
   const [open, setOpen] = useState(false);
   const [loadingRequest, setLoadingRequest] = useState(true);
   const [request, setRequest] = useState(null);
 
+  /** Utility: write a string to the clipboard (best-effort). */
   const copyToClipboard = useCallback(async (text) => {
     if (!text) return;
     try {
@@ -122,6 +108,7 @@ function HttpRequestsDataGrid({ rows, page, loading, onPageChange }) {
     }
   }, []);
 
+  /** Fetch full request details for the drawer. */
   const fetchRequest = async (id) => {
     try {
       setRequest(null);
@@ -129,7 +116,7 @@ function HttpRequestsDataGrid({ rows, page, loading, onPageChange }) {
       const res = await httpRequestsService.getHttpRequestById(id);
       setRequest(res);
     } catch (error) {
-      enqueueSnackbar("Error during retrieving request.", { variant: "error" });
+      enqueueSnackbar('Error during retrieving request.', { variant: 'error' });
       setRequest(null);
       setOpen(false);
     } finally {
@@ -137,48 +124,48 @@ function HttpRequestsDataGrid({ rows, page, loading, onPageChange }) {
     }
   };
 
+  /** Grid columns (stable identity). */
   const columns = [
     {
-      field: "method",
-      headerName: "Method",
+      field: 'method',
+      headerName: 'Method',
       width: 100,
     },
     {
-      field: "status",
-      headerName: "Status",
+      field: 'status',
+      headerName: 'Status',
       width: 110,
-      valueGetter: (_, row) => row?.response?.status ?? "",
+      valueGetter: (_, row) => row?.response?.status ?? '',
     },
     {
-      field: "url",
-      headerName: "URL",
+      field: 'url',
+      headerName: 'URL',
       flex: 1,
       minWidth: 250,
-      valueGetter: (_, row) => row?.uri?.full ?? "",
+      valueGetter: (_, row) => row?.uri?.full ?? '',
     },
     {
-      field: "authority",
-      headerName: "Authority",
+      field: 'authority',
+      headerName: 'Authority',
       flex: 0.7,
       minWidth: 180,
-      valueGetter: (_, row) =>
-        row?.connection?.authority ?? row?.uri?.authority ?? "",
+      valueGetter: (_, row) => row?.connection?.authority ?? row?.uri?.authority ?? '',
     },
     {
-      field: "graph",
-      headerName: "Graph",
+      field: 'graph',
+      headerName: 'Graph',
       flex: 0.8,
       minWidth: 200,
-      valueGetter: (_, row) => row?.graph ?? "",
+      valueGetter: (_, row) => row?.graph ?? '',
     },
     {
-      field: "actions",
-      headerName: "",
+      field: 'actions',
+      headerName: '',
       sortable: false,
       filterable: false,
       width: 70,
-      align: "center",
-      headerAlign: "center",
+      align: 'center',
+      headerAlign: 'center',
       renderCell: (params) => (
         <Tooltip title="View details">
           <IconButton
@@ -196,17 +183,20 @@ function HttpRequestsDataGrid({ rows, page, loading, onPageChange }) {
     },
   ];
 
+  // Fallback page metadata to keep DataGrid controlled.
   const safePage = page || {
     limit: 100,
     offset: 0,
     total: 0,
   };
 
+  // Convert server pagination (offset/limit) to DataGrid pagination model.
   const paginationModel = {
     page: safePage.limit > 0 ? Math.floor(safePage.offset / safePage.limit) : 0,
     pageSize: safePage.limit,
   };
 
+  /** Handle server-side pagination triggers from the grid. */
   const handlePaginationModelChange = (model) => {
     const newOffset = model.page * model.pageSize;
     const newLimit = model.pageSize;
@@ -216,6 +206,7 @@ function HttpRequestsDataGrid({ rows, page, loading, onPageChange }) {
     }
   };
 
+  // Request-level convenience variables for the drawer header.
   const status = request?.response?.status;
   const reason = request?.response?.reason;
   const url = request?.uri?.full;
@@ -242,11 +233,12 @@ function HttpRequestsDataGrid({ rows, page, loading, onPageChange }) {
       <DrawerWrapper
         open={open}
         setOpen={setOpen}
-        title={request ? `Request details - Id: ${request.id}`: "Request details"}
+        title={request ? `Request details - Id: ${request.id}` : 'Request details'}
         loading={loadingRequest}
       >
         {request && (
           <Box className="httprequestsdatagrid-drawer">
+            {/* Header: method/status chips, canonical URL, meta */}
             <Box className="httprequestsdatagrid-header">
               <Stack
                 direction="row"
@@ -255,14 +247,10 @@ function HttpRequestsDataGrid({ rows, page, loading, onPageChange }) {
                 className="httprequestsdatagrid-header-chips"
               >
                 {method && (
-                  <Chip
-                    label={method}
-                    size="small"
-                    className="httprequestsdatagrid-method-chip"
-                  />
+                  <Chip label={method} size="small" className="httprequestsdatagrid-method-chip" />
                 )}
 
-                {typeof status === "number" && (
+                {typeof status === 'number' && (
                   <Chip
                     label={reason ? `${status} ${reason}` : status}
                     size="small"
@@ -277,18 +265,11 @@ function HttpRequestsDataGrid({ rows, page, loading, onPageChange }) {
                 alignItems="center"
                 className="httprequestsdatagrid-header-urlrow"
               >
-                <Typography
-                  variant="body2"
-                  className="httprequestsdatagrid-header-url"
-                  title={url}
-                >
+                <Typography variant="body2" className="httprequestsdatagrid-header-url" title={url}>
                   {url}
                 </Typography>
                 <Tooltip title="Copy URL">
-                  <IconButton
-                    size="small"
-                    onClick={() => copyToClipboard(url)}
-                  >
+                  <IconButton size="small" onClick={() => copyToClipboard(url)}>
                     <ContentCopyIcon fontSize="inherit" />
                   </IconButton>
                 </Tooltip>
@@ -299,18 +280,15 @@ function HttpRequestsDataGrid({ rows, page, loading, onPageChange }) {
                 color="text.secondary"
                 className="httprequestsdatagrid-header-meta"
               >
-                Graph: {request.graph || "—"} • Connection:{" "}
-                {request.connection?.authority || "—"}
+                Graph: {request.graph || '—'} • Connection: {request.connection?.authority || '—'}
               </Typography>
             </Box>
 
             <Divider />
 
+            {/* Request section */}
             <Box className="httprequestsdatagrid-section">
-              <Typography
-                variant="subtitle1"
-                className="httprequestsdatagrid-section-title"
-              >
+              <Typography variant="subtitle1" className="httprequestsdatagrid-section-title">
                 Request
               </Typography>
 
@@ -318,10 +296,7 @@ function HttpRequestsDataGrid({ rows, page, loading, onPageChange }) {
               <LabelValueRow label="Scheme" value={request.uri?.scheme} />
               <LabelValueRow label="Authority" value={request.uri?.authority} />
               <LabelValueRow label="Path" value={request.uri?.path} />
-              <LabelValueRow
-                label="Query string"
-                value={request.uri?.queryRaw}
-              />
+              <LabelValueRow label="Query string" value={request.uri?.queryRaw} />
 
               <QueryParamsList params={request.uri?.params} />
 
@@ -333,22 +308,20 @@ function HttpRequestsDataGrid({ rows, page, loading, onPageChange }) {
 
             <Divider />
 
+            {/* Response section */}
             <Box className="httprequestsdatagrid-section">
-              <Typography
-                variant="subtitle1"
-                className="httprequestsdatagrid-section-title"
-              >
+              <Typography variant="subtitle1" className="httprequestsdatagrid-section-title">
                 Response
               </Typography>
 
               <LabelValueRow
                 label="Status"
                 value={
-                  typeof status === "number"
+                  typeof status === 'number'
                     ? reason
                       ? `${status} ${reason}`
                       : String(status)
-                    : "—"
+                    : '—'
                 }
               />
 
@@ -370,9 +343,7 @@ function HttpRequestsDataGrid({ rows, page, loading, onPageChange }) {
                       <IconButton
                         size="small"
                         disabled={!request.response?.bodyBase64}
-                        onClick={() =>
-                          copyToClipboard(request.response?.bodyBase64)
-                        }
+                        onClick={() => copyToClipboard(request.response?.bodyBase64)}
                       >
                         <ContentCopyIcon fontSize="inherit" />
                       </IconButton>
@@ -380,17 +351,9 @@ function HttpRequestsDataGrid({ rows, page, loading, onPageChange }) {
                   </Tooltip>
                 </Stack>
 
-                <Paper
-                  variant="outlined"
-                  className="httprequestsdatagrid-bodybox"
-                >
-                  <Typography
-                    variant="body2"
-                    className="httprequestsdatagrid-bodytext"
-                  >
-                    {request.response?.bodyBase64
-                      ? request.response.bodyBase64
-                      : "No body"}
+                <Paper variant="outlined" className="httprequestsdatagrid-bodybox">
+                  <Typography variant="body2" className="httprequestsdatagrid-bodytext">
+                    {request.response?.bodyBase64 ? request.response.bodyBase64 : 'No body'}
                   </Typography>
                 </Paper>
               </Box>

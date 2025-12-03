@@ -1,16 +1,38 @@
-import { Paper, Typography, Zoom } from "@mui/material";
-import HttpIcon from "@mui/icons-material/Http";
-import BugReportIcon from "@mui/icons-material/BugReport";
-import SendIcon from "@mui/icons-material/Send";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import ApiIcon from "@mui/icons-material/Api";
+import './home.css';
+import { Paper, Typography, Zoom } from '@mui/material';
+import HttpIcon from '@mui/icons-material/Http';
+import BugReportIcon from '@mui/icons-material/BugReport';
+import SendIcon from '@mui/icons-material/Send';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import ApiIcon from '@mui/icons-material/Api';
+import HomeCard from './components/homeCard/homeCard';
 
-import "./home.css";
-import HomeCard from "./components/homeCard/homeCard";
-
+/**
+ * Page: Home (Dashboard)
+ *
+ * Architectural Role:
+ * - Acts as the landing page summarizing the main capabilities of OntoWeb-PT.
+ * - Introduces the product and provides quick entries to core sections:
+ *   HTTP Requests, Findings, Send PCAP, Tool Status, and OpenAPI.
+ *
+ * Responsibilities:
+ * - Present an introductory block (title + descriptive copy).
+ * - Render a row of feature cards, each linking to a dedicated route.
+ *
+ * UX Notes:
+ * - Uses MUI <Zoom> for a smooth entrance animation on the intro panel.
+ * - Feature cards animate in with staggered delays (0–400ms).
+ * - Icons visually differentiate features and improve scan-ability.
+ *
+ * Data/State:
+ * - Purely presentational; no local state or side effects.
+ *
+ * @returns {JSX.Element} The dashboard page with entry points to main features.
+ */
 function Home() {
   return (
     <div className="home-div">
+      {/* Intro section: product overview and positioning */}
       <Zoom in={true}>
         <Paper className="home-section intro-section">
           <Typography variant="h4" className="title">
@@ -18,25 +40,23 @@ function Home() {
           </Typography>
 
           <Typography variant="body1" className="description">
-            OntoWeb-PT is a web penetration testing assistant that ingests HTTP
-            traffic from different sources (browser interceptor, PCAP imports
-            and automation), normalises it and stores it in a security ontology
-            backed by GraphDB. It turns noisy network captures into structured,
-            queryable objects that you can explore and correlate across
-            requests, technologies and findings.
+            OntoWeb-PT is a web penetration testing assistant that ingests HTTP traffic from
+            different sources (browser interceptor, PCAP imports and automation), normalises it and
+            stores it in a security ontology backed by GraphDB. It turns noisy network captures into
+            structured, queryable objects that you can explore and correlate across requests,
+            technologies and findings.
           </Typography>
 
           <Typography variant="body1" className="description">
-            On top of this knowledge graph, dedicated resolvers (HTTP,
-            Techstack and HTML Analyzer) derive higher-level findings about
-            misconfigurations, weak controls and risky patterns. Use the
-            sections below to browse raw HTTP requests, review findings,
-            import traffic from PCAP, check the health of the backend and
-            inspect the public REST API.
+            On top of this knowledge graph, dedicated resolvers (HTTP, Techstack and HTML Analyzer)
+            derive higher-level findings about misconfigurations, weak controls and risky patterns.
+            Use the sections below to browse raw HTTP requests, review findings, import traffic from
+            PCAP, check the health of the backend and inspect the public REST API.
           </Typography>
         </Paper>
       </Zoom>
 
+      {/* Feature entry points (staggered animations via 'delay') */}
       <div className="cards-row">
         <HomeCard
           show={true}
@@ -85,10 +105,13 @@ function Home() {
           path="/server-status"
           icon={<CheckCircleIcon className="feature-icon" />}
           title="Tool Status"
-          description={`Check the current health of the OntoWeb-PT backend before 
-            starting an analysis. This view queries the Node.js API, worker queues 
-            and GraphDB/SPARQL endpoint, summarising whether the analysis tool is 
-            ON, reachable and ready to accept new HTTP traffic or resolver jobs.`}
+          description={`Monitor the live health of OntoWeb-PT while you work. This view 
+            aggregates the readiness of the API server, Redis, GraphDB and the WebSocket 
+            channel into a single overall tool status, and exposes per-component status 
+            cards so you can quickly see what is up, down or still starting. A real-time 
+            log panel streams structured logs from both the API and worker processes 
+            (with timestamp, level, namespace and message), letting you tail background 
+            jobs and troubleshoot issues directly from the dashboard.`}
         />
 
         <HomeCard

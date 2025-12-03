@@ -1,8 +1,32 @@
+/**
+ * Theme Setup
+ *
+ * Central factory for Material UI theme creation. Produces a neutral,
+ * low-contrast visual identity tuned for both dark and light modes.
+ *
+ * Exports:
+ * - createNeutralTheme(mode): returns a fully configured MUI theme.
+ * - neutralDarkTheme / neutralLightTheme: ready-to-use presets.
+ *
+ * Design Notes:
+ * - Palette values are intentionally restrained to reduce visual noise.
+ * - Theme is built in two passes:
+ *   1) Base theme with palette/typography/shape.
+ *   2) Component overrides that depend on computed theme tokens.
+ */
+
 import { createTheme } from '@mui/material/styles';
 
+/**
+ * Create a neutral MUI theme for the given color mode.
+ *
+ * @param {'light'|'dark'} [mode='dark'] - Preferred color scheme.
+ * @returns {import('@mui/material').Theme} A Material UI theme instance.
+ */
 export function createNeutralTheme(mode = 'dark') {
   const isDark = mode === 'dark';
 
+  // --- Palette: neutral greys + minimal primary for focus/selection ---
   const palette = {
     mode,
     common: { black: '#000000', white: '#ffffff' },
@@ -38,7 +62,7 @@ export function createNeutralTheme(mode = 'dark') {
     },
   };
 
-  // Base theme configuration
+  // --- Pass 1: base theme tokens (used by overrides in Pass 2) ---
   let theme = createTheme({
     palette,
     shape: { borderRadius: 10 },
@@ -65,10 +89,10 @@ export function createNeutralTheme(mode = 'dark') {
     },
   });
 
-  // Second pass to apply component overrides that depend on the computed theme
+  // --- Pass 2: component-level overrides that depend on resolved tokens ---
   theme = createTheme(theme, {
     components: {
-      // AppBar: transparent, text inherits from theme
+      // AppBar: transparent shell; inherits text color from theme
       MuiAppBar: {
         styleOverrides: {
           root: {
@@ -79,7 +103,7 @@ export function createNeutralTheme(mode = 'dark') {
         },
       },
 
-      // Paper: subtle border and background for cards and surfaces
+      // Paper: card/surface with subtle border for separation
       MuiPaper: {
         styleOverrides: {
           root: {
@@ -89,7 +113,7 @@ export function createNeutralTheme(mode = 'dark') {
         },
       },
 
-      // Card: gradient background with border and rounded corners
+      // Card: soft gradient and rounded corners
       MuiCard: {
         styleOverrides: {
           root: {
@@ -103,7 +127,7 @@ export function createNeutralTheme(mode = 'dark') {
         },
       },
 
-      // CardActionArea: full-height clickable area
+      // CardActionArea: expand clickable area to the full card height
       MuiCardActionArea: {
         styleOverrides: {
           root: {
@@ -116,7 +140,7 @@ export function createNeutralTheme(mode = 'dark') {
         },
       },
 
-      // CardContent: take full width of the card container
+      // CardContent: take full width within the card container
       MuiCardContent: {
         styleOverrides: {
           root: {
@@ -125,7 +149,7 @@ export function createNeutralTheme(mode = 'dark') {
         },
       },
 
-      // Button: smoother corners, neutral gradients for primary variant
+      // Button: neutral styling, rounded corners; primary uses a subtle gradient
       MuiButton: {
         styleOverrides: {
           root: {
@@ -148,7 +172,7 @@ export function createNeutralTheme(mode = 'dark') {
         },
       },
 
-      // Accordion: compact spacing and no pseudo divider line
+      // Accordion: compact spacing; remove default top divider
       MuiAccordion: {
         styleOverrides: {
           root: {
@@ -165,7 +189,7 @@ export function createNeutralTheme(mode = 'dark') {
         },
       },
 
-      // AccordionSummary: compact header height and margins
+      // AccordionSummary: smaller header density
       MuiAccordionSummary: {
         styleOverrides: {
           root: {
@@ -178,7 +202,7 @@ export function createNeutralTheme(mode = 'dark') {
         },
       },
 
-      // Tabs & Tab: improved indicator and selected state styling
+      // Tabs & Tab: thicker indicator and clear selected state
       MuiTabs: {
         styleOverrides: {
           indicator: {
@@ -199,7 +223,7 @@ export function createNeutralTheme(mode = 'dark') {
         },
       },
 
-      // Tooltip: themed background, border and shadow
+      // Tooltip: themed surface with border and shadow
       MuiTooltip: {
         styleOverrides: {
           tooltip: {
@@ -212,7 +236,7 @@ export function createNeutralTheme(mode = 'dark') {
         },
       },
 
-      // StepIcon: color text
+      // StepIcon: ensure text contrast inside the icon
       MuiStepIcon: {
         styleOverrides: {
           text: {
@@ -221,7 +245,7 @@ export function createNeutralTheme(mode = 'dark') {
         },
       },
 
-      // Divider: use theme's divider color
+      // Divider: use theme's divider token for consistency
       MuiDivider: {
         styleOverrides: {
           root: { background: theme.palette.divider },
@@ -233,6 +257,6 @@ export function createNeutralTheme(mode = 'dark') {
   return theme;
 }
 
-// Pre-built themes for direct use if needed
+// Pre-built themes for direct consumption if needed
 export const neutralDarkTheme = createNeutralTheme('dark');
 export const neutralLightTheme = createNeutralTheme('light');
