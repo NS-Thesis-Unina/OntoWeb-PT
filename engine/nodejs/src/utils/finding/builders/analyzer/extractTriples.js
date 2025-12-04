@@ -81,23 +81,14 @@ function emitAttributeFields(triples, tagIri, tagKey, attributes, keySuffix = 'a
   attributes.forEach((attr, idx) => {
     if (!attr || typeof attr !== 'object') return;
 
-    const name =
-      attr.name != null
-        ? String(attr.name)
-        : null;
-    const value =
-      attr.value != null
-        ? String(attr.value)
-        : null;
+    const name = attr.name != null ? String(attr.name) : null;
+    const value = attr.value != null ? String(attr.value) : null;
 
     const fieldKey = `${tagKey}:${keySuffix}:${idx}`;
     const fieldIri = `<${iriHtmlField(fieldKey)}>`; // -> urn:html:field:...
 
     // Types
-    triples.push(
-      `${fieldIri} a <${EX}Field> .`,
-      `${fieldIri} a <${EX}HTML> .`
-    );
+    triples.push(`${fieldIri} a <${EX}Field> .`, `${fieldIri} a <${EX}HTML> .`);
 
     // Link Tag → Field
     triples.push(`${tagIri} <${EX}tagHasProperties> ${fieldIri} .`);
@@ -105,11 +96,7 @@ function emitAttributeFields(triples, tagIri, tagKey, attributes, keySuffix = 'a
     // Attribute snippet
     const snippet = buildAttributeSnippet(name, value);
     if (snippet) {
-      triples.push(
-        `${fieldIri} <${EX}sourceLocation> "${escapeStringLiteral(
-          snippet
-        )}" .`
-      );
+      triples.push(`${fieldIri} <${EX}sourceLocation> "${escapeStringLiteral(snippet)}" .`);
     }
   });
 }
@@ -136,11 +123,7 @@ function addAnalyzerTriples(triples, findingIri, f) {
   // === AnalyzerScan data properties defined in the ontology ===
 
   if (ctx.type) {
-    triples.push(
-      `${findingIri} <${EX}contextType> "${escapeStringLiteral(
-        String(ctx.type)
-      )}" .`
-    );
+    triples.push(`${findingIri} <${EX}contextType> "${escapeStringLiteral(String(ctx.type))}" .`);
   }
 
   if (typeof ctx.index === 'number') {
@@ -151,35 +134,25 @@ function addAnalyzerTriples(triples, findingIri, f) {
 
   if (ctx.origin) {
     triples.push(
-      `${findingIri} <${EX}contextOrigin> "${escapeStringLiteral(
-        String(ctx.origin)
-      )}" .`
+      `${findingIri} <${EX}contextOrigin> "${escapeStringLiteral(String(ctx.origin))}" .`
     );
   }
 
   // Script / iframe src or page URL
   const contextSrc = ctx.src || f.pageUrl;
   if (contextSrc) {
-    triples.push(
-      `${findingIri} <${EX}contextSrc> "${escapeStringLiteral(
-        String(contextSrc)
-      )}" .`
-    );
+    triples.push(`${findingIri} <${EX}contextSrc> "${escapeStringLiteral(String(contextSrc))}" .`);
   }
 
   // Form-specific properties
   if (ctx.formAction) {
     triples.push(
-      `${findingIri} <${EX}formAction> "${escapeStringLiteral(
-        String(ctx.formAction)
-      )}" .`
+      `${findingIri} <${EX}formAction> "${escapeStringLiteral(String(ctx.formAction))}" .`
     );
   }
   if (ctx.formMethod) {
     triples.push(
-      `${findingIri} <${EX}formMethod> "${escapeStringLiteral(
-        String(ctx.formMethod)
-      )}" .`
+      `${findingIri} <${EX}formMethod> "${escapeStringLiteral(String(ctx.formMethod))}" .`
     );
   }
 
@@ -197,11 +170,7 @@ function addAnalyzerTriples(triples, findingIri, f) {
 
   if (snippetParts.length > 0) {
     const combined = snippetParts.join('\n\n');
-    triples.push(
-      `${findingIri} <${EX}codeSnippet> "${escapeStringLiteral(
-        combined
-      )}" .`
-    );
+    triples.push(`${findingIri} <${EX}codeSnippet> "${escapeStringLiteral(combined)}" .`);
   }
 
   // === HTML modeling: Tag / Field / nested Tag ===
@@ -217,8 +186,7 @@ function addAnalyzerTriples(triples, findingIri, f) {
   htmlRefs.forEach((ref, refIdx) => {
     if (!ref || typeof ref !== 'object') return;
 
-    const tagName =
-      ref.tagName || ref.tag || ref.nodeName || ctx.tagName || 'unknown';
+    const tagName = ref.tagName || ref.tag || ref.nodeName || ctx.tagName || 'unknown';
 
     // Stable key for this Tag (page + context type + index + tag name)
     const baseKeyParts = [
@@ -232,39 +200,24 @@ function addAnalyzerTriples(triples, findingIri, f) {
     const tagIri = `<${iriHtmlTag(tagKey)}>`; // e.g. urn:html:tag:<encoded key>
 
     // Types for the parent Tag
-    triples.push(
-      `${tagIri} a <${EX}Tag> .`,
-      `${tagIri} a <${EX}HTML> .`
-    );
+    triples.push(`${tagIri} a <${EX}Tag> .`, `${tagIri} a <${EX}HTML> .`);
 
     // Link AnalyzerScan → HTML node (parent Tag)
     triples.push(`${findingIri} <${EX}relatedToHTML> ${tagIri} .`);
 
     // --- Parent Tag attributes → Field ---
-    const attributes =
-      ref.attributes ||
-      ref.attrs ||
-      ref.properties ||
-      null;
+    const attributes = ref.attributes || ref.attrs || ref.properties || null;
 
     emitAttributeFields(triples, tagIri, tagKey, attributes, 'attr');
 
     // --- Parent Tag HTML snippet ---
-    const outer =
-      ref.outerHTML ||
-      ref.outerHtml ||
-      ref.html ||
-      null;
+    const outer = ref.outerHTML || ref.outerHtml || ref.html || null;
 
     const tagSource =
       outer || buildTagOuterHtml(tagName, Array.isArray(attributes) ? attributes : []);
 
     if (tagSource) {
-      triples.push(
-        `${tagIri} <${EX}sourceLocation> "${escapeStringLiteral(
-          String(tagSource)
-        )}" .`
-      );
+      triples.push(`${tagIri} <${EX}sourceLocation> "${escapeStringLiteral(String(tagSource))}" .`);
     }
 
     // --- Nested Tag/Field (ref.fields) ---
@@ -277,40 +230,23 @@ function addAnalyzerTriples(triples, findingIri, f) {
     nestedFields.forEach((fieldRef, fieldIdx) => {
       if (!fieldRef || typeof fieldRef !== 'object') return;
 
-      const childTagName =
-        fieldRef.tagName ||
-        fieldRef.tag ||
-        fieldRef.nodeName ||
-        'unknown';
+      const childTagName = fieldRef.tagName || fieldRef.tag || fieldRef.nodeName || 'unknown';
 
       // Stable key for the child Tag
       const childKey = `${tagKey}:child:${fieldIdx}`;
       const childTagIri = `<${iriHtmlTag(childKey)}>`; // Child Tag
 
       // Types for the child Tag
-      triples.push(
-        `${childTagIri} a <${EX}Tag> .`,
-        `${childTagIri} a <${EX}HTML> .`
-      );
+      triples.push(`${childTagIri} a <${EX}Tag> .`, `${childTagIri} a <${EX}HTML> .`);
 
       // Nesting relation: parent Tag → child Tag
       // (uses the ex:tagHasChildTag property defined in the ontology)
-      triples.push(
-        `${tagIri} <${EX}tagHasChildTag> ${childTagIri} .`
-      );
+      triples.push(`${tagIri} <${EX}tagHasChildTag> ${childTagIri} .`);
 
       // Child Tag attributes → Field
-      const childAttributes = Array.isArray(fieldRef.attributes)
-        ? fieldRef.attributes
-        : [];
+      const childAttributes = Array.isArray(fieldRef.attributes) ? fieldRef.attributes : [];
 
-      emitAttributeFields(
-        triples,
-        childTagIri,
-        childKey,
-        childAttributes,
-        'attr'
-      );
+      emitAttributeFields(triples, childTagIri, childKey, childAttributes, 'attr');
 
       // Child Tag HTML snippet
       const childOuter =
@@ -321,9 +257,7 @@ function addAnalyzerTriples(triples, findingIri, f) {
 
       if (childOuter) {
         triples.push(
-          `${childTagIri} <${EX}sourceLocation> "${escapeStringLiteral(
-            String(childOuter)
-          )}" .`
+          `${childTagIri} <${EX}sourceLocation> "${escapeStringLiteral(String(childOuter))}" .`
         );
       }
     });

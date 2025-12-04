@@ -86,7 +86,7 @@ function bindingsToRequestsJson(bindings) {
     const hn = valueOf(b.hdrName);
     if (hn) {
       const hv = valueOf(b.hdrValue) ?? '';
-      if (!obj.requestHeaders.some(h => h.name === hn && h.value === hv)) {
+      if (!obj.requestHeaders.some((h) => h.name === hn && h.value === hv)) {
         obj.requestHeaders.push({ name: hn, value: hv });
       }
     }
@@ -96,7 +96,7 @@ function bindingsToRequestsJson(bindings) {
     if (pn) {
       const pv = valueOf(b.paramValue) ?? '';
       obj.uri.params ||= [];
-      if (!obj.uri.params.some(p => p.name === pn && String(p.value ?? '') === pv)) {
+      if (!obj.uri.params.some((p) => p.name === pn && String(p.value ?? '') === pv)) {
         obj.uri.params.push({ name: pn, value: pv });
       }
     }
@@ -110,15 +110,15 @@ function bindingsToRequestsJson(bindings) {
 
     // Response basics
     const resHttpVer = valueOf(b.resHttpVersion);
-    const resBody    = valueOf(b.resBodyBase64);
-    const scNum      = valueOf(b.statusCodeNumber);
-    const scReason   = valueOf(b.reasonPhrase);
+    const resBody = valueOf(b.resBodyBase64);
+    const scNum = valueOf(b.statusCodeNumber);
+    const scReason = valueOf(b.reasonPhrase);
     if (resHttpVer || resBody || scNum || scReason) {
       obj.response ||= {};
       if (resHttpVer) obj.response.httpVersion = resHttpVer;
-      if (resBody)    obj.response.bodyBase64  = resBody;
+      if (resBody) obj.response.bodyBase64 = resBody;
       if (scNum !== undefined) obj.response.status = Number(scNum);
-      if (scReason)   obj.response.reason = scReason;
+      if (scReason) obj.response.reason = scReason;
     }
 
     // Response headers
@@ -127,7 +127,7 @@ function bindingsToRequestsJson(bindings) {
       const rhv = valueOf(b.rhdrValue) ?? '';
       obj.response ||= {};
       obj.response.headers ||= [];
-      if (!obj.response.headers.some(h => h.name === rhn && h.value === rhv)) {
+      if (!obj.response.headers.some((h) => h.name === rhn && h.value === rhv)) {
         obj.response.headers.push({ name: rhn, value: rhv });
       }
     }
@@ -140,7 +140,7 @@ function bindingsToRequestsJson(bindings) {
       r.uri.params.sort((a, b) => a.name.localeCompare(b.name));
       if (!r.uri.queryRaw) {
         r.uri.queryRaw = r.uri.params
-          .map(p => `${encodeURIComponent(p.name)}=${encodeURIComponent(p.value ?? '')}`)
+          .map((p) => `${encodeURIComponent(p.name)}=${encodeURIComponent(p.value ?? '')}`)
           .join('&');
       }
     }

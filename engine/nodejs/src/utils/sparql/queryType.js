@@ -20,7 +20,9 @@
  * isSelectOrAsk('# comment\nSELECT * WHERE {}');  // false (comment blocks the prefix)
  */
 function isSelectOrAsk(query) {
-  const q = String(query || '').trim().toUpperCase();
+  const q = String(query || '')
+    .trim()
+    .toUpperCase();
   return q.startsWith('SELECT') || q.startsWith('ASK');
 }
 
@@ -48,7 +50,7 @@ function isUpdate(query) {
   const q = String(query || '');
   const noComments = q.replace(/(^|\n)\s*#.*(?=\n|$)/g, '$1');
   const stripped = noComments
-    .replace(/^\s*(?:PREFIX\s+\w+:\s*<[^>]+>\s*|BASE\s*<[^>]+>\s*)+/ig, '')
+    .replace(/^\s*(?:PREFIX\s+\w+:\s*<[^>]+>\s*|BASE\s*<[^>]+>\s*)+/gi, '')
     .trim()
     .toUpperCase();
   return /^(INSERT|DELETE|LOAD|CLEAR|CREATE|DROP|MOVE|COPY|ADD|WITH|MODIFY)\b/.test(stripped);

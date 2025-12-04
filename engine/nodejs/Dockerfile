@@ -23,5 +23,5 @@ COPY . .
 
 ENV NODE_ENV=production
 
-# Express server listens on port 8081 (matching your existing configuration)
+# Express server listens on port 8081
 EXPOSE 8081

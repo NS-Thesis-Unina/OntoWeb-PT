@@ -25,7 +25,9 @@ const { escapeStringLiteral, escapeXml } = require('../strings/escape');
  * const lit = asXmlLiteral(xml);
  */
 function asXmlLiteral(xmlString = '') {
-  return `"${escapeStringLiteral(xmlString)}"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral>`;
+  return `"${escapeStringLiteral(
+    xmlString
+  )}"^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral>`;
 }
 
 /**
@@ -72,7 +74,7 @@ function xmlLiteralFromQueryRaw(raw = '') {
  */
 function xmlLiteralFromParams(params = []) {
   const items = (Array.isArray(params) ? params : [])
-    .map(p => {
+    .map((p) => {
       const n = escapeXml(p?.name ?? '');
       const v = escapeXml(String(p?.value ?? ''));
       return `  <param name="${n}">${v}</param>`;

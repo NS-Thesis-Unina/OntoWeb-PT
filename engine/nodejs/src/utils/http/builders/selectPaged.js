@@ -63,12 +63,18 @@ const { escapeStr } = require('../../strings/escape');
 function buildSelectRequestsPaged({ filters = {}, limit = 10, offset = 0 } = {}) {
   const { method, scheme, authority, path, headerName, headerValue, text } = filters || {};
   const whereFilters = [];
-  if (method)      whereFilters.push(`FILTER(UCASE(STR(?methodName0)) = "${escapeStr(String(method).toUpperCase())}")`);
-  if (scheme)      whereFilters.push(`FILTER(STR(?scheme0) = "${escapeStr(scheme)}")`);
-  if (authority)   whereFilters.push(`FILTER(STR(?authority0) = "${escapeStr(authority)}")`);
-  if (path)        whereFilters.push(`FILTER(STR(?path0) = "${escapeStr(path)}")`);
-  if (text)        whereFilters.push(`FILTER(CONTAINS(STR(?uriFull0), "${escapeStr(text)}"))`);
-  if (headerName)  whereFilters.push(`FILTER(LCASE(STR(?hdrName0)) = "${escapeStr(String(headerName).toLowerCase())}")`);
+  if (method)
+    whereFilters.push(
+      `FILTER(UCASE(STR(?methodName0)) = "${escapeStr(String(method).toUpperCase())}")`
+    );
+  if (scheme) whereFilters.push(`FILTER(STR(?scheme0) = "${escapeStr(scheme)}")`);
+  if (authority) whereFilters.push(`FILTER(STR(?authority0) = "${escapeStr(authority)}")`);
+  if (path) whereFilters.push(`FILTER(STR(?path0) = "${escapeStr(path)}")`);
+  if (text) whereFilters.push(`FILTER(CONTAINS(STR(?uriFull0), "${escapeStr(text)}"))`);
+  if (headerName)
+    whereFilters.push(
+      `FILTER(LCASE(STR(?hdrName0)) = "${escapeStr(String(headerName).toLowerCase())}")`
+    );
   if (headerValue) whereFilters.push(`FILTER(STR(?hdrValue0) = "${escapeStr(headerValue)}")`);
 
   const lim = sanitizeLimit(limit, 10);

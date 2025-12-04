@@ -149,9 +149,7 @@ const httpRules = [
     owasp: 'A05:2021 – Security Misconfiguration',
     severity: 'medium',
     check: (req) => {
-      const headers = Array.isArray(req?.response?.headers)
-        ? req.response.headers
-        : [];
+      const headers = Array.isArray(req?.response?.headers) ? req.response.headers : [];
 
       const hits = [];
       headers.forEach((h, index) => {
@@ -214,9 +212,7 @@ const httpRules = [
     owasp: 'A07:2021 – Identification and Authentication Failures',
     severity: 'medium',
     check: (req) => {
-      const headers = Array.isArray(req?.response?.headers)
-        ? req.response.headers
-        : [];
+      const headers = Array.isArray(req?.response?.headers) ? req.response.headers : [];
 
       const offenders = [];
 
@@ -260,9 +256,7 @@ const httpRules = [
     owasp: 'A07:2021 – Identification and Authentication Failures',
     severity: 'low',
     check: (req) => {
-      const headers = Array.isArray(req?.response?.headers)
-        ? req.response.headers
-        : [];
+      const headers = Array.isArray(req?.response?.headers) ? req.response.headers : [];
 
       const offenders = [];
 
@@ -343,8 +337,7 @@ const httpRules = [
       const body = decodeBody(req?.response?.bodyBase64);
       if (!body) return false;
 
-      const regex =
-        /(ReferenceError|TypeError|Exception|Traceback|at\s+\w+\s+\()/i;
+      const regex = /(ReferenceError|TypeError|Exception|Traceback|at\s+\w+\s+\()/i;
       const match = body.match(regex);
       if (!match) return false;
 
@@ -366,19 +359,14 @@ const httpRules = [
     owasp: 'A05:2021 – Security Misconfiguration',
     severity: 'low',
     check: (req) => {
-      const headers = Array.isArray(req?.response?.headers)
-        ? req.response.headers
-        : [];
+      const headers = Array.isArray(req?.response?.headers) ? req.response.headers : [];
       const hits = [];
 
       headers.forEach((h, index) => {
         const name = String(h?.name || '').toLowerCase();
         const value = String(h?.value || '');
 
-        if (
-          ['server', 'x-powered-by'].includes(name) &&
-          /\d+\.\d+/.test(value)
-        ) {
+        if (['server', 'x-powered-by'].includes(name) && /\d+\.\d+/.test(value)) {
           hits.push({
             where: 'response',
             index,
@@ -535,10 +523,7 @@ const httpRules = [
       params.forEach((p, index) => {
         const name = String(p?.name || '').toLowerCase();
         const value = p?.value != null ? String(p.value) : '';
-        if (
-          ['redirect', 'next', 'url'].includes(name) &&
-          /^https?:\/\//i.test(value)
-        ) {
+        if (['redirect', 'next', 'url'].includes(name) && /^https?:\/\//i.test(value)) {
           suspects.push({ index, name: p.name, value });
         }
       });

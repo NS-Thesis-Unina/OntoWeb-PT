@@ -57,21 +57,21 @@ function bindingsToAnalyzerFindingDetail(bindings) {
     }
 
     // === Scalar fields ===
-    const resolver       = valueOf(row.resolver);
-    const vulnType       = valueOf(row.vulnType);
-    const severity       = valueOf(row.severity);
-    const category       = valueOf(row.findingCategory);
-    const owasp          = valueOf(row.owaspCategory);
-    const ruleId         = valueOf(row.ruleId);
-    const description    = valueOf(row.description);
-    const remediation    = valueOf(row.remediation);
-    const contextType    = valueOf(row.contextType);
-    const contextIndex   = valueOf(row.contextIndex);
-    const contextOrigin  = valueOf(row.contextOrigin);
-    const contextSrc     = valueOf(row.contextSrc);
-    const formAction     = valueOf(row.formAction);
-    const formMethod     = valueOf(row.formMethod);
-    const codeSnippet    = valueOf(row.codeSnippet);
+    const resolver = valueOf(row.resolver);
+    const vulnType = valueOf(row.vulnType);
+    const severity = valueOf(row.severity);
+    const category = valueOf(row.findingCategory);
+    const owasp = valueOf(row.owaspCategory);
+    const ruleId = valueOf(row.ruleId);
+    const description = valueOf(row.description);
+    const remediation = valueOf(row.remediation);
+    const contextType = valueOf(row.contextType);
+    const contextIndex = valueOf(row.contextIndex);
+    const contextOrigin = valueOf(row.contextOrigin);
+    const contextSrc = valueOf(row.contextSrc);
+    const formAction = valueOf(row.formAction);
+    const formMethod = valueOf(row.formMethod);
+    const codeSnippet = valueOf(row.codeSnippet);
 
     if (resolver && !result.resolver) result.resolver = resolver;
     if (vulnType && !result.vulnerabilityType) result.vulnerabilityType = vulnType;
@@ -83,14 +83,7 @@ function bindingsToAnalyzerFindingDetail(bindings) {
     if (remediation && !result.remediation) result.remediation = remediation;
     if (codeSnippet && !result.codeSnippet) result.codeSnippet = codeSnippet;
 
-    if (
-      contextType ||
-      contextIndex ||
-      contextOrigin ||
-      contextSrc ||
-      formAction ||
-      formMethod
-    ) {
+    if (contextType || contextIndex || contextOrigin || contextSrc || formAction || formMethod) {
       result.context ||= {};
       if (contextType && !result.context.type) {
         result.context.type = contextType;
@@ -116,14 +109,14 @@ function bindingsToAnalyzerFindingDetail(bindings) {
     }
 
     // === HTML structure ===
-    const htmlTagIri        = valueOf(row.htmlTag);
-    const htmlTagSource     = valueOf(row.htmlTagSource);
-    const htmlFieldIri      = valueOf(row.htmlField);
-    const htmlFieldSource   = valueOf(row.htmlFieldSource);
-    const childTagIri       = valueOf(row.childTag);
-    const childTagSource    = valueOf(row.childTagSource);
-    const childFieldIri     = valueOf(row.childField);
-    const childFieldSource  = valueOf(row.childFieldSource);
+    const htmlTagIri = valueOf(row.htmlTag);
+    const htmlTagSource = valueOf(row.htmlTagSource);
+    const htmlFieldIri = valueOf(row.htmlField);
+    const htmlFieldSource = valueOf(row.htmlFieldSource);
+    const childTagIri = valueOf(row.childTag);
+    const childTagSource = valueOf(row.childTagSource);
+    const childFieldIri = valueOf(row.childField);
+    const childFieldSource = valueOf(row.childFieldSource);
 
     // Root tag
     if (htmlTagIri) {

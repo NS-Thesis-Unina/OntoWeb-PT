@@ -7,10 +7,7 @@ const xssRule = {
     const issues = [];
     walk(ast, {
       AssignmentExpression(node) {
-        if (
-          node.left.type === 'MemberExpression' &&
-          node.left.property.name === 'innerHTML'
-        ) {
+        if (node.left.type === 'MemberExpression' && node.left.property.name === 'innerHTML') {
           issues.push({
             ruleId: self.id,
             description: self.description,
@@ -214,10 +211,7 @@ const localStorageRule = {
     const issues = [];
     walk(ast, {
       MemberExpression(node) {
-        if (
-          node.object.name &&
-          ['localStorage', 'sessionStorage'].includes(node.object.name)
-        ) {
+        if (node.object.name && ['localStorage', 'sessionStorage'].includes(node.object.name)) {
           issues.push({
             ruleId: self.id,
             description: self.description,
@@ -336,8 +330,16 @@ const htmlInlineEventRule = {
   checkHtml(htmlText) {
     const issues = [];
     const attrs = [
-      'onclick', 'onerror', 'onload', 'onmouseover', 'onfocus',
-      'onchange', 'onkeydown', 'onkeyup', 'oninput', 'onsubmit',
+      'onclick',
+      'onerror',
+      'onload',
+      'onmouseover',
+      'onfocus',
+      'onchange',
+      'onkeydown',
+      'onkeyup',
+      'oninput',
+      'onsubmit',
     ];
     for (const attr of attrs) {
       const re = new RegExp(`\\b${attr}\\s*=\\s*["']`, 'gi');
@@ -403,7 +405,6 @@ const htmlIframeRule = {
     return issues;
   },
 };
-
 
 module.exports = [
   xssRule,

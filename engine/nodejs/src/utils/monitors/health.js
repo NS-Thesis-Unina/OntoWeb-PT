@@ -48,10 +48,7 @@ function setState(key, value) {
 function getHealth() {
   /** @type {Record<HealthComponentsKey, HealthState>} */
   const snapshot = { ...state };
-  const ok =
-    snapshot.server === 'up' &&
-    snapshot.graphdb === 'up' &&
-    snapshot.redis === 'up';
+  const ok = snapshot.server === 'up' && snapshot.graphdb === 'up' && snapshot.redis === 'up';
   return { ok, components: snapshot };
 }
 

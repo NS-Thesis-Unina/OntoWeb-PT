@@ -58,18 +58,14 @@ async function runSelect(sparql) {
     const res = await axios.post(url, `query=${encodeURIComponent(sparql)}`, {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
-        'Accept': 'application/sparql-results+json',
+        Accept: 'application/sparql-results+json',
       },
       timeout: 30000,
     });
     return res.data;
   } catch (err) {
     const e = /** @type {any} */ (err);
-    const msg =
-      e?.response?.data?.message ||
-      e?.code ||
-      e?.message ||
-      'GraphDB SELECT error';
+    const msg = e?.response?.data?.message || e?.code || e?.message || 'GraphDB SELECT error';
     throw new Error(msg);
   }
 }
@@ -100,11 +96,7 @@ async function runUpdate(sparqlUpdate) {
     return res.status;
   } catch (err) {
     const e = /** @type {any} */ (err);
-    const msg =
-      e?.response?.data?.message ||
-      e?.code ||
-      e?.message ||
-      'GraphDB UPDATE error';
+    const msg = e?.response?.data?.message || e?.code || e?.message || 'GraphDB UPDATE error';
     throw new Error(msg);
   }
 }

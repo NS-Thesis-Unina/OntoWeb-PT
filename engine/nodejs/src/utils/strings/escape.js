@@ -83,8 +83,8 @@ function escapeXml(s = '') {
  * // -> He said: \\\"Hello\\\"
  * const sparql = `FILTER(str(?x) = "${safe}")`;
  @type {StringEscaperFn} */
-function escapeStr(s = '') { 
-  return String(s).replace(/\\/g, '\\\\').replace(/"/g, '\\"'); 
+function escapeStr(s = '') {
+  return String(s).replace(/\\/g, '\\\\').replace(/"/g, '\\"');
 }
 
 module.exports = { escapeStringLiteral, escapeXml, escapeStr };

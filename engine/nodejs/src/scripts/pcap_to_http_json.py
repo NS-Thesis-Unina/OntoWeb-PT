@@ -1,5 +1,16 @@
 #!/usr/bin/env python
 # pcap_to_http_json.py
+#
+# Convert a PCAP capture into a list of HTTP requests (with optional responses),
+# in a JSON schema that is compatible with the Node.js /http-requests/ingest-http API.
+#
+# High-level flow:
+#  1. Run tshark on the given PCAP, using the provided TLS key log to decrypt HTTPS.
+#  2. Export selected HTTP/1.x and HTTP/2 fields as JSON.
+#  3. Walk over all packets:
+#     - build HttpRequest objects from request packets
+#     - attach response metadata/body when a matching response packet is found
+#  4. Print a JSON array of HttpRequest objects to stdout.
 
 import sys
 import json
@@ -9,18 +20,28 @@ import os
 import base64
 import time
 
+# Single timestamp used to generate stable-ish IDs for all requests in this run.
 RUN_TIMESTAMP_MS = int(time.time() * 1000)
 
 
 def first_or_none(value):
-    """In tshark JSON, every field is usually an array of values. Return the first or None."""
+    """
+    In tshark JSON, most fields are represented as arrays.
+    Return the first element if the input is a non-empty list, otherwise None.
+    """
     if isinstance(value, list) and value:
         return value[0]
     return value
 
 
 def as_list(value):
-    """Always return a list."""
+    """
+    Normalize a value to a list.
+
+    - None        -> []
+    - list        -> value as-is
+    - other types -> [value]
+    """
     if value is None:
         return []
     if isinstance(value, list):
@@ -30,38 +51,46 @@ def as_list(value):
 
 def byte_sequence_field_to_base64(field_values):
     """
-    Convert tshark 'Byte sequence' fields (http.file_data, http2.body.reassembled.data)
-    into a base64 string.
+    Convert tshark "Byte sequence" fields (e.g. http.file_data, http2.body.reassembled.data)
+    into a base64-encoded string.
 
     Typical tshark input:
       "3c 68 74 6d 6c 3e ..." or "3c:68:74:6d:6c:3e"
 
     Output:
-      "PHRtbD4uLi4=" (base64)
+      "PHRtbD4uLi4="  (base64 string)
+
+    Returns:
+      - base64 string if the conversion is successful
+      - None if the input is empty or cannot be parsed as hex
     """
     values = as_list(field_values)
     if not values:
         return None
 
-    # Join everything into a single string
+    # Join everything into a single string (fields may be split across multiple entries)
     joined = "".join(values)
 
-    # Normalize: remove colons, tabs, and collapse multiple spaces
+    # Normalize:
+    #  - replace colons and tabs with spaces
+    #  - collapse multiple spaces into a single space
     hex_str = joined.replace(":", " ").replace("\t", " ")
     hex_str = " ".join(hex_str.split())
 
     try:
         body_bytes = bytes.fromhex(hex_str)
     except ValueError:
+        # If tshark produced something unexpected, fail gracefully.
         return None
 
-    # Convert to base64
+    # Convert to base64 for transport/storage.
     return base64.b64encode(body_bytes).decode("ascii")
 
 
 def build_uri_struct(full_url, scheme_hint=None, authority_hint=None, path_hint=None):
     """
-    Build a `uri` structure compatible with the ontology:
+    Build a `uri` structure compatible with the ontology/Node schema:
+
       {
         "full": "...",
         "scheme": "...",
@@ -70,9 +99,18 @@ def build_uri_struct(full_url, scheme_hint=None, authority_hint=None, path_hint=
         "params": [{ "name": "...", "value": "..." }],
         "queryRaw": "a=1&b=2"
       }
+
+    Resolution logic:
+    - Prefer a fully-qualified URL when available (full_url).
+    - Fall back to (authority + path) when full_url is missing.
+    - Apply scheme/authority/path hints when they are provided.
+
+    Query parameters are parsed and exposed both as:
+    - "queryRaw"  (original query string)
+    - "params"    (array of { name, value } objects)
     """
     if not full_url and authority_hint and path_hint:
-        # Fallback: if we don't have full_url but we do have host + path
+        # Fallback: if we don't have full_url but we do have host + path.
         full_url = f"http://{authority_hint}{path_hint}"
 
     full_url = full_url or ""
@@ -106,7 +144,11 @@ def build_uri_struct(full_url, scheme_hint=None, authority_hint=None, path_hint=
 
 def normalize_headers(headers):
     """
-    Normalize headers into [{ name, value }] with header name in lower-case.
+    Normalize an iterable of header dicts into the canonical format:
+      [{ "name": "<lowercase-name>", "value": "<string-value>" }, ...]
+
+    - Header names are lower-cased to simplify matching.
+    - Entries without a name are discarded.
     """
     out = []
     for h in headers or []:
@@ -124,9 +166,17 @@ def normalize_headers(headers):
 
 def run_tshark(pcap_path, sslkeys_path):
     """
-    Run tshark on the provided pcap file, using the TLS key log file
-    to decrypt HTTP/1.1 and HTTP/2 traffic.
-    Returns raw tshark JSON data.
+    Run tshark on the provided PCAP file, using the TLS key log file
+    to decrypt HTTP/1.1 and HTTP/2 traffic, and export selected fields as JSON.
+
+    Environment variables:
+    - TSHARK_BIN: path or name of the tshark executable (default: "tshark")
+
+    Returns:
+      A Python object obtained by json.loads(stdout), typically a list of packets.
+
+    Raises:
+      RuntimeError on execution failure or JSON parse errors.
     """
     tshark_bin = os.getenv("TSHARK_BIN", "tshark")
 
@@ -134,7 +184,7 @@ def run_tshark(pcap_path, sslkeys_path):
         tshark_bin,
         "-r", pcap_path,
         "-o", f"tls.keylog_file:{sslkeys_path}",
-        # Broad filter: capture every packet with http or http2
+        # Broad display filter: capture every packet with http or http2.
         "-Y", "http || http2",
         "-T", "json",
         # Common fields
@@ -179,7 +229,7 @@ def run_tshark(pcap_path, sslkeys_path):
         "-e", "http2.headers.set_cookie",
         "-e", "http2.headers.location",
         "-e", "http2.headers.content_length",
-        # IMPORTANT: do not use http2.request_in (not available on your Docker tshark)
+        # IMPORTANT: we do not rely on http2.request_in (not available in some builds)
         # HTTP/2 body (if available)
         "-e", "http2.body.reassembled.data",
     ]
@@ -217,12 +267,25 @@ def run_tshark(pcap_path, sslkeys_path):
 
 def http_request_from_layers(layers):
     """
-    Convert a single tshark JSON record into an HttpRequest object (Node schema).
-    If this packet is not a valid HTTP request, return (None, None).
+    Convert a single tshark JSON record (`layers` section) into an HttpRequest dict
+    compatible with the Node schema.
 
-    Also returns the logical key used to match the response:
-      - HTTP/1.x : ('http1', frame.number)
-      - HTTP/2   : ('http2', tcp.stream, streamid)
+    If the packet does not represent an HTTP request, return (None, None).
+
+    Returns:
+      (key, http_request) where:
+        - key is used to match the corresponding response:
+            * HTTP/1.x : ('http1', frame.number)
+            * HTTP/2   : ('http2', tcp.stream, streamid)
+        - http_request is a dict:
+            {
+              "id": "...",
+              "method": "...",
+              "httpVersion": "...",
+              "uri": { ... },
+              "requestHeaders": [...],
+              "connection": { "authority": "..." }
+            }
     """
     frame_no = first_or_none(layers.get("frame.number"))
     if not frame_no:
@@ -234,7 +297,7 @@ def http_request_from_layers(layers):
     tcp_dst = first_or_none(layers.get("tcp.dstport"))
     tcp_stream = first_or_none(layers.get("tcp.stream"))
 
-    # HTTP/1.x
+    # HTTP/1.x request fields
     http1_method = first_or_none(layers.get("http.request.method"))
     http1_full_uri = first_or_none(layers.get("http.request.full_uri"))
     http1_host = first_or_none(layers.get("http.host"))
@@ -244,7 +307,7 @@ def http_request_from_layers(layers):
     http1_cookie = first_or_none(layers.get("http.cookie"))
     http1_referer = first_or_none(layers.get("http.referer"))
 
-    # HTTP/2
+    # HTTP/2 request fields
     h2_method = first_or_none(layers.get("http2.headers.method"))
     h2_scheme = first_or_none(layers.get("http2.headers.scheme"))
     h2_authority = first_or_none(layers.get("http2.headers.authority"))
@@ -259,6 +322,7 @@ def http_request_from_layers(layers):
     connection_auth = None
     key = None
 
+    # ----- HTTP/1.x request -----
     if http1_method:
         protocol = "http1"
         method = http1_method
@@ -271,6 +335,7 @@ def http_request_from_layers(layers):
             path_hint=http1_path,
         )
 
+        # Build request headers from selected fields
         if http1_host:
             headers.append({"name": "host", "value": http1_host})
         if http1_ua:
@@ -285,6 +350,7 @@ def http_request_from_layers(layers):
 
         key = ("http1", frame_no)
 
+    # ----- HTTP/2 request -----
     elif h2_method:
         protocol = "http2"
         method = h2_method
@@ -294,6 +360,7 @@ def http_request_from_layers(layers):
         if h2_scheme and h2_authority and h2_path:
             full_url = f"{h2_scheme}://{h2_authority}{h2_path}"
         elif h2_authority and h2_path:
+            # Assume HTTPS by default when only authority + path are available.
             full_url = f"https://{h2_authority}{h2_path}"
 
         uri = build_uri_struct(
@@ -303,7 +370,7 @@ def http_request_from_layers(layers):
             path_hint=h2_path,
         )
 
-        # Pseudo-headers in the header list
+        # HTTP/2 pseudo-headers are returned as regular headers.
         if h2_authority:
             headers.append({"name": ":authority", "value": h2_authority})
         if h2_scheme:
@@ -319,9 +386,10 @@ def http_request_from_layers(layers):
         key = ("http2", stream_key, h2_streamid or "0")
 
     else:
-        # Not an HTTP request we care about
+        # Not an HTTP request of interest.
         return None, None
 
+    # Build a stable-ish ID for the request.
     base_id = f"pcap-{protocol}-{RUN_TIMESTAMP_MS}-{frame_no}"
     if protocol == "http2" and h2_streamid:
         base_id += f"-s{h2_streamid}"
@@ -345,7 +413,16 @@ def http_request_from_layers(layers):
 
 def attach_http1_response(req, layers):
     """
-    Attach an HTTP/1.x response to an existing request object.
+    Attach an HTTP/1.x response to an existing HttpRequest dict.
+
+    This populates:
+      req["response"] = {
+        "statusCode": ...,
+        "httpVersion": ...,
+        "reasonPhrase": ...,
+        "responseHeaders": [...],
+        "body": "<base64-encoded payload>"
+      }
     """
     status_code = first_or_none(layers.get("http.response.code"))
     if not status_code:
@@ -383,7 +460,7 @@ def attach_http1_response(req, layers):
     if norm_headers:
         resp_obj["responseHeaders"] = norm_headers
 
-    # HTTP/1.x body in base64
+    # HTTP/1.x body in base64 (if present).
     body_b64 = byte_sequence_field_to_base64(layers.get("http.file_data"))
     if body_b64:
         resp_obj["body"] = body_b64
@@ -393,7 +470,15 @@ def attach_http1_response(req, layers):
 
 def attach_http2_response(req, layers):
     """
-    Attach an HTTP/2 response to an existing request object.
+    Attach an HTTP/2 response to an existing HttpRequest dict.
+
+    This populates:
+      req["response"] = {
+        "statusCode": ...,
+        "httpVersion": "HTTP/2",
+        "responseHeaders": [...],
+        "body": "<base64-encoded payload>"
+      }
     """
     status_code = first_or_none(layers.get("http2.headers.status"))
     if not status_code:
@@ -427,7 +512,7 @@ def attach_http2_response(req, layers):
     if norm_headers:
         resp_obj["responseHeaders"] = norm_headers
 
-    # HTTP/2 body in base64
+    # HTTP/2 body in base64 (if present).
     body_b64 = byte_sequence_field_to_base64(layers.get("http2.body.reassembled.data"))
     if body_b64:
         resp_obj["body"] = body_b64
@@ -437,23 +522,32 @@ def attach_http2_response(req, layers):
 
 def extract_http_from_packets(tshark_data):
     """
-    Single pass over packets:
-      - identify requests and store them in a map
-      - identify responses and attach them to the corresponding requests
+    Single pass over the list of tshark packets to build HttpRequest objects.
+
+    Strategy:
+    - For each packet, try to interpret it as an HTTP request:
+        * If successful, store the request in a map keyed by a logical tuple.
+    - For each packet, also check if it carries an HTTP response:
+        * For HTTP/1.x: join by frame.number (via http.request_in)
+        * For HTTP/2  : join by (tcp.stream, streamid)
+    - When a matching request is found, attach response metadata and body.
+
+    Returns:
+      List of HttpRequest dicts (some may have a "response" field, some may not).
     """
     requests_map = {}
 
     for pkt in tshark_data:
         layers = pkt.get("_source", {}).get("layers", {})
 
-        # 1) If it is a request, create it
+        # 1) If it is a request, create it.
         key, req_obj = http_request_from_layers(layers)
         if key and req_obj:
-            # If it already exists, do not overwrite it (first request wins)
+            # If the key already exists, keep the first request we saw.
             if key not in requests_map:
                 requests_map[key] = req_obj
 
-        # 2) If it is an HTTP/1.x response, link it using http.request_in
+        # 2) If it is an HTTP/1.x response, link it using http.request_in.
         status_http1 = first_or_none(layers.get("http.response.code"))
         if status_http1:
             req_frame = first_or_none(layers.get("http.request_in"))
@@ -463,7 +557,7 @@ def extract_http_from_packets(tshark_data):
                 if req is not None:
                     attach_http1_response(req, layers)
 
-        # 3) If it is an HTTP/2 response, link it using (tcp.stream, streamid)
+        # 3) If it is an HTTP/2 response, link it using (tcp.stream, streamid).
         status_http2 = first_or_none(layers.get("http2.headers.status"))
         if status_http2:
             streamid = first_or_none(layers.get("http2.streamid")) or "0"
@@ -478,6 +572,18 @@ def extract_http_from_packets(tshark_data):
 
 
 def main():
+    """
+    CLI entry point.
+
+    Expected arguments:
+      1) pcap_path    : path to .pcap / .pcapng file
+      2) sslkeys_path : path to TLS key log file (e.g. sslkeys.log)
+
+    Exits with:
+      - 0 on success
+      - 1 on missing arguments
+      - 2 on tshark / parsing errors
+    """
     if len(sys.argv) < 3:
         print(
             "Usage: python pcap_to_http_json.py <pcap_path> <sslkeys_path>",
@@ -504,7 +610,7 @@ def main():
         file=sys.stderr,
     )
 
-    # Output: list of HttpRequest objects, ready for /http-requests/ingest-http
+    # Output: list of HttpRequest objects, ready for /http-requests/ingest-http.
     print(json.dumps(http_requests))
 
 

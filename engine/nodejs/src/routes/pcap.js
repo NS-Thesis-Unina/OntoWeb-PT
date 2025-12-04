@@ -7,12 +7,17 @@ const path = require('path');
 const fs = require('fs');
 const { spawn } = require('child_process');
 
-const {
-  makeLogger,
-} = require('../utils');
+const { makeLogger } = require('../utils');
 
 const log = makeLogger('api:pcap');
 
+/**
+ * Multer instance for handling PCAP uploads.
+ *
+ * - Files are stored in the OS temp directory.
+ * - Filenames are prefixed with a unique timestamp-based token to avoid clashes.
+ * - Maximum upload size: 200 MB.
+ */
 const upload = multer({
   storage: multer.diskStorage({
     destination: (req, file, cb) => {
@@ -28,6 +33,10 @@ const upload = multer({
   },
 });
 
+/**
+ * Best-effort removal of temporary files.
+ * Errors are logged but not re-thrown.
+ */
 function safeUnlink(filePath) {
   if (!filePath) return;
   fs.unlink(filePath, (err) => {
@@ -40,11 +49,23 @@ function safeUnlink(filePath) {
 /**
  * POST /pcap/pcap-http-requests
  *
- * Body: multipart/form-data
- *  - pcap:    .pcap / .pcapng file
- *  - sslkeys: TLS keylog file (e.g. sslkeys.log)
+ * Convert a PCAP capture into a list of HTTP requests.
  *
- * Output: HttpRequest[] in JSON (already compatible with /http-requests/ingest-http schema)
+ * Body: multipart/form-data
+ *  - pcap    : .pcap / .pcapng file
+ *  - sslkeys : TLS keylog file (e.g. sslkeys.log) for decrypting HTTPS
+ *
+ * Behaviour:
+ *  - Saves both files to a temp directory.
+ *  - Spawns a Python script "pcap_to_http_json.py" to parse the capture.
+ *  - Expects JSON array on stdout in the /http-requests/ingest-http format.
+ *
+ * Response:
+ *  - 200 with HttpRequest[] on success.
+ *  - 400 when mandatory fields are missing.
+ *  - 500 when processing fails.
+ *
+ * Temporary files are always cleaned up in the "finally" block.
  */
 router.post(
   '/pcap-http-requests',
@@ -59,7 +80,7 @@ router.post(
     let sslKeysPath;
 
     try {
-      const files = /** @type {Record<string, Express.Multer.File[]>} */(req.files || {});
+      const files = /** @type {Record<string, Express.Multer.File[]>} */ (req.files || {});
 
       const pcapFile = files.pcap && files.pcap[0];
       const sslKeysFile = files.sslkeys && files.sslkeys[0];
@@ -83,9 +104,13 @@ router.post(
       });
 
       const scriptPath = path.join(__dirname, '../scripts', 'pcap_to_http_json.py');
-
       const pythonBin = process.env.PYTHON_BIN || 'python';
 
+      /**
+       * Spawn the Python converter.
+       * - stdout: JSON array of HTTP requests
+       * - stderr: diagnostics forwarded to logs and included on error
+       */
       const py = spawn(pythonBin, [scriptPath, pcapPath, sslKeysPath], {
         stdio: ['ignore', 'pipe', 'pipe'],
       });
@@ -102,14 +127,16 @@ router.post(
         stderr += s;
       });
 
+      /**
+       * Wait for the Python process to complete and parse its output.
+       * Any non-zero exit code or invalid JSON will result in an error.
+       */
       const httpRequests = await new Promise((resolve, reject) => {
         py.on('error', (err) => reject(err));
         py.on('close', (code) => {
           if (code !== 0) {
             return reject(
-              new Error(
-                `Python script exited with code ${code}. stderr: ${stderr || 'n/a'}`
-              )
+              new Error(`Python script exited with code ${code}. stderr: ${stderr || 'n/a'}`)
             );
           }
 
@@ -118,9 +145,7 @@ router.post(
             resolve(parsed);
           } catch (err) {
             reject(
-              new Error(
-                `Failed to parse JSON from python stdout: ${(err && err.message) || err}`
-              )
+              new Error(`Failed to parse JSON from python stdout: ${(err && err.message) || err}`)
             );
           }
         });
@@ -138,6 +163,7 @@ router.post(
         detail: String(err?.message || err),
       });
     } finally {
+      // Always clean up temporary files, regardless of success/failure.
       safeUnlink(pcapPath);
       safeUnlink(sslKeysPath);
     }

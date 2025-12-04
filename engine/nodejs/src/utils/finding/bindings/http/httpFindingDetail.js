@@ -48,18 +48,18 @@ function bindingsToHttpFindingDetail(bindings) {
       result.id = id;
     }
 
-    const resolver       = valueOf(row.resolver);
-    const vulnType       = valueOf(row.vulnType);
-    const severity       = valueOf(row.severity);
-    const category       = valueOf(row.findingCategory);
-    const owasp          = valueOf(row.owaspCategory);
-    const ruleId         = valueOf(row.ruleId);
-    const description    = valueOf(row.description);
-    const remediation    = valueOf(row.remediation);
-    const httpMethod     = valueOf(row.httpMethod);
-    const requestUrl     = valueOf(row.requestUrl);
+    const resolver = valueOf(row.resolver);
+    const vulnType = valueOf(row.vulnType);
+    const severity = valueOf(row.severity);
+    const category = valueOf(row.findingCategory);
+    const owasp = valueOf(row.owaspCategory);
+    const ruleId = valueOf(row.ruleId);
+    const description = valueOf(row.description);
+    const remediation = valueOf(row.remediation);
+    const httpMethod = valueOf(row.httpMethod);
+    const requestUrl = valueOf(row.requestUrl);
     const responseStatus = valueOf(row.responseStatus);
-    const relatedHttp    = valueOf(row.relatedHttp);
+    const relatedHttp = valueOf(row.relatedHttp);
 
     if (resolver && !result.resolver) result.resolver = resolver;
     if (vulnType && !result.vulnerabilityType) result.vulnerabilityType = vulnType;

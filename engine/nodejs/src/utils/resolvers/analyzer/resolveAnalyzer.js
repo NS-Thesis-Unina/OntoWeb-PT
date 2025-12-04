@@ -58,13 +58,7 @@ async function resolveAnalyzer({
     const pageUrl = url || mainDomain || '';
 
     /** @type {AnalyzerFinding[]} */
-    const findings = await engine.scanCode(
-      scripts,
-      html,
-      pageUrl,
-      forms,
-      iframes
-    );
+    const findings = await engine.scanCode(scripts, html, pageUrl, forms, iframes);
 
     const stats = { high: 0, medium: 0, low: 0 };
     for (const f of findings) {

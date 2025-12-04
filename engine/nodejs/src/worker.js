@@ -19,18 +19,13 @@ const {
     buildInsertFromHttpRequestsArray,
     normalizeHttpRequestsPayload,
   },
-  findingBuilders: {
-    buildInsertFromFindingsArray,
-  },
+  findingBuilders: { buildInsertFromFindingsArray },
   resolvers: {
     techstack: { resolveTechstack },
     analyzer: { resolveAnalyzer },
     http: { analyzeHttpRequests },
   },
-  monitors: {
-    startRedisMonitor,
-    startGraphDBHealthProbe,
-  },
+  monitors: { startRedisMonitor, startGraphDBHealthProbe },
   makeLogger,
 } = require('./utils');
 
@@ -41,12 +36,22 @@ const logAnalyzer = makeLogger('worker:analyzer');
 
 const logForward = makeLogger('logs-forwarder');
 
-// URL del server che espone il namespace /logs
+/**
+ * WebSocket URL of the API server that exposes the /logs namespace.
+ *
+ * This allows the worker process to forward its logs to the API instance,
+ * which then broadcasts them to connected dashboard clients.
+ */
 const LOGS_WS_URL =
   process.env.LOGS_WS_URL ||
   `http://${process.env.SERVER_HOST || 'localhost'}:${process.env.SERVER_PORT || 8081}/logs`;
 
-// Socket client verso il server API (/logs)
+/**
+ * Socket.IO client towards the API server (/logs namespace).
+ *
+ * The worker emits log entries over this connection so that all logs
+ * (API + workers) can be observed in a single WebSocket stream.
+ */
 const logsSocket = io(LOGS_WS_URL, {
   transports: ['websocket'],
   reconnection: true,
@@ -64,18 +69,30 @@ logsSocket.on('error', (err) => {
   logForward.warn('Logs WebSocket error', err?.message || err);
 });
 
-// 🔵 inoltra TUTTI i log del processo worker verso il server
+/**
+ * Global log forwarder
+ *
+ * Every log entry produced via makeLogger in this process is forwarded
+ * to the API server, which then emits it to /logs subscribers.
+ */
 onLog((entry) => {
   try {
     // entry: { ts, level, ns, msg }
     logsSocket.emit('log', entry);
   } catch {
-    // niente, se il socket è giù semplicemente si perde quel log
+    // If the socket is down we simply drop this log entry.
   }
 });
 
+/* ========================================================================
+ * HTTP Requests worker
+ * ====================================================================== */
 
-// === HTTP Requests worker ===
+/**
+ * Worker that:
+ * - Ingests raw HTTP request payloads and persists them into GraphDB
+ * - Runs HTTP analysis jobs and writes corresponding findings
+ */
 const workerHttpRequests = new Worker(
   queueNameHttpRequestsWrites,
   async (job) => {
@@ -84,6 +101,10 @@ const workerHttpRequests = new Worker(
         const { payload } = job.data || {};
         if (!payload) throw new Error('Missing payload');
 
+        /**
+         * Normalize the incoming payload into a list of HTTP request records,
+         * then build a single SPARQL UPDATE that inserts them into GraphDB.
+         */
         const list = normalizeHttpRequestsPayload(payload);
         const update =
           list.length === 1
@@ -95,11 +116,15 @@ const workerHttpRequests = new Worker(
       }
       case 'http-resolver': {
         const { list } = job.data || {};
-        if (!list || !Array.isArray(list))
-          throw new Error('Missing or invalid requests list');
+        if (!list || !Array.isArray(list)) throw new Error('Missing or invalid requests list');
 
         logHttp.info(`http-resolver start (count=${list.length})`);
 
+        /**
+         * Analyze HTTP requests and derive:
+         * - security findings
+         * - aggregate statistics per host / endpoint / category
+         */
         const result = await analyzeHttpRequests(list);
 
         logHttp.info('http-resolver completed', {
@@ -107,13 +132,13 @@ const workerHttpRequests = new Worker(
           stats: result.stats,
         });
 
-        // Persist HTTP findings into the findings graph
+        // Persist HTTP findings into the findings graph.
         let insertStatus = null;
         try {
           if (result && Array.isArray(result.findings) && result.findings.length > 0) {
             const findingsForInsert = result.findings.map((f) => ({
               ...f,
-              // garantisco che la sorgente sia sempre presente
+              // Ensure that a "source" is always present for traceability.
               source: f.source || 'http',
             }));
             const sparql = buildInsertFromFindingsArray(findingsForInsert);
@@ -124,10 +149,7 @@ const workerHttpRequests = new Worker(
             });
           }
         } catch (err) {
-          logHttp.warn(
-            'Failed to insert HTTP findings into GraphDB',
-            err?.message || err
-          );
+          logHttp.warn('Failed to insert HTTP findings into GraphDB', err?.message || err);
         }
 
         return { result, insertStatus };
@@ -139,8 +161,7 @@ const workerHttpRequests = new Worker(
   {
     connection,
     concurrency: Number(process.env.CONCURRENCY_WORKER_HTTP_REQUESTS) || 2,
-    stalledInterval:
-      Number(process.env.STALLED_INTERVAL_WORKER_HTTP_REQUESTS) || 30000,
+    stalledInterval: Number(process.env.STALLED_INTERVAL_WORKER_HTTP_REQUESTS) || 30000,
   }
 );
 
@@ -161,15 +182,25 @@ workerHttpRequests.on('completed', (job, result) => {
     logHttp.info(`completed job=${job.name} id=${job.id}`, result);
   }
 });
+
 workerHttpRequests.on('failed', (job, err) => {
   logHttp.warn(`failed job=${job?.name} id=${job?.id}`, err?.message || err);
 });
+
 workerHttpRequests.on('error', (err) => {
   logHttp.warn('worker error', err?.message || err);
 });
 
+/* ========================================================================
+ * SPARQL UPDATE worker
+ * ====================================================================== */
 
-// === SPARQL UPDATE worker ===
+/**
+ * Worker responsible for executing generic SPARQL UPDATE statements.
+ *
+ * This decouples write traffic from the API process and allows retries
+ * with custom backoff strategies.
+ */
 const workerSparql = new Worker(
   queueNameSparqlWrites,
   async (job) => {
@@ -195,21 +226,29 @@ const workerSparql = new Worker(
 workerSparql.on('completed', (job, result) => {
   logSp.info(`completed job=${job.name} id=${job.id}`, { result });
 });
+
 workerSparql.on('failed', (job, err) => {
   logSp.warn(`failed job=${job?.name} id=${job?.id}`, err?.message || err);
 });
+
 workerSparql.on('error', (err) => {
   logSp.warn('worker error', err?.message || err);
 });
 
-// === Techstack analysis worker ===
+/* ========================================================================
+ * Techstack analysis worker
+ * ====================================================================== */
+
+/**
+ * Worker that resolves the technology stack information into structured
+ * findings and persists them into GraphDB.
+ */
 const workerTechstack = new Worker(
   queueNameTechstackWrites,
   async (job) => {
     switch (job.name) {
       case 'techstack-analyze': {
-        const { technologies, waf, secureHeaders, cookies, mainDomain } =
-          job.data || {};
+        const { technologies, waf, secureHeaders, cookies, mainDomain } = job.data || {};
         if (!technologies || !Array.isArray(technologies)) {
           throw new Error('Invalid technologies payload');
         }
@@ -237,10 +276,7 @@ const workerTechstack = new Worker(
             });
           }
         } catch (err) {
-          logTech.warn(
-            'Failed to insert Techstack findings into GraphDB',
-            err?.message || err
-          );
+          logTech.warn('Failed to insert Techstack findings into GraphDB', err?.message || err);
         }
 
         return { result, insertStatus };
@@ -252,8 +288,7 @@ const workerTechstack = new Worker(
   {
     connection,
     concurrency: Number(process.env.CONCURRENCY_WORKER_TECHSTACK) || 2,
-    stalledInterval:
-      Number(process.env.STALLED_INTERVAL_WORKER_TECHSTACK) || 30000,
+    stalledInterval: Number(process.env.STALLED_INTERVAL_WORKER_TECHSTACK) || 30000,
   }
 );
 
@@ -268,21 +303,28 @@ workerTechstack.on('completed', (job, result) => {
     insertStatus: result?.insertStatus ?? null,
   });
 });
+
 workerTechstack.on('failed', (job, err) => {
   logTech.warn(`failed job=${job?.name} id=${job?.id}`, err?.message || err);
 });
+
 workerTechstack.on('error', (err) => {
   logTech.warn('worker error', err?.message || err);
 });
 
+/* ========================================================================
+ * Analyzer (SAST) worker
+ * ====================================================================== */
 
-// === Analyzer (SAST) worker ===
+/**
+ * Worker that runs static analysis (SAST-like) against HTML/JS artifacts
+ * and persists the resulting findings into GraphDB.
+ */
 const workerAnalyzer = new Worker(
   queueNameAnalyzerWrites,
   async (job) => {
     if (job.name === 'sast-analyze') {
-      const { url, html, scripts, forms, iframes, includeSnippets } =
-        job.data || {};
+      const { url, html, scripts, forms, iframes, includeSnippets } = job.data || {};
 
       const result = await resolveAnalyzer({
         url,
@@ -308,10 +350,7 @@ const workerAnalyzer = new Worker(
           });
         }
       } catch (err) {
-        logAnalyzer.warn(
-          'Failed to insert Analyzer findings into GraphDB',
-          err?.message || err
-        );
+        logAnalyzer.warn('Failed to insert Analyzer findings into GraphDB', err?.message || err);
       }
 
       return { result, insertStatus };
@@ -321,8 +360,7 @@ const workerAnalyzer = new Worker(
   {
     connection,
     concurrency: Number(process.env.CONCURRENCY_WORKER_ANALYZER) || 2,
-    stalledInterval:
-      Number(process.env.STALLED_INTERVAL_WORKER_ANALYZER) || 30000,
+    stalledInterval: Number(process.env.STALLED_INTERVAL_WORKER_ANALYZER) || 30000,
   }
 );
 
@@ -334,13 +372,24 @@ workerAnalyzer.on('completed', (job, result) => {
     insertStatus: result?.insertStatus ?? null,
   });
 });
+
 workerAnalyzer.on('failed', (job, err) => {
   logAnalyzer.warn(`failed job=${job?.name} id=${job?.id}`, err?.message || err);
 });
+
 workerAnalyzer.on('error', (err) => {
   logAnalyzer.warn('worker error', err?.message || err);
 });
 
-// Monitors
+/* ========================================================================
+ * Monitors (worker process)
+ * ====================================================================== */
+
+/**
+ * Health monitors for the worker process.
+ *
+ * These do not update the API-facing registry directly, but are useful
+ * for logs and external observability.
+ */
 startRedisMonitor(connection, 'redis:worker');
 startGraphDBHealthProbe(runSelect, 'graphdb:worker');

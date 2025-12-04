@@ -1,4 +1,3 @@
-
 const formRules = [
   {
     id: 'form-method-get',

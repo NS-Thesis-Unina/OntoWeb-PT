@@ -45,25 +45,19 @@ function addTechstackTriples(triples, findingIri, f) {
   if (ev.type === 'Technology' || ev.type === 'WAF') {
     if (ev.name) {
       triples.push(
-        `${findingIri} <${EX}technologyName> "${escapeStringLiteral(
-          String(ev.name)
-        )}" .`
+        `${findingIri} <${EX}technologyName> "${escapeStringLiteral(String(ev.name))}" .`
       );
     }
     if (ev.version) {
       triples.push(
-        `${findingIri} <${EX}technologyVersion> "${escapeStringLiteral(
-          String(ev.version)
-        )}" .`
+        `${findingIri} <${EX}technologyVersion> "${escapeStringLiteral(String(ev.version))}" .`
       );
     }
 
     // CPE as literal on the finding (backwards compatibility)
     if (Array.isArray(ev.cpe)) {
       ev.cpe.forEach((cpe) => {
-        triples.push(
-          `${findingIri} <${EX}cpe> "${escapeStringLiteral(String(cpe))}" .`
-        );
+        triples.push(`${findingIri} <${EX}cpe> "${escapeStringLiteral(String(cpe))}" .`);
       });
     }
 
@@ -86,15 +80,11 @@ function addTechstackTriples(triples, findingIri, f) {
       }
 
       if (sevNorm && sevNorm !== 'UNKNOWN') {
-        triples.push(
-          `${cveIri} <${EX}cvssSeverity> "${escapeStringLiteral(sevNorm)}" .`
-        );
+        triples.push(`${cveIri} <${EX}cvssSeverity> "${escapeStringLiteral(sevNorm)}" .`);
       }
 
       // Finding → CVE as vulnerability type
-      triples.push(
-        `${findingIri} <${EX}aboutVulnerabilityType> ${cveIri} .`
-      );
+      triples.push(`${findingIri} <${EX}aboutVulnerabilityType> ${cveIri} .`);
 
       // CPE individuals + platformHasVulnerability (CPE → CVE)
       if (Array.isArray(ev.cpe)) {
@@ -119,30 +109,20 @@ function addTechstackTriples(triples, findingIri, f) {
   if (ev.type === 'Header') {
     if (ev.header) {
       // Direct info on finding (backwards compat)
-      triples.push(
-        `${findingIri} <${EX}headerName> "${escapeStringLiteral(
-          String(ev.header)
-        )}" .`
-      );
+      triples.push(`${findingIri} <${EX}headerName> "${escapeStringLiteral(String(ev.header))}" .`);
 
       // MessageHeader individual + link refersToHeader
       const headerIri = `<${iriHeader(ev.header)}>`;
       triples.push(
         `${headerIri} a <${EX}MessageHeader> .`,
-        `${headerIri} <${EX}fieldName> "${escapeStringLiteral(
-          String(ev.header)
-        )}" .`,
+        `${headerIri} <${EX}fieldName> "${escapeStringLiteral(String(ev.header))}" .`,
         `${findingIri} <${EX}refersToHeader> ${headerIri} .`
       );
     }
 
     if (Array.isArray(ev.urls)) {
       ev.urls.forEach((u) => {
-        triples.push(
-          `${findingIri} <${EX}headerUrl> "${escapeStringLiteral(
-            String(u)
-          )}" .`
-        );
+        triples.push(`${findingIri} <${EX}headerUrl> "${escapeStringLiteral(String(u))}" .`);
       });
     }
   }
@@ -154,25 +134,15 @@ function addTechstackTriples(triples, findingIri, f) {
   if (ev.type === 'Cookie') {
     // Direct info on the finding (backwards compat)
     if (ev.name) {
-      triples.push(
-        `${findingIri} <${EX}cookieName> "${escapeStringLiteral(
-          String(ev.name)
-        )}" .`
-      );
+      triples.push(`${findingIri} <${EX}cookieName> "${escapeStringLiteral(String(ev.name))}" .`);
     }
     if (ev.domain) {
       triples.push(
-        `${findingIri} <${EX}cookieDomain> "${escapeStringLiteral(
-          String(ev.domain)
-        )}" .`
+        `${findingIri} <${EX}cookieDomain> "${escapeStringLiteral(String(ev.domain))}" .`
       );
     }
     if (ev.path) {
-      triples.push(
-        `${findingIri} <${EX}cookiePath> "${escapeStringLiteral(
-          String(ev.path)
-        )}" .`
-      );
+      triples.push(`${findingIri} <${EX}cookiePath> "${escapeStringLiteral(String(ev.path))}" .`);
     }
     if (ev.flags) {
       if (typeof ev.flags.secure === 'boolean') {
@@ -204,25 +174,15 @@ function addTechstackTriples(triples, findingIri, f) {
     triples.push(`${cookieIri} a <${EX}Cookie> .`);
 
     if (ev.name) {
-      triples.push(
-        `${cookieIri} <${EX}cookieName> "${escapeStringLiteral(
-          String(ev.name)
-        )}" .`
-      );
+      triples.push(`${cookieIri} <${EX}cookieName> "${escapeStringLiteral(String(ev.name))}" .`);
     }
     if (ev.domain) {
       triples.push(
-        `${cookieIri} <${EX}cookieDomain> "${escapeStringLiteral(
-          String(ev.domain)
-        )}" .`
+        `${cookieIri} <${EX}cookieDomain> "${escapeStringLiteral(String(ev.domain))}" .`
       );
     }
     if (ev.path) {
-      triples.push(
-        `${cookieIri} <${EX}cookiePath> "${escapeStringLiteral(
-          String(ev.path)
-        )}" .`
-      );
+      triples.push(`${cookieIri} <${EX}cookiePath> "${escapeStringLiteral(String(ev.path))}" .`);
     }
     if (ev.flags) {
       if (typeof ev.flags.secure === 'boolean') {
@@ -237,9 +197,7 @@ function addTechstackTriples(triples, findingIri, f) {
       }
       if (ev.flags.sameSite) {
         triples.push(
-          `${cookieIri} <${EX}cookieSameSite> "${escapeStringLiteral(
-            String(ev.flags.sameSite)
-          )}" .`
+          `${cookieIri} <${EX}cookieSameSite> "${escapeStringLiteral(String(ev.flags.sameSite))}" .`
         );
       }
     }
@@ -249,18 +207,12 @@ function addTechstackTriples(triples, findingIri, f) {
       );
     }
 
-    triples.push(
-      `${findingIri} <${EX}refersToCookie> ${cookieIri} .`
-    );
+    triples.push(`${findingIri} <${EX}refersToCookie> ${cookieIri} .`);
   }
 
   // Generic evidence.type on the finding
   if (ev.type) {
-    triples.push(
-      `${findingIri} <${EX}evidenceType> "${escapeStringLiteral(
-        String(ev.type)
-      )}" .`
-    );
+    triples.push(`${findingIri} <${EX}evidenceType> "${escapeStringLiteral(String(ev.type))}" .`);
   }
 }
 

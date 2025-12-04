@@ -10,7 +10,7 @@ const { Joi } = require('celebrate');
 
 /** @typedef {import('../_types/validators/types').JoiSchema} JoiSchema */
 
-const sparqlMax = 100_000;         // 100 KB for SELECT/ASK
+const sparqlMax = 100_000; // 100 KB for SELECT/ASK
 const sparqlUpdateMax = 2_000_000; // 2 MB for UPDATE
 
 /**

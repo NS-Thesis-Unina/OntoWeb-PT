@@ -180,40 +180,28 @@ function addGenericFindingTriples(triples, findingIri, f) {
 
   if (f?.category) {
     triples.push(
-      `${findingIri} <${EX}findingCategory> "${escapeStringLiteral(
-        String(f.category)
-      )}" .`
+      `${findingIri} <${EX}findingCategory> "${escapeStringLiteral(String(f.category))}" .`
     );
   }
 
   if (f?.owasp) {
-    triples.push(
-      `${findingIri} <${EX}owaspCategory> "${escapeStringLiteral(
-        String(f.owasp)
-      )}" .`
-    );
+    triples.push(`${findingIri} <${EX}owaspCategory> "${escapeStringLiteral(String(f.owasp))}" .`);
   }
 
   if (f?.ruleId || f?.rule) {
     triples.push(
-      `${findingIri} <${EX}findingRuleId> "${escapeStringLiteral(
-        String(f.ruleId || f.rule)
-      )}" .`
+      `${findingIri} <${EX}findingRuleId> "${escapeStringLiteral(String(f.ruleId || f.rule))}" .`
     );
   }
 
   const sevNorm = normalizeSeverity(f?.severity);
   if (sevNorm) {
-    triples.push(
-      `${findingIri} <${EX}severity> "${escapeStringLiteral(sevNorm)}" .`
-    );
+    triples.push(`${findingIri} <${EX}severity> "${escapeStringLiteral(sevNorm)}" .`);
   }
 
   if (f?.remediation) {
     triples.push(
-      `${findingIri} <${EX}remediation> "${escapeStringLiteral(
-        String(f.remediation)
-      )}" .`
+      `${findingIri} <${EX}remediation> "${escapeStringLiteral(String(f.remediation))}" .`
     );
   }
 
@@ -224,9 +212,7 @@ function addGenericFindingTriples(triples, findingIri, f) {
 
   const vulnTypeIri = mapVulnerabilityTypeIri(f);
   if (vulnTypeIri) {
-    triples.push(
-      `${findingIri} <${EX}aboutVulnerabilityType> ${vulnTypeIri} .`
-    );
+    triples.push(`${findingIri} <${EX}aboutVulnerabilityType> ${vulnTypeIri} .`);
   }
 }
 

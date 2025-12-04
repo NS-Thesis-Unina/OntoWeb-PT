@@ -1,10 +1,7 @@
 // @ts-check
 
 const { iriFinding } = require('../../iri/finding');
-const {
-  computeFindingKey,
-  addGenericFindingTriples,
-} = require('./common');
+const { computeFindingKey, addGenericFindingTriples } = require('./common');
 const { addTechstackTriples } = require('./techstack/extractTriples');
 const { addHttpTriples } = require('./http/extractTriples');
 const { addAnalyzerTriples } = require('./analyzer/extractTriples');

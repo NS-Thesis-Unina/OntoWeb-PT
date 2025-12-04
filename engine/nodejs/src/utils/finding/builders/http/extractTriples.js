@@ -33,25 +33,19 @@ function addHttpTriples(triples, findingIri, f) {
 
   // HttpScan → Response
   if (ctx.responseIri) {
-    triples.push(
-      `${findingIri} <${EX}relatedToHTTP> <${ctx.responseIri}> .`
-    );
+    triples.push(`${findingIri} <${EX}relatedToHTTP> <${ctx.responseIri}> .`);
   }
 
   // HttpScan → URI
   if (ctx.uriIri) {
-    triples.push(
-      `${findingIri} <${EX}relatedToHTTP> <${ctx.uriIri}> .`
-    );
+    triples.push(`${findingIri} <${EX}relatedToHTTP> <${ctx.uriIri}> .`);
   }
 
   // Headers (RequestHeader / ResponseHeader ⊑ MessageHeader ⊑ HTTP)
   if (Array.isArray(ctx.headers)) {
     ctx.headers.forEach((h) => {
       if (h.iri) {
-        triples.push(
-          `${findingIri} <${EX}relatedToHTTP> <${h.iri}> .`
-        );
+        triples.push(`${findingIri} <${EX}relatedToHTTP> <${h.iri}> .`);
       }
     });
   }
@@ -60,15 +54,11 @@ function addHttpTriples(triples, findingIri, f) {
   if (Array.isArray(ctx.params)) {
     ctx.params.forEach((p) => {
       if (p.iri) {
-        triples.push(
-          `${findingIri} <${EX}relatedToHTTP> <${p.iri}> .`
-        );
+        triples.push(`${findingIri} <${EX}relatedToHTTP> <${p.iri}> .`);
 
         if (p.name) {
           triples.push(
-            `<${p.iri}> <${EX}nameParameter> "${escapeStringLiteral(
-              String(p.name)
-            )}" .`
+            `<${p.iri}> <${EX}nameParameter> "${escapeStringLiteral(String(p.name))}" .`
           );
         }
       }
@@ -79,22 +69,14 @@ function addHttpTriples(triples, findingIri, f) {
   if (Array.isArray(ctx.cookies)) {
     ctx.cookies.forEach((c) => {
       if (c.headerIri) {
-        triples.push(
-          `${findingIri} <${EX}relatedToHTTP> <${c.headerIri}> .`
-        );
+        triples.push(`${findingIri} <${EX}relatedToHTTP> <${c.headerIri}> .`);
       }
       if (c.name) {
-        triples.push(
-          `${findingIri} <${EX}cookieName> "${escapeStringLiteral(
-            String(c.name)
-          )}" .`
-        );
+        triples.push(`${findingIri} <${EX}cookieName> "${escapeStringLiteral(String(c.name))}" .`);
       }
       if (c.domain) {
         triples.push(
-          `${findingIri} <${EX}cookieDomain> "${escapeStringLiteral(
-            String(c.domain)
-          )}" .`
+          `${findingIri} <${EX}cookieDomain> "${escapeStringLiteral(String(c.domain))}" .`
         );
       }
     });
@@ -103,18 +85,12 @@ function addHttpTriples(triples, findingIri, f) {
   // === HTTP metadata on the finding (data properties) ===
 
   if (f.url) {
-    triples.push(
-      `${findingIri} <${EX}requestUrl> "${escapeStringLiteral(
-        String(f.url)
-      )}" .`
-    );
+    triples.push(`${findingIri} <${EX}requestUrl> "${escapeStringLiteral(String(f.url))}" .`);
   }
 
   if (f.method) {
     const m = String(f.method).toUpperCase();
-    triples.push(
-      `${findingIri} <${EX}httpMethod> "${escapeStringLiteral(m)}" .`
-    );
+    triples.push(`${findingIri} <${EX}httpMethod> "${escapeStringLiteral(m)}" .`);
   }
 
   if (typeof f.responseStatus === 'number') {
@@ -126,55 +102,31 @@ function addHttpTriples(triples, findingIri, f) {
   // If the resolver provides a logical path and we have the URI IRI,
   // map it on ex:path (domain URI).
   if (ev.path && ctx.uriIri) {
-    triples.push(
-      `<${ctx.uriIri}> <${EX}path> "${escapeStringLiteral(
-        String(ev.path)
-      )}" .`
-    );
+    triples.push(`<${ctx.uriIri}> <${EX}path> "${escapeStringLiteral(String(ev.path))}" .`);
   }
 
   // === Extra evidence fields (not explicitly modeled in ontology) ===
 
   if (ev.kind) {
-    triples.push(
-      `${findingIri} <${EX}evidenceKind> "${escapeStringLiteral(
-        String(ev.kind)
-      )}" .`
-    );
+    triples.push(`${findingIri} <${EX}evidenceKind> "${escapeStringLiteral(String(ev.kind))}" .`);
   }
 
   if (ev.pattern) {
-    triples.push(
-      `${findingIri} <${EX}pattern> "${escapeStringLiteral(
-        String(ev.pattern)
-      )}" .`
-    );
+    triples.push(`${findingIri} <${EX}pattern> "${escapeStringLiteral(String(ev.pattern))}" .`);
   }
 
   if (ev.rawQuery) {
-    triples.push(
-      `${findingIri} <${EX}rawQuery> "${escapeStringLiteral(
-        String(ev.rawQuery)
-      )}" .`
-    );
+    triples.push(`${findingIri} <${EX}rawQuery> "${escapeStringLiteral(String(ev.rawQuery))}" .`);
   }
 
   if (Array.isArray(ev.insecureResources)) {
     ev.insecureResources.forEach((r) => {
-      triples.push(
-        `${findingIri} <${EX}insecureResource> "${escapeStringLiteral(
-          String(r)
-        )}" .`
-      );
+      triples.push(`${findingIri} <${EX}insecureResource> "${escapeStringLiteral(String(r))}" .`);
     });
   }
 
   if (ev.snippet) {
-    triples.push(
-      `${findingIri} <${EX}snippet> "${escapeStringLiteral(
-        String(ev.snippet)
-      )}" .`
-    );
+    triples.push(`${findingIri} <${EX}snippet> "${escapeStringLiteral(String(ev.snippet))}" .`);
   }
 }
 

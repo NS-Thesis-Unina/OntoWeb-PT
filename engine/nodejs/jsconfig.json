@@ -10,8 +10,5 @@
     "types": ["node"],
     "baseUrl": "."
   },
-  "include": [
-    "src/utils",
-    "_tests/helpers"
-  ]
+  "include": ["src/utils", "_tests/helpers"]
 }

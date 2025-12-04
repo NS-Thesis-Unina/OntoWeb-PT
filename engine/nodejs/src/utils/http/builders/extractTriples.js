@@ -15,10 +15,7 @@ const {
   xmlLiteralFromParams,
   asXmlLiteral,
 } = require('../../sparql/format');
-const {
-  classifyRequestHeader,
-  classifyResponseHeader,
-} = require('../headers');
+const { classifyRequestHeader, classifyResponseHeader } = require('../headers');
 const {
   iriRequest,
   iriURI,
@@ -206,20 +203,16 @@ function extractTriplesForSingleRequest(p = {}) {
     `${uriIri} a <${EX}URI> .`,
     `${reqIri} <${EX}id> "${escapeStringLiteral(p.id)}" .`,
     `${reqIri} <${EX}uriRequest> ${uriIri} .`,
-    `${reqIri} <${EX}mthd> ${methodInd} .`,
+    `${reqIri} <${EX}mthd> ${methodInd} .`
   );
 
   // Optional request-level fields
   if (p.httpVersion) {
-    triples.push(
-      `${reqIri} <${EX}httpVersion> "${escapeStringLiteral(p.httpVersion)}" .`,
-    );
+    triples.push(`${reqIri} <${EX}httpVersion> "${escapeStringLiteral(p.httpVersion)}" .`);
   }
   if (p.bodyBase64) {
     triples.push(
-      `${reqIri} <${EX}body> "${escapeStringLiteral(
-        p.bodyBase64,
-      )}"^^<${CONTENT}ContentAsBase64> .`,
+      `${reqIri} <${EX}body> "${escapeStringLiteral(p.bodyBase64)}"^^<${CONTENT}ContentAsBase64> .`
     );
   }
 
@@ -229,9 +222,9 @@ function extractTriplesForSingleRequest(p = {}) {
     triples.push(
       `${connIri} a <${EX}Connection> .`,
       `${connIri} <${EX}connectionAuthority> "${escapeStringLiteral(
-        String(p.connection.authority),
+        String(p.connection.authority)
       )}" .`,
-      `${reqIri} <http://www.w3.org/2000/01/rdf-schema#seeAlso> ${connIri} .`,
+      `${reqIri} <http://www.w3.org/2000/01/rdf-schema#seeAlso> ${connIri} .`
     );
   }
 
@@ -239,44 +232,28 @@ function extractTriplesForSingleRequest(p = {}) {
   /** @type {Partial<NonNullable<BuilderRequestInput['uri']>>} */
   const u = p.uri || {};
   if (u.scheme) {
-    triples.push(
-      `${uriIri} <${EX}scheme> "${escapeStringLiteral(u.scheme)}" .`,
-    );
+    triples.push(`${uriIri} <${EX}scheme> "${escapeStringLiteral(u.scheme)}" .`);
   }
   if (u.authority) {
-    triples.push(
-      `${uriIri} <${EX}authority> "${escapeStringLiteral(u.authority)}" .`,
-    );
+    triples.push(`${uriIri} <${EX}authority> "${escapeStringLiteral(u.authority)}" .`);
   }
   if (u.path) {
-    triples.push(
-      `${uriIri} <${EX}path> "${escapeStringLiteral(u.path)}" .`,
-    );
+    triples.push(`${uriIri} <${EX}path> "${escapeStringLiteral(u.path)}" .`);
   }
   if (u.fragment) {
-    triples.push(
-      `${uriIri} <${EX}fragment> "${escapeStringLiteral(u.fragment)}" .`,
-    );
+    triples.push(`${uriIri} <${EX}fragment> "${escapeStringLiteral(u.fragment)}" .`);
   }
   if (u.full) {
-    triples.push(
-      `${uriIri} <${EX}uri> "${escapeStringLiteral(u.full)}" .`,
-    );
+    triples.push(`${uriIri} <${EX}uri> "${escapeStringLiteral(u.full)}" .`);
   }
 
   // Query representation (XMLLiteral)
   if (u.queryXml && String(u.queryXml).trim()) {
-    triples.push(
-      `${uriIri} <${EX}query> ${asXmlLiteral(String(u.queryXml))} .`,
-    );
+    triples.push(`${uriIri} <${EX}query> ${asXmlLiteral(String(u.queryXml))} .`);
   } else if (u.queryRaw && String(u.queryRaw).trim()) {
-    triples.push(
-      `${uriIri} <${EX}query> ${xmlLiteralFromQueryRaw(u.queryRaw)} .`,
-    );
+    triples.push(`${uriIri} <${EX}query> ${xmlLiteralFromQueryRaw(u.queryRaw)} .`);
   } else if (Array.isArray(u.params) && u.params.length > 0) {
-    triples.push(
-      `${uriIri} <${EX}query> ${xmlLiteralFromParams(u.params)} .`,
-    );
+    triples.push(`${uriIri} <${EX}query> ${xmlLiteralFromParams(u.params)} .`);
   }
 
   // Params
@@ -286,14 +263,12 @@ function extractTriplesForSingleRequest(p = {}) {
     triples.push(
       `${paramIri} a <${EX}Parameter> .`,
       `${paramIri} <${EX}nameParameter> "${escapeStringLiteral(
-        prm.name || '',
-      )}"^^<http://www.w3.org/2001/XMLSchema#string> .`,
+        prm.name || ''
+      )}"^^<http://www.w3.org/2001/XMLSchema#string> .`
     );
     if (prm.value !== undefined && prm.value !== null) {
       triples.push(
-        `${paramIri} <${EX}valueParameter> "${escapeStringLiteral(
-          String(prm.value),
-        )}" .`,
+        `${paramIri} <${EX}valueParameter> "${escapeStringLiteral(String(prm.value))}" .`
       );
     }
     triples.push(`${uriIri} <${EX}param> ${paramIri} .`);
@@ -307,15 +282,11 @@ function extractTriplesForSingleRequest(p = {}) {
     triples.push(
       `${hdrIri} a <${EX}${cls}> .`,
       `${hdrIri} <${EX}fieldName> "${escapeStringLiteral(
-        h?.name || '',
-      )}"^^<http://www.w3.org/2001/XMLSchema#string> .`,
+        h?.name || ''
+      )}"^^<http://www.w3.org/2001/XMLSchema#string> .`
     );
     if (h?.value !== undefined && h?.value !== null) {
-      triples.push(
-        `${hdrIri} <${EX}fieldValue> "${escapeStringLiteral(
-          String(h.value),
-        )}" .`,
-      );
+      triples.push(`${hdrIri} <${EX}fieldValue> "${escapeStringLiteral(String(h.value))}" .`);
     }
     triples.push(`${reqIri} <${EX}${prop}> ${hdrIri} .`);
   });
@@ -325,40 +296,26 @@ function extractTriplesForSingleRequest(p = {}) {
   if (r) {
     const resIri = `<${iriResponse(p.id)}>`;
     const scIri = `<${iriStatus(p.id)}>`;
-    triples.push(
-      `${resIri} a <${EX}Response> .`,
-      `${reqIri} <${EX}resp> ${resIri} .`,
-    );
+    triples.push(`${resIri} a <${EX}Response> .`, `${reqIri} <${EX}resp> ${resIri} .`);
     if (r.httpVersion) {
-      triples.push(
-        `${resIri} <${EX}httpVersion> "${escapeStringLiteral(
-          r.httpVersion,
-        )}" .`,
-      );
+      triples.push(`${resIri} <${EX}httpVersion> "${escapeStringLiteral(r.httpVersion)}" .`);
     }
     if (r.bodyBase64) {
       triples.push(
         `${resIri} <${EX}body> "${escapeStringLiteral(
-          r.bodyBase64,
-        )}"^^<${CONTENT}ContentAsBase64> .`,
+          r.bodyBase64
+        )}"^^<${CONTENT}ContentAsBase64> .`
       );
     }
     if (typeof r.status === 'number' || r.reason) {
-      triples.push(
-        `${scIri} a <${EX}StatusCodes> .`,
-        `${resIri} <${EX}sc> ${scIri} .`,
-      );
+      triples.push(`${scIri} a <${EX}StatusCodes> .`, `${resIri} <${EX}sc> ${scIri} .`);
       if (typeof r.status === 'number') {
         triples.push(
-          `${scIri} <${EX}statusCodeNumber> "${r.status}"^^<http://www.w3.org/2001/XMLSchema#int> .`,
+          `${scIri} <${EX}statusCodeNumber> "${r.status}"^^<http://www.w3.org/2001/XMLSchema#int> .`
         );
       }
       if (r.reason) {
-        triples.push(
-          `${scIri} <${EX}reasonPhrase> "${escapeStringLiteral(
-            r.reason,
-          )}" .`,
-        );
+        triples.push(`${scIri} <${EX}reasonPhrase> "${escapeStringLiteral(r.reason)}" .`);
       }
     }
 
@@ -371,34 +328,22 @@ function extractTriplesForSingleRequest(p = {}) {
       triples.push(
         `${hdrIri} a <${EX}${cls}> .`,
         `${hdrIri} <${EX}fieldName> "${escapeStringLiteral(
-          h?.name || '',
-        )}"^^<http://www.w3.org/2001/XMLSchema#string> .`,
+          h?.name || ''
+        )}"^^<http://www.w3.org/2001/XMLSchema#string> .`
       );
 
       if (h?.value !== undefined && h?.value !== null) {
         const rawValue = String(h.value);
-        triples.push(
-          `${hdrIri} <${EX}fieldValue> "${escapeStringLiteral(
-            rawValue,
-          )}" .`,
-        );
+        triples.push(`${hdrIri} <${EX}fieldValue> "${escapeStringLiteral(rawValue)}" .`);
 
         // Optional enrichment for Set-Cookie: extract cookieName / cookieDomain
         if (String(h?.name || '').toLowerCase() === 'set-cookie') {
           const { cookieName, cookieDomain } = parseSetCookieAttributes(rawValue);
           if (cookieName) {
-            triples.push(
-              `${hdrIri} <${EX}cookieName> "${escapeStringLiteral(
-                cookieName,
-              )}" .`,
-            );
+            triples.push(`${hdrIri} <${EX}cookieName> "${escapeStringLiteral(cookieName)}" .`);
           }
           if (cookieDomain) {
-            triples.push(
-              `${hdrIri} <${EX}cookieDomain> "${escapeStringLiteral(
-                cookieDomain,
-              )}" .`,
-            );
+            triples.push(`${hdrIri} <${EX}cookieDomain> "${escapeStringLiteral(cookieDomain)}" .`);
           }
         }
       }

@@ -71,7 +71,8 @@ function startRedisMonitor(connectionOpts, ns = 'redis:monitor', report) {
   redis.on('error', (err) => {
     const msg = String(err?.message || err);
     // Respect QUIET_REDIS_ERRORS=1 to silence extremely frequent network errors
-    if (process.env.QUIET_REDIS_ERRORS === '1' && /ECONNREFUSED|getaddrinfo|ETIMEDOUT/i.test(msg)) return;
+    if (process.env.QUIET_REDIS_ERRORS === '1' && /ECONNREFUSED|getaddrinfo|ETIMEDOUT/i.test(msg))
+      return;
     log.warn('Redis error', msg);
   });
 

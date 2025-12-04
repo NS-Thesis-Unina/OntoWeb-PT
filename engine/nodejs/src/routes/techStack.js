@@ -25,7 +25,26 @@ const {
 
 const log = makeLogger('api:techstack');
 
-// === POST /techstack/analyze ===
+/**
+ * POST /techstack/analyze
+ *
+ * Enqueue a tech stack analysis job.
+ *
+ * The input is typically produced by passive fingerprinting tools and scanners
+ * (e.g. Wappalyzer-like output, headers, cookies).
+ *
+ * Request body:
+ * - technologies   : detected technologies (frameworks, servers, plugins, etc.)
+ * - waf            : detected WAF / reverse proxy information
+ * - secureHeaders  : security-related HTTP headers
+ * - cookies        : cookie metadata (flags, lifetimes, scope...)
+ * - mainDomain     : primary domain under assessment
+ *
+ * Response:
+ * - 202 with the BullMQ job id and basic counts of input arrays
+ * - 400 on validation error (handled by celebrate)
+ * - 500 if the job cannot be enqueued
+ */
 router.post(
   '/analyze',
   celebrate({ [Segments.BODY]: techstackBodySchema }, celebrateOptions),
@@ -57,14 +76,21 @@ router.post(
       });
     } catch (err) {
       log.error('techstack enqueue failed', err?.message || err);
-      res
-        .status(500)
-        .json({ error: 'Enqueue failed', detail: String(err?.message || err) });
+      res.status(500).json({ error: 'Enqueue failed', detail: String(err?.message || err) });
     }
   }
 );
 
-// === GET /techstack/results/:jobId ===
+/**
+ * GET /techstack/results/:jobId
+ *
+ * Retrieve the status and result of a tech stack analysis job.
+ *
+ * Response:
+ * - 200 with job state, result and timestamps
+ * - 404 if the job does not exist
+ * - 500 on internal errors
+ */
 router.get(
   '/results/:jobId',
   celebrate({ [Segments.PARAMS]: jobIdParamSchema }, celebrateOptions),
@@ -101,17 +127,19 @@ router.get(
 );
 
 /**
- * Paginated list of TechstackScan findings detected by TechstackResolverInstance.
- * Returns only finding IDs (no details).
- *
  * GET /techstack/finding/list
+ *
+ * Paginated list of TechstackScan findings detected by the Techstack resolver.
+ * This endpoint only returns finding identifiers and summary information
+ * (no detailed evidence).
+ *
+ * Query parameters:
+ * - limit  : page size (default: 100)
+ * - offset : page offset (default: 0)
  */
 router.get(
   '/finding/list',
-  celebrate(
-    { [Segments.QUERY]: techstackFindingsListQuerySchema },
-    celebrateOptions
-  ),
+  celebrate({ [Segments.QUERY]: techstackFindingsListQuerySchema }, celebrateOptions),
   async (req, res) => {
     try {
       const { limit = '100', offset = '0' } = req.query;
@@ -160,17 +188,19 @@ router.get(
 );
 
 /**
- * Get detailed information for a single TechstackScan finding by id.
- * Aggregates scalar fields, software evidence, header evidence and cookie evidence.
- *
  * GET /techstack/finding/:id
+ *
+ * Retrieve detailed information for a single TechstackScan finding.
+ *
+ * The SPARQL query aggregates:
+ * - scalar fields (severity, rule id, description, etc.)
+ * - software evidence (detected technologies and versions)
+ * - header evidence (security-related HTTP headers)
+ * - cookie evidence (flags, lifetimes, attributes)
  */
 router.get(
   '/finding/:id',
-  celebrate(
-    { [Segments.PARAMS]: techstackFindingIdParamSchema },
-    celebrateOptions
-  ),
+  celebrate({ [Segments.PARAMS]: techstackFindingIdParamSchema }, celebrateOptions),
   async (req, res) => {
     try {
       const { id } = req.params; // raw id from URL (URN)

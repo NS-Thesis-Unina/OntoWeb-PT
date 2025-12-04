@@ -99,9 +99,7 @@ async function rateLimitedGet(url, config = {}) {
   if (nvdCallTimestamps.length >= limit) {
     const oldest = nvdCallTimestamps[0];
     const waitMs = NVD_WINDOW_MS - (now - oldest) + 100; // small safety margin
-    log.info(
-      `NVD rate limit reached (${nvdCallTimestamps.length}/${limit}), sleeping ${waitMs}ms`
-    );
+    log.info(`NVD rate limit reached (${nvdCallTimestamps.length}/${limit}), sleeping ${waitMs}ms`);
     await sleep(waitMs);
   }
 
@@ -151,9 +149,7 @@ async function lookupNvd(product, version = '') {
         if (!id) continue;
 
         const metrics = v.cve?.metrics || {};
-        const cvssV3 =
-          metrics.cvssMetricV31?.[0]?.cvssData ||
-          metrics.cvssMetricV30?.[0]?.cvssData;
+        const cvssV3 = metrics.cvssMetricV31?.[0]?.cvssData || metrics.cvssMetricV30?.[0]?.cvssData;
         const cvssV2 = metrics.cvssMetricV2?.[0]?.cvssData;
         const cvss = cvssV3 || cvssV2 || {};
         const score = cvss.baseScore || null;
@@ -226,8 +222,7 @@ function classifyHeaders(headers = []) {
         risk = 'HIGH';
         category = 'TransportSecurity';
         rule = 'missing_hsts';
-        remediation =
-          "Add header: Strict-Transport-Security: max-age=31536000; includeSubDomains";
+        remediation = 'Add header: Strict-Transport-Security: max-age=31536000; includeSubDomains';
         break;
 
       case 'content-security-policy':
@@ -235,8 +230,7 @@ function classifyHeaders(headers = []) {
         risk = 'HIGH';
         category = 'ContentSecurityPolicy';
         rule = 'missing_csp';
-        remediation =
-          "Add a strict CSP policy, e.g.: Content-Security-Policy: default-src 'self';";
+        remediation = "Add a strict CSP policy, e.g.: Content-Security-Policy: default-src 'self';";
         break;
 
       case 'x-frame-options':
@@ -251,16 +245,14 @@ function classifyHeaders(headers = []) {
         risk = 'MEDIUM';
         category = 'MimeSniffingProtection';
         rule = 'missing_x_content_type_options';
-        remediation =
-          'Add header: X-Content-Type-Options: nosniff to prevent MIME-type sniffing';
+        remediation = 'Add header: X-Content-Type-Options: nosniff to prevent MIME-type sniffing';
         break;
 
       case 'x-xss-protection':
         risk = 'LOW';
         category = 'LegacyXSSFilter';
         rule = 'deprecated_x_xss_protection';
-        remediation =
-          'Header obsolete: remove or replace with proper CSP configuration';
+        remediation = 'Header obsolete: remove or replace with proper CSP configuration';
         break;
 
       default:
@@ -548,11 +540,9 @@ async function resolveTechstack({
           severity,
           score: typeof cve.score === 'number' ? cve.score : null,
           category: 'TechnologyVulnerability',
-          message: `Technology ${name}${
-            version ? ' ' + version : ''
-          } has known vulnerability ${cve.id} (${severity}${
-            cve.score != null ? ', score ' + cve.score : ''
-          }).`,
+          message: `Technology ${name}${version ? ' ' + version : ''} has known vulnerability ${
+            cve.id
+          } (${severity}${cve.score != null ? ', score ' + cve.score : ''}).`,
           evidence: {
             type: 'Technology',
             name,
@@ -600,9 +590,7 @@ async function resolveTechstack({
         rule: issue.rule,
         severity,
         category: issue.category || 'CookieSecurity',
-        message:
-          issue.description ||
-          `Cookie ${cf.name} has issue ${issue.rule}.`,
+        message: issue.description || `Cookie ${cf.name} has issue ${issue.rule}.`,
         evidence: {
           type: 'Cookie',
           name: cf.name,
@@ -627,10 +615,7 @@ async function resolveTechstack({
     totalWaf: analyzedWaf.length,
     wafWithKnownCVE: analyzedWaf.filter((w) => w.hasKnownCVE).length,
     totalHeaderFindings: headerFindings.length,
-    totalCookieFindings: cookieFindings.reduce(
-      (acc, cf) => acc + cf.issues.length,
-      0
-    ),
+    totalCookieFindings: cookieFindings.reduce((acc, cf) => acc + cf.issues.length, 0),
     totalFindings,
   };
 

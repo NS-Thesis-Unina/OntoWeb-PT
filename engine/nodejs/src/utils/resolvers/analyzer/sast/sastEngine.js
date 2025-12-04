@@ -338,8 +338,7 @@ class sastEngine {
           const action = f.action || '';
           if (!action) return false;
           return (
-            (action && html.includes(action)) ||
-            (issue.snippet && issue.snippet.includes(action))
+            (action && html.includes(action)) || (issue.snippet && issue.snippet.includes(action))
           );
         });
 
@@ -353,9 +352,7 @@ class sastEngine {
           action: form?.action || null,
           method: form?.method || null,
           inputs: Array.isArray(form?.inputs)
-            ? form.inputs.map((i) =>
-                typeof i === 'string' ? i : i.name || i.tag || ''
-              )
+            ? form.inputs.map((i) => (typeof i === 'string' ? i : i.name || i.tag || ''))
             : [],
         };
       }
@@ -404,10 +401,7 @@ class sastEngine {
     ];
     const snippets = [];
     for (const attr of attrs) {
-      const re = new RegExp(
-        `\\b${attr}\\s*=\\s*"(.*?)"|\\b${attr}\\s*=\\s*'(.*?)'`,
-        'gi'
-      );
+      const re = new RegExp(`\\b${attr}\\s*=\\s*"(.*?)"|\\b${attr}\\s*=\\s*'(.*?)'`, 'gi');
       let match;
       while ((match = re.exec(htmlText))) {
         const inner = (match[1] || match[2] || '').trim();
@@ -428,19 +422,14 @@ class sastEngine {
     if (!code || !location || typeof location.start !== 'object') return '';
     const lines = code.split(/\r?\n/);
 
-    const startLoc = /** @type {{ line: number, column: number }} */ (
-      location.start
-    );
+    const startLoc = /** @type {{ line: number, column: number }} */ (location.start);
     const endLoc =
       location.end && typeof location.end === 'object'
         ? /** @type {{ line: number, column: number }} */ (location.end)
         : startLoc;
 
     const startLine = Math.max(0, (startLoc.line || 1) - 2);
-    const endLine = Math.min(
-      lines.length - 1,
-      (endLoc.line || startLoc.line || 1) + 1
-    );
+    const endLine = Math.min(lines.length - 1, (endLoc.line || startLoc.line || 1) + 1);
     const context = lines.slice(startLine, endLine + 1);
     return context.join('\n');
   }
@@ -457,10 +446,7 @@ class sastEngine {
     if (!htmlText || !location || typeof location.start !== 'number') return '';
 
     const startNum = /** @type {number} */ (location.start ?? 0);
-    const endNum =
-      typeof location.end === 'number'
-        ? location.end
-        : startNum;
+    const endNum = typeof location.end === 'number' ? location.end : startNum;
 
     const start = Math.max(0, startNum - 80);
     const end = Math.min(htmlText.length, endNum + 80);
@@ -554,8 +540,7 @@ class sastEngine {
 
     // SCRIPT
     if (contextVector.type === 'script') {
-      const idx =
-        typeof contextVector.index === 'number' ? contextVector.index : null;
+      const idx = typeof contextVector.index === 'number' ? contextVector.index : null;
       const script = idx != null ? scripts[idx] : null;
       const attributes = [];
       if (script?.src) attributes.push({ name: 'src', value: script.src });
@@ -573,10 +558,7 @@ class sastEngine {
     }
 
     // Inline handler or generic HTML context
-    if (
-      contextVector.type === 'html-inline-handler' ||
-      contextVector.type === 'html'
-    ) {
+    if (contextVector.type === 'html-inline-handler' || contextVector.type === 'html') {
       return {
         type: contextVector.type,
         tag: 'html',
@@ -607,15 +589,10 @@ class sastEngine {
     if (location) {
       if (typeof location.start === 'number') {
         const startNum = /** @type {number} */ (location.start ?? 0);
-        const endNum =
-          typeof location.end === 'number'
-            ? location.end
-            : startNum;
+        const endNum = typeof location.end === 'number' ? location.end : startNum;
         locPart = `off-${startNum}-${endNum}`;
       } else if (typeof location.start === 'object') {
-        const startLoc = /** @type {{ line: number, column: number }} */ (
-          location.start
-        );
+        const startLoc = /** @type {{ line: number, column: number }} */ (location.start);
         const endLoc =
           location.end && typeof location.end === 'object'
             ? /** @type {{ line: number, column: number }} */ (location.end)

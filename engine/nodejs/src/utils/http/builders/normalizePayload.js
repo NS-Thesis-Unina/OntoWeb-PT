@@ -40,9 +40,9 @@ function normalizeHttpRequestsPayload(payload) {
 
   if (payload && typeof payload === 'object') {
     // @ts-ignore - narrow structural check at runtime
-    if (Array.isArray((payload).items)) {
+    if (Array.isArray(payload.items)) {
       // @ts-ignore
-      return (payload).items;
+      return payload.items;
     }
     return [payload];
   }

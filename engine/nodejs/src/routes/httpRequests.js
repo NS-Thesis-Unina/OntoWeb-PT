@@ -5,16 +5,12 @@ const { celebrate, Segments } = require('celebrate');
 
 const { queueHttpRequests } = require('../queue');
 const {
-  httpBuilders: {
-    buildSelectRequests,
-    bindingsToRequestsJson,
-    buildSelectRequestsPaged,
-  },
+  httpBuilders: { buildSelectRequests, bindingsToRequestsJson, buildSelectRequestsPaged },
   findingBuilders: {
     buildSelectHttpFindingsPaged,
     bindingsToHttpFindingsList,
     bindingsToHttpFindingDetail,
-    buildSelectHttpFindingById
+    buildSelectHttpFindingById,
   },
   graphdb: { runSelect },
   makeLogger,
@@ -34,7 +30,32 @@ const {
 const log = makeLogger('api:http');
 
 /**
- * Ingest one or more HTTP requests (enqueue write job)
+ * POST /http-requests/ingest-http
+ *
+ * Ingest one or more HTTP requests and enqueue a write job.
+ *
+ * The payload can be:
+ * - a single request object
+ * - an array of request objects
+ * - { items: Request[] } wrapper
+ *
+ * Optional:
+ * - activateResolver: if true, enqueue an additional "http-resolver" job to
+ *   analyze the ingested traffic and generate findings.
+ *
+ * Response (202):
+ * {
+ *   resRequest: {
+ *     accepted: true,
+ *     jobId: <id>,
+ *     count: <number of ingested requests>
+ *   },
+ *   resResolver?: {
+ *     accepted: true,
+ *     jobId: <id>,
+ *     count: <number of analyzed requests>
+ *   }
+ * }
  */
 router.post(
   '/ingest-http',
@@ -42,42 +63,50 @@ router.post(
   async (req, res) => {
     try {
       const raw = req.body ?? {};
-      const list = Array.isArray(raw)
-        ? raw
-        : Array.isArray(raw.items)
-        ? raw.items
-        : [raw];
+      const list = Array.isArray(raw) ? raw : Array.isArray(raw.items) ? raw.items : [raw];
 
-      var objRes = {};
+      let objRes = {};
       const job = await queueHttpRequests.add('http-ingest', { payload: list });
       log.info('ingest-http enqueued', { jobId: job.id, count: list.length });
 
-      objRes = { resRequest: { accepted: true, jobId: job.id, count: list.length } };
+      objRes = {
+        resRequest: { accepted: true, jobId: job.id, count: list.length },
+      };
 
       if (raw?.activateResolver) {
         const jobRes = await queueHttpRequests.add('http-resolver', { list });
         objRes = {
           ...objRes,
-          resResolver: { accepted: true, jobId: jobRes.id, count: list.length },
+          resResolver: {
+            accepted: true,
+            jobId: jobRes.id,
+            count: list.length,
+          },
         };
-        log.info('http-resolver enqueued', { jobId: jobRes.id, count: list.length });
+        log.info('http-resolver enqueued', {
+          jobId: jobRes.id,
+          count: list.length,
+        });
       }
 
       res.status(202).json(objRes);
     } catch (err) {
       log.error('ingest-http enqueue failed', err?.message || err);
-      res
-        .status(500)
-        .json({ error: 'Enqueue failed', detail: String(err?.message || err) });
+      res.status(500).json({ error: 'Enqueue failed', detail: String(err?.message || err) });
     }
   }
 );
 
 /**
- * Get the status/result of an HTTP ingest job
+ * GET /http-requests/results/:jobId
+ *
+ * Retrieve the status and result of an HTTP job.
  * Mirrors /analyzer/results/:jobId but uses queueHttpRequests.
  *
- * GET /http/results/:jobId
+ * Response:
+ * - 200 with job status and return value
+ * - 404 if the job does not exist
+ * - 500 on internal errors
  */
 router.get(
   '/results/:jobId',
@@ -115,7 +144,17 @@ router.get(
 );
 
 /**
- * Paginated list — single GraphDB request (total + page ids + details)
+ * GET /http-requests/list
+ *
+ * Paginated list of HTTP requests.
+ *
+ * The underlying SPARQL query returns:
+ * - the total count (for pagination metadata)
+ * - page of request ids + detailed fields
+ *
+ * Query parameters:
+ * - limit, offset           : pagination
+ * - method, scheme, path... : optional filters applied at SPARQL level
  */
 router.get(
   '/list',
@@ -150,6 +189,7 @@ router.get(
       const data = await runSelect(sparql);
       const bindings = data.results?.bindings || [];
 
+      // Extract total from the first row that exposes ?total
       const total = (() => {
         for (const b of bindings) {
           const v = b?.total?.value;
@@ -158,6 +198,7 @@ router.get(
         return 0;
       })();
 
+      // Filter rows that actually represent HTTP request details
       const detailBindings = bindings.filter((b) => b?.id?.value);
 
       let items = [];
@@ -196,7 +237,10 @@ router.get(
 );
 
 /**
- * Get a single HTTP request by id — single GraphDB request
+ * GET /http-requests/:id
+ *
+ * Retrieve a single HTTP request by id.
+ * Uses a single SPARQL query to fetch the full representation.
  */
 router.get(
   '/:id',
@@ -213,10 +257,12 @@ router.get(
       const data = await runSelect(sparql);
       const json = bindingsToRequestsJson(data.results?.bindings || []);
       const item = (json.items || [])[0];
+
       if (!item) {
         log.info('get by id: not found', { id });
         return res.status(404).json({ error: 'Not found' });
       }
+
       log.info('get by id: ok', { id });
       res.json(item);
     } catch (err) {
@@ -230,17 +276,17 @@ router.get(
 );
 
 /**
- * Paginated list of HttpScan findings detected by HttpResolverInstance.
- * Returns only finding IDs (no details).
- *
  * GET /http-requests/finding/list
+ *
+ * Paginated list of HttpScan findings detected by the HTTP resolver.
+ * This endpoint only returns finding identifiers and summary metadata.
+ *
+ * Query parameters:
+ * - limit, offset : pagination
  */
 router.get(
   '/finding/list',
-  celebrate(
-    { [Segments.QUERY]: httpFindingsListQuerySchema },
-    celebrateOptions
-  ),
+  celebrate({ [Segments.QUERY]: httpFindingsListQuerySchema }, celebrateOptions),
   async (req, res) => {
     try {
       const { limit = '100', offset = '0' } = req.query;
@@ -289,17 +335,17 @@ router.get(
 );
 
 /**
- * Get detailed information for a single HttpScan finding by id.
- * Aggregates scalar fields and related HTTP entities.
- *
  * GET /http-requests/finding/:id
+ *
+ * Retrieve detailed information for a single HttpScan finding.
+ *
+ * The detail includes:
+ * - scalar attributes (severity, rule, evidence)
+ * - related HTTP entities (request, response, headers, etc.)
  */
 router.get(
   '/finding/:id',
-  celebrate(
-    { [Segments.PARAMS]: httpFindingIdParamSchema },
-    celebrateOptions
-  ),
+  celebrate({ [Segments.PARAMS]: httpFindingIdParamSchema }, celebrateOptions),
   async (req, res) => {
     try {
       const { id } = req.params; // raw id from URL

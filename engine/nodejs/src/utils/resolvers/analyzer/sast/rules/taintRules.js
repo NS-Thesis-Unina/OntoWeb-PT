@@ -148,10 +148,7 @@ function isDirectSource(node) {
   if (!node) return false;
   const docProps = ['cookie', 'URL', 'baseURI', 'referrer'];
   for (const prop of docProps) {
-    if (
-      matchesPath(node, ['document', prop]) ||
-      matchesPath(node, ['window', 'document', prop])
-    ) {
+    if (matchesPath(node, ['document', prop]) || matchesPath(node, ['window', 'document', prop])) {
       return true;
     }
   }
@@ -184,7 +181,8 @@ const Taint = {
       n.callee.type === 'MemberExpression' &&
       n.callee.object.name === 'document' &&
       n.callee.property.name === 'write',
-    (n) => n.type === 'CallExpression' && n.callee.type === 'Identifier' && n.callee.name === 'eval',
+    (n) =>
+      n.type === 'CallExpression' && n.callee.type === 'Identifier' && n.callee.name === 'eval',
     (n) =>
       n.type === 'AssignmentExpression' &&
       n.left.type === 'MemberExpression' &&
@@ -205,9 +203,7 @@ const Taint = {
         (n.left.type === 'MemberExpression' &&
           allLocPaths.some((path) => matchesPath(n.left, path)))),
     (n) =>
-      n.type === 'NewExpression' &&
-      n.callee.type === 'Identifier' &&
-      n.callee.name === 'Function',
+      n.type === 'NewExpression' && n.callee.type === 'Identifier' && n.callee.name === 'Function',
   ],
 
   sanitizers: [
@@ -241,7 +237,7 @@ const Taint = {
             const sinkFile = left.sourceFile || meta.file;
             const sinkLoc = left.loc;
             const sourceFile =
-            // @ts-ignore
+              // @ts-ignore
               taintedInfo.file || right.sourceFile || sinkFile || meta.file;
             const sourceLoc = taintedInfo.loc || right.loc;
 
@@ -298,7 +294,7 @@ const Taint = {
             const sinkFile = node.callee.sourceFile || meta.file;
             const sinkLoc = node.loc;
             const sourceFile =
-            // @ts-ignore
+              // @ts-ignore
               taintedInfo.file || arg?.sourceFile || sinkFile || meta.file;
             const sourceLoc = taintedInfo.loc || arg?.loc;
 

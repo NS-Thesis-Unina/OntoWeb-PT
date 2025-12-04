@@ -61,15 +61,15 @@ function bindingsToTechstackFindingDetail(bindings) {
     }
 
     // === Scalar fields ===
-    const resolver        = valueOf(row.resolver);
-    const vulnType        = valueOf(row.vulnType);
-    const severity        = valueOf(row.severity);
+    const resolver = valueOf(row.resolver);
+    const vulnType = valueOf(row.vulnType);
+    const severity = valueOf(row.severity);
     const findingCategory = valueOf(row.findingCategory);
-    const owaspCategory   = valueOf(row.owaspCategory);
-    const ruleId          = valueOf(row.ruleId);
-    const description     = valueOf(row.description);
-    const remediation     = valueOf(row.remediation);
-    const evidenceType    = valueOf(row.evidenceType);
+    const owaspCategory = valueOf(row.owaspCategory);
+    const ruleId = valueOf(row.ruleId);
+    const description = valueOf(row.description);
+    const remediation = valueOf(row.remediation);
+    const evidenceType = valueOf(row.evidenceType);
 
     if (resolver && !result.resolver) result.resolver = resolver;
     if (vulnType && !result.vulnerabilityType) result.vulnerabilityType = vulnType;
@@ -86,14 +86,14 @@ function bindingsToTechstackFindingDetail(bindings) {
     if (evidenceType && !result.evidenceType) result.evidenceType = evidenceType;
 
     // === Software evidence (Technology / WAF) ===
-    const technologyName     = valueOf(row.technologyName);
-    const technologyVersion  = valueOf(row.technologyVersion);
-    const cpeLiteral         = valueOf(row.cpeLiteral);
-    const cveIri             = valueOf(row.cveIri);
-    const cveId              = valueOf(row.cveId);
-    const cvssScore          = valueOf(row.cvssScore);
-    const cvssSeverity       = valueOf(row.cvssSeverity);
-    const cpeLabel           = valueOf(row.cpeLabel);
+    const technologyName = valueOf(row.technologyName);
+    const technologyVersion = valueOf(row.technologyVersion);
+    const cpeLiteral = valueOf(row.cpeLiteral);
+    const cveIri = valueOf(row.cveIri);
+    const cveId = valueOf(row.cveId);
+    const cvssScore = valueOf(row.cvssScore);
+    const cvssSeverity = valueOf(row.cvssSeverity);
+    const cpeLabel = valueOf(row.cpeLabel);
 
     if (evidenceType === 'Technology' || evidenceType === 'WAF') {
       result.software ||= {};
@@ -126,9 +126,9 @@ function bindingsToTechstackFindingDetail(bindings) {
     }
 
     // === Header evidence ===
-    const headerName       = valueOf(row.headerName);
-    const headerFieldName  = valueOf(row.headerFieldName);
-    const headerUrl        = valueOf(row.headerUrl);
+    const headerName = valueOf(row.headerName);
+    const headerFieldName = valueOf(row.headerFieldName);
+    const headerUrl = valueOf(row.headerUrl);
 
     if (evidenceType === 'Header') {
       result.header ||= { urls: [] };
@@ -144,13 +144,13 @@ function bindingsToTechstackFindingDetail(bindings) {
     }
 
     // === Cookie evidence ===
-    const cookieIri        = valueOf(row.cookieIri);
-    const cookieName       = valueOf(row.cookieName);
-    const cookieDomain     = valueOf(row.cookieDomain);
-    const cookiePath       = valueOf(row.cookiePath);
-    const cookieSecure     = valueOf(row.cookieSecure);
-    const cookieHttpOnly   = valueOf(row.cookieHttpOnly);
-    const cookieSameSite   = valueOf(row.cookieSameSite);
+    const cookieIri = valueOf(row.cookieIri);
+    const cookieName = valueOf(row.cookieName);
+    const cookieDomain = valueOf(row.cookieDomain);
+    const cookiePath = valueOf(row.cookiePath);
+    const cookieSecure = valueOf(row.cookieSecure);
+    const cookieHttpOnly = valueOf(row.cookieHttpOnly);
+    const cookieSameSite = valueOf(row.cookieSameSite);
     const cookieExpiration = valueOf(row.cookieExpiration);
 
     if (evidenceType === 'Cookie' && cookieIri) {

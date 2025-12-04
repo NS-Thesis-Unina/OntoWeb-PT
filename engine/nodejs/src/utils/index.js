@@ -75,7 +75,7 @@ module.exports = {
   // GraphDB (Select/Update)
   graphdb: require('./graphdb/client'),
 
-  // Resolvers (new namespace)
+  // Resolvers
   resolvers: {
     techstack: require('./resolvers/techstack/resolveTechstack'),
     analyzer: require('./resolvers/analyzer/resolveAnalyzer'),

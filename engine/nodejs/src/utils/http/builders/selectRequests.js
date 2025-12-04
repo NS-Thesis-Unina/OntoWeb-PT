@@ -61,17 +61,22 @@ const { escapeStr } = require('../../strings/escape');
 function buildSelectRequests({ ids = [], filters = {}, limit = 50, offset = 0 } = {}) {
   const { method, scheme, authority, path, headerName, headerValue, text } = filters || {};
 
-  const idFilters = Array.isArray(ids) && ids.length
-    ? `VALUES ?idVal { ${ids.map(id => `"${escapeStr(id)}"`).join(' ')} }`
-    : '';
+  const idFilters =
+    Array.isArray(ids) && ids.length
+      ? `VALUES ?idVal { ${ids.map((id) => `"${escapeStr(id)}"`).join(' ')} }`
+      : '';
 
   const whereFilters = [];
-  if (method)      whereFilters.push(`FILTER(ucase(str(?methodName)) = "${escapeStr(String(method).toUpperCase())}")`);
-  if (scheme)      whereFilters.push(`FILTER(str(?scheme) = "${escapeStr(scheme)}")`);
-  if (authority)   whereFilters.push(`FILTER(str(?authority) = "${escapeStr(authority)}")`);
-  if (path)        whereFilters.push(`FILTER(str(?path) = "${escapeStr(path)}")`);
-  if (text)        whereFilters.push(`FILTER(CONTAINS(str(?uriFull), "${escapeStr(text)}"))`);
-  if (headerName)  whereFilters.push(`FILTER(lcase(str(?hdrName)) = "${escapeStr(headerName.toLowerCase())}")`);
+  if (method)
+    whereFilters.push(
+      `FILTER(ucase(str(?methodName)) = "${escapeStr(String(method).toUpperCase())}")`
+    );
+  if (scheme) whereFilters.push(`FILTER(str(?scheme) = "${escapeStr(scheme)}")`);
+  if (authority) whereFilters.push(`FILTER(str(?authority) = "${escapeStr(authority)}")`);
+  if (path) whereFilters.push(`FILTER(str(?path) = "${escapeStr(path)}")`);
+  if (text) whereFilters.push(`FILTER(CONTAINS(str(?uriFull), "${escapeStr(text)}"))`);
+  if (headerName)
+    whereFilters.push(`FILTER(lcase(str(?hdrName)) = "${escapeStr(headerName.toLowerCase())}")`);
   if (headerValue) whereFilters.push(`FILTER(str(?hdrValue) = "${escapeStr(headerValue)}")`);
 
   const lim = sanitizeLimit(limit, 50);

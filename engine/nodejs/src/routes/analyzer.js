@@ -1,4 +1,3 @@
-// src/routes/analyzer.js
 const express = require('express');
 const router = express.Router();
 
@@ -13,7 +12,7 @@ const {
     bindingsToAnalyzerFindingDetail,
   },
   graphdb: { runSelect },
-    validators: {
+  validators: {
     analyzer: {
       analyzerBodySchema,
       jobIdParamSchema,
@@ -26,7 +25,24 @@ const {
 
 const log = makeLogger('api:analyzer');
 
-// === POST /analyzer/analyze ===
+/**
+ * POST /analyzer/analyze
+ *
+ * Enqueue a SAST/DOM/HTML analysis job.
+ *
+ * Request body:
+ * - url             : page URL (used for context and correlation)
+ * - html            : raw HTML of the page
+ * - scripts         : array of script descriptors
+ * - forms           : array of form descriptors
+ * - iframes         : array of iframe descriptors
+ * - includeSnippets : whether to include code snippets in the analysis
+ *
+ * Response:
+ * - 202 Accepted with a BullMQ job id
+ * - 400 if validation fails (handled by celebrate)
+ * - 500 if the job cannot be enqueued
+ */
 router.post(
   '/analyze',
   celebrate({ [Segments.BODY]: analyzerBodySchema }, celebrateOptions),
@@ -61,14 +77,21 @@ router.post(
       });
     } catch (err) {
       log.error('sast enqueue failed', err?.message || err);
-      res
-        .status(500)
-        .json({ error: 'Enqueue failed', detail: String(err?.message || err) });
+      res.status(500).json({ error: 'Enqueue failed', detail: String(err?.message || err) });
     }
   }
 );
 
-// === GET /analyzer/results/:jobId ===
+/**
+ * GET /analyzer/results/:jobId
+ *
+ * Retrieve the status and result of a previously enqueued analyzer job.
+ *
+ * Response:
+ * - 200 with job state, result and timestamps
+ * - 404 if the job does not exist
+ * - 500 on internal errors
+ */
 router.get(
   '/results/:jobId',
   celebrate({ [Segments.PARAMS]: jobIdParamSchema }, celebrateOptions),
@@ -105,17 +128,19 @@ router.get(
 );
 
 /**
- * Paginated list of AnalyzerScan findings detected by AnalyzerResolverInstance.
- * Returns only finding IDs (no details).
- *
  * GET /analyzer/finding/list
+ *
+ * Paginated list of AnalyzerScan findings created by the analyzer worker.
+ * This endpoint only returns finding identifiers and summary information, not
+ * the full HTML context.
+ *
+ * Query parameters:
+ * - limit  : page size (default: 100)
+ * - offset : page offset (default: 0)
  */
 router.get(
   '/finding/list',
-  celebrate(
-  { [Segments.QUERY]: analyzerFindingsListQuerySchema },
-  celebrateOptions
-  ),
+  celebrate({ [Segments.QUERY]: analyzerFindingsListQuerySchema }, celebrateOptions),
   async (req, res) => {
     try {
       const { limit = '100', offset = '0' } = req.query;
@@ -164,17 +189,18 @@ router.get(
 );
 
 /**
- * Get detailed information for a single AnalyzerScan finding by id.
- * Aggregates scalar fields, context and full HTML reference (root + nested tags).
- *
  * GET /analyzer/finding/:id
+ *
+ * Retrieve detailed information for a single AnalyzerScan finding.
+ *
+ * The SPARQL query aggregates:
+ * - scalar fields (severity, category, etc.)
+ * - contextual information (location in the DOM, related assets)
+ * - full HTML reference (root + nested tags, when available)
  */
 router.get(
   '/finding/:id',
-  celebrate(
-    { [Segments.PARAMS]: analyzerFindingIdParamSchema },
-    celebrateOptions
-  ),
+  celebrate({ [Segments.PARAMS]: analyzerFindingIdParamSchema }, celebrateOptions),
   async (req, res) => {
     try {
       const { id } = req.params; // raw id from URL (URN)
