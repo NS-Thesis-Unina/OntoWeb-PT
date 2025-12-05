@@ -1,0 +1,21 @@
+---
+config:
+  theme: mc
+  layout: dagre
+---
+flowchart LR
+  subgraph Client["Ambiente client"]
+    BrowserExt["Estensione browser"]
+    Dashboard["Dashboard web"]
+    ZshPlugin["Plugin zsh"]
+    Disk["Disco locale"]
+  end
+
+  EngineEndpoint["Engine / Tool (endpoint API)"]
+
+  ZshPlugin -- Genera PCAP e TLS keys --> Disk
+  Dashboard -- Seleziona PCAP e TLS keys --> Disk
+
+  BrowserExt -- Invia risultati scansioni --> EngineEndpoint
+  Dashboard -- API HTTP e WebSocket --> EngineEndpoint
+  Dashboard -- Upload PCAP e TLS keys --> EngineEndpoint

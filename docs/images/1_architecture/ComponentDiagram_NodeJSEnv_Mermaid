@@ -1,0 +1,27 @@
+---
+config:
+  theme: mc
+  layout: dagre
+---
+flowchart LR
+  ClientEnv["Ambiente client"]
+  Nginx["Nginx reverse proxy"]
+
+  subgraph NodeEnv["Ambiente Node.js"]
+    NodeAPI["node-api (API Express + WebSocket)"]
+    NodeWorker["node-worker (Job worker)"]
+  end
+
+  Redis["Redis (BullMQ code)"]
+  GraphDB["GraphDB (SPARQL endpoint)"]
+
+  ClientEnv -- HTTP e WebSocket --> Nginx
+  Nginx -- Proxy HTTP e WS --> NodeAPI
+
+  NodeAPI -- Enqueue job --> Redis
+  NodeWorker -- Consume job --> Redis
+
+  NodeAPI -- SPARQL read --> GraphDB
+  NodeWorker -- SPARQL write findings --> GraphDB
+
+  NodeWorker -- Log e stato job --> NodeAPI

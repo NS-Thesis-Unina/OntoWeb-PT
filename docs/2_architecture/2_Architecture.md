@@ -2,15 +2,13 @@
 
 ---
 
-## Indice
-
 1. [Client Environment](./2_1_ClientEnv.md)
    
    1. [Extension](./2_1_ClientEnv/2_1_1_Extension.md)
    
    2. [Dashboard](./2_1_ClientEnv/2_1_2_Dashboard.md)
    
-   3. [ZSHPlugin](./2_1_ClientEnv/2_1_3_ZSHPlugin.md)
+   3. [ZSH Plugin](./2_1_ClientEnv/2_1_3_ZSHPlugin.md)
 
 2. [Engine/Tool](./2_2_Engine_Tool.md)
    
@@ -30,7 +28,7 @@
 
 In questa sezione si descrive come OntoWeb-PT è strutturato internamente e come i diversi componenti cooperano per supportare il penetration tester nelle attività di analisi.
 
-Dopo la vista black-box fornita nell’Overview, questa sezione adotta una prospettiva grey-box: esplicita la suddivisione in sottosistemi, le loro responsabilità principali e le modalità con cui si scambiano dati e comandi.
+Dopo la vista black-box fornita nell’[Overview](../1_Overview.md), questa sezione adotta una prospettiva grey-box: esplicita la suddivisione in sottosistemi, le loro responsabilità principali e le modalità con cui si scambiano dati e comandi.
 
 L’architettura è organizzata in due macro-aree:
 
