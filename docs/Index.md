@@ -7,6 +7,12 @@
    1. [Client Environment](./2_architecture/2_1_ClientEnv.md)
       
       1. [Extension](./2_architecture/2_1_ClientEnv/2_1_1_Extension.md)
+         
+         1. [Analyzer](./2_architecture/2_1_ClientEnv/2_1_1_Extension/2_1_1_1_Analyzer.md)
+         
+         2. [Techstack](./2_architecture/2_1_ClientEnv/2_1_1_Extension/2_1_1_3_Techstack.md)
+         
+         3. [Interceptor](./2_architecture/2_1_ClientEnv/2_1_1_Extension/2_1_1_2_Interceptor.md)
       
       2. [Dashboard](./2_architecture/2_1_ClientEnv/2_1_2_Dashboard.md)
       
