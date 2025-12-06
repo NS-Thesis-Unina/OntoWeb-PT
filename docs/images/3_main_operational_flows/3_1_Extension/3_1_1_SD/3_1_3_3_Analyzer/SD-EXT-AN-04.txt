@@ -1,0 +1,85 @@
+sequenceDiagram
+    actor User as Utente
+    participant UI as Analyzer UI (Analyze Wizard)
+    participant Controller as AnalyzeController
+    participant ToolState as ToolStatusService
+    participant Lock as LockService
+    participant Store as Local Storage
+    participant Backend as Backend Tool
+    participant Jobs as JobMonitor
+
+    %% Ingresso nel wizard Analyze
+    User ->> UI: Naviga in "Analyzer → Analyze"
+    UI ->> Controller: initAnalyzeView(mode)
+    Controller ->> ToolState: checkToolStatus()
+    ToolState -->> Controller: status (On/Off)
+    Controller ->> Lock: checkScanLock()
+    Lock -->> Controller: lockInfo (free/owned)
+
+    alt Tool On e nessun lock blocca Analyze
+        Controller -->> UI: enableWizardNavigation()
+    else Tool Off o lock attivo
+        Controller -->> UI: disableWizardNavigation()
+        Controller -->> UI: showPreconditionWarning(status, lockInfo)
+    end
+
+    %% Step di selezione dati (One-Time o Runtime)
+    User ->> UI: Clic su "Continue" dal primo step
+    UI ->> Controller: loadSelectableData(mode)
+    alt mode = One-Time
+        Controller ->> Store: getOneTimeSnapshotsForAnalyze()
+        Store -->> Controller: oneTimeList
+        Controller -->> UI: showOneTimeSelection(oneTimeList)
+    else mode = Runtime
+        Controller ->> Store: getRuntimeRunsForAnalyze()
+        Store -->> Controller: runtimeRuns
+        Controller -->> UI: showRuntimeRunsSelection(runtimeRuns)
+        %% Step successivi: selezione pagina e snapshot (gestiti da UI + Controller + Store)
+    end
+
+    %% Selezione finale dello snapshot
+    User ->> UI: Seleziona snapshot (One-Time o da run runtime)
+    UI -->> User: Mostra preview step successivo
+    User ->> UI: Clic su "Continue"
+    UI ->> Controller: loadSnapshotPreview(selectedSnapshotId)
+    Controller ->> Store: getSnapshotData(selectedSnapshotId)
+    Store -->> Controller: snapshotData
+    Controller -->> UI: showSnapshotPreview(snapshotData)
+
+    %% Invio al backend
+    User ->> UI: Clic su "Send Scan"
+    UI ->> Controller: sendSnapshotToBackend(snapshotData, mode)
+
+    Controller ->> ToolState: checkToolStatus()
+    ToolState -->> Controller: status
+    Controller ->> Lock: checkScanLock()
+    Lock -->> Controller: lockInfo
+
+    alt Tool On e nessun lock blocca Analyze
+        Controller ->> Backend: enqueueAnalyzeJob(snapshotData, mode)
+        Backend -->> Controller: jobIds o errore
+
+        alt Job accettati
+            Controller -->> UI: showNotification("Job accepted")
+            Controller -->> UI: openJobSummariesDialog()
+            Controller ->> Jobs: startMonitoring(jobIds, mode)
+            loop Polling / eventi backend
+                Jobs ->> Backend: getJobsStatus(jobIds)
+                Backend -->> Jobs: jobsStatus
+                Jobs -->> UI: updateJobSummaries(jobsStatus)
+            end
+            Jobs -->> UI: notifyAllJobsCompletedOrFailed()
+            UI ->> User: Mostra stato finale job
+        else Errore invio job
+            Controller -->> UI: showError("Backend non ha accettato il job")
+        end
+    else Precondizioni non soddisfatte
+        Controller -->> UI: showPreconditionWarning(status, lockInfo)
+        Controller -->> UI: keepSendDisabled()
+    end
+
+    %% Reset del wizard dopo i job
+    User ->> UI: Clic su "OK" nel Job Summaries
+    UI ->> Jobs: stopMonitoring()
+    UI ->> Controller: resetAnalyzeWizard()
+    Controller -->> UI: showInitialAnalyzeStep()

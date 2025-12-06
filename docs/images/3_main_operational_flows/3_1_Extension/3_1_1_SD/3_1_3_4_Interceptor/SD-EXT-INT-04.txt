@@ -1,0 +1,67 @@
+sequenceDiagram
+    actor User
+    participant PopupUI as Popup / Interceptor UI (Send to ontology)
+    participant Wizard as Interceptor Ontology Wizard Controller
+    participant ToolState as Tool State Service
+    participant LockService as Global Lock Service
+    participant Storage as Storage Service
+    participant DetailsDialog as Dialog Dettaglio Richiesta
+
+    User->>PopupUI: Seleziona "Interceptor → Send to ontology"
+    PopupUI->>Wizard: initWizard()
+    Wizard->>ToolState: getToolStatus()
+    Wizard->>LockService: checkLock()
+
+    alt Tool On e lock libero
+        ToolState-->>Wizard: TOOL_ON
+        LockService-->>Wizard: lockFree
+        Wizard-->>PopupUI: abilita pulsante "Continue" nello step introduttivo
+    else Tool Off o lock occupato
+        ToolState-->>Wizard: TOOL_OFF (o errore)
+        LockService-->>Wizard: lockBusy(owner)
+        Wizard-->>PopupUI: mostra banner di blocco + disabilita avanzamento
+    end
+
+    opt Step 2 - Scelta scansione
+        User->>PopupUI: Click "Continue" (Step 1 → Step 2)
+        PopupUI->>Wizard: enterStep2_chooseScan()
+        Wizard->>Storage: loadInterceptorRuns()
+        Storage-->>Wizard: runsIndex[]
+        Wizard-->>PopupUI: mostra elenco scansioni (start/stop, pagesCount, totalEvents, totalBytes)
+        User->>PopupUI: Seleziona una scansione
+        PopupUI-->>Wizard: scanSelected(runId)
+    end
+
+    opt Step 3 - Scelta website
+        User->>PopupUI: Click "Continue" (Step 2 → Step 3)
+        PopupUI->>Wizard: enterStep3_chooseWebsite(runId)
+        Wizard->>Storage: loadWebsites(runId)
+        Storage-->>Wizard: websitesList(pageUrl, requestsCount)
+        Wizard-->>PopupUI: mostra elenco pagine/siti
+        User->>PopupUI: Seleziona un website
+        PopupUI-->>Wizard: websiteSelected(pageId)
+    end
+
+    opt Step 4 - Selezione richieste
+        User->>PopupUI: Click "Continue" (Step 3 → Step 4)
+        PopupUI->>Wizard: enterStep4_selectRequests(runId, pageId)
+        Wizard->>Storage: loadRequestsForPage(runId, pageId)
+        Storage-->>Wizard: requestsList
+        Wizard-->>PopupUI: mostra griglia richieste (Method, URL, Status, Status Text, Content-Type)
+
+        loop Utente seleziona/analizza richieste
+            User->>PopupUI: Seleziona/deseleziona richieste da includere
+            PopupUI-->>Wizard: updateSelection(requestIds[])
+
+            opt Ispezione dettaglio richiesta
+                User->>PopupUI: Click "Show request/response details"
+                PopupUI->>Wizard: openRequestDetails(requestId)
+                Wizard->>Storage: loadRequestDetails(requestId)
+                Storage-->>Wizard: requestDetails
+                Wizard-->>DetailsDialog: open(requestDetails)
+                User->>DetailsDialog: Close()
+            end
+        end
+    end
+
+    Note over PopupUI,Wizard: Quando almeno una richiesta è selezionata,<br/>il pulsante "Continue" verso lo Step 5 viene abilitato.

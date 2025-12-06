@@ -1,0 +1,45 @@
+sequenceDiagram
+    actor User
+    participant PopupUI as Popup / Interceptor UI (Runtime Scan)
+    participant IntController as Interceptor Runtime Controller
+    participant LockService as Global Lock Service
+    participant CaptureEngine as Interceptor Capture Engine (bg script)
+    participant Storage as Storage Service
+
+    User->>PopupUI: Seleziona "Interceptor → Runtime Scan"
+    PopupUI->>IntController: initRuntimeView()
+    IntController-->>PopupUI: stato corrente (RUNNING/STOPPED, contatori)
+
+    alt Lock libero e sessione STOPPED
+        User->>PopupUI: Click "Start interceptor"
+        PopupUI->>IntController: startRuntime(tabId)
+        IntController->>LockService: acquire("INTERCEPTOR_RUNTIME")
+        alt Lock concesso
+            LockService-->>IntController: lockGranted
+            IntController->>CaptureEngine: startCapture(tabId)
+            CaptureEngine-->>IntController: captureStarted(sessionId)
+            IntController-->>PopupUI: stato RUNNING + contatori azzerati
+
+            loop Durante la sessione
+                CaptureEngine-->>IntController: onCapturedEvent(meta, sizes)
+                IntController->>Storage: appendEvent(sessionId, meta, sizes)
+                IntController-->>PopupUI: updateCounters(pagine, eventi, bytes)
+            end
+        else Lock occupato
+            LockService-->>IntController: lockDenied(owner)
+            IntController-->>PopupUI: mostra errore "Scan in corso" (owner)
+        end
+    else Sessione già RUNNING (popup riaperta)
+        Note over PopupUI,IntController: La vista mostra immediatamente lo stato RUNNING<br/>e i contatori live senza riavviare la cattura.
+    end
+
+    opt Arresto sessione
+        User->>PopupUI: Click "Stop interceptor"
+        PopupUI->>IntController: stopRuntime()
+        IntController->>CaptureEngine: stopCapture(sessionId)
+        CaptureEngine-->>IntController: captureStopped(finalData)
+        IntController->>Storage: saveRun(finalData)
+        IntController->>LockService: release("INTERCEPTOR_RUNTIME")
+        LockService-->>IntController: lockReleased
+        IntController-->>PopupUI: stato STOPPED + riepilogo run (pagine, eventi, bytes)
+    end

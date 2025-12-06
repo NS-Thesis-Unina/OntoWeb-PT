@@ -1,0 +1,50 @@
+sequenceDiagram
+    actor User as Utente
+    participant UI as Analyzer UI (One-Time)
+    participant Controller as OneTimeScanController
+    participant Lock as LockService
+    participant Tabs as TabService
+    participant Scanner as Content Scanner
+    participant Store as Local Storage
+
+    User ->> UI: Clic su "One-Time Scan"
+    UI ->> Controller: initOneTimeView()
+    Controller ->> Store: loadLastOneTimeResultPerContext()
+    Store -->> Controller: lastResult? (per tab / sessione / locale)
+    alt Risultato trovato
+        Controller -->> UI: showResult(lastResult) + banner origine
+    else Nessun risultato
+        Controller -->> UI: showEmptyState()
+    end
+
+    User ->> UI: Clic su "Scan current tab"
+    UI ->> Controller: requestOneTimeScan()
+
+    Controller ->> Lock: acquire("Analyzer One-Time")
+    alt Lock disponibile o già posseduto da Analyzer One-Time
+        Lock -->> Controller: granted
+        Controller ->> Tabs: getActiveTab()
+        Tabs -->> Controller: tabId, url oppure errore
+
+        alt Tab attiva disponibile
+            Controller ->> Scanner: runOneTimeScan(tabId, url)
+            Scanner -->> Controller: scanResult o errore
+
+            alt Scan OK
+                Controller ->> Store: saveOneTimeResult(scanResult, contesti)
+                Store -->> Controller: ok / warning
+                Controller -->> UI: showResult(scanResult)
+                Controller -->> UI: showNotification("Scan completed")
+            else Errore durante la scan
+                Controller -->> UI: showError("Errore nella scansione")
+            end
+        else Nessuna tab attiva
+            Controller -->> UI: showError("Nessuna scheda attiva")
+        end
+
+        Controller ->> Lock: release("Analyzer One-Time")
+    else Lock occupato da altro modulo
+        Lock -->> Controller: denied(ownerLabel)
+        Controller -->> UI: disableScanButton()
+        Controller -->> UI: showLockMessage("Scan in corso: " + ownerLabel)
+    end

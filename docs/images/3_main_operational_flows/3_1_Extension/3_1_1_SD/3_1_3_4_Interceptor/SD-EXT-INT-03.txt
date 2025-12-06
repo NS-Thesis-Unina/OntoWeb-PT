@@ -1,0 +1,74 @@
+sequenceDiagram
+    actor User
+    participant PopupUI as Popup / Interceptor UI (Archive)
+    participant IntController as Interceptor Controller
+    participant Storage as Storage Service
+
+    User->>PopupUI: Seleziona "Interceptor → Archive"
+    PopupUI->>IntController: loadArchiveIndex()
+    IntController->>Storage: listRuns()
+
+    alt Archivio con sessioni
+        Storage-->>IntController: runsIndex[]
+        IntController-->>PopupUI: mostra elenco sessioni (start/stop, pages, events, bytes)
+    else Nessuna sessione salvata
+        Storage-->>IntController: emptyList
+        IntController-->>PopupUI: mostra messaggio "No runtime runs."
+    else Errore di storage
+        Storage-->>IntController: error
+        IntController-->>PopupUI: mostra errore + pulsante "Retry"
+    end
+
+    opt Aggiornamento automatico dopo un nuovo run
+        IntController-->>PopupUI: onArchiveUpdated(newIndex)
+        PopupUI->>PopupUI: aggiorna elenco sessioni
+    end
+
+    opt Refresh manuale archivio
+        User->>PopupUI: Click "Refresh"
+        PopupUI->>IntController: reloadArchiveIndex()
+        IntController->>Storage: listRuns()
+        Storage-->>IntController: runsIndex[]
+        IntController-->>PopupUI: aggiorna elenco + notifica esito
+    end
+
+    opt Apertura dettagli di una sessione
+        User->>PopupUI: Espande una sessione
+        PopupUI->>IntController: loadRunDetails(runId)
+        IntController->>Storage: loadRun(runId)
+        alt Run caricato
+            Storage-->>IntController: runData
+            IntController-->>PopupUI: mostra dettagli (pagine, eventi, tabella richieste)
+        else Errore nel caricamento run
+            Storage-->>IntController: error
+            IntController-->>PopupUI: mostra errore + pulsante "Retry"
+        end
+    end
+
+    opt Cancellazione singola
+        User->>PopupUI: Click "Delete Scan" su una sessione
+        PopupUI->>IntController: requestDeleteRun(runId)
+        IntController->>Storage: deleteRun(runId)
+        alt Cancellazione OK
+            Storage-->>IntController: deleteOk
+            IntController->>Storage: listRuns()
+            Storage-->>IntController: runsIndex[]
+            IntController-->>PopupUI: aggiorna elenco + notifica conferma
+        else Errore in cancellazione
+            Storage-->>IntController: error
+            IntController-->>PopupUI: mostra errore "Error deleting scan from storage."
+        end
+    end
+
+    opt Cancellazione massiva
+        User->>PopupUI: Click "Delete All Scans"
+        PopupUI->>IntController: requestDeleteAllRuns()
+        IntController->>Storage: deleteAllRuns()
+        alt Wipe OK
+            Storage-->>IntController: deleteAllOk
+            IntController-->>PopupUI: mostra elenco vuoto + notifica conferma
+        else Errore nel wipe
+            Storage-->>IntController: error
+            IntController-->>PopupUI: mostra errore "Error deleting scans from storage."
+        end
+    end

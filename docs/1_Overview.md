@@ -1,4 +1,4 @@
-### Obiettivo
+# Obiettivo
 
 L’obiettivo del sistema OntoWeb-PT è supportare il penetration tester nell’analisi delle vulnerabilità di applicazioni web, fornendo un unico punto di raccolta, normalizzazione e correlazione delle evidenze raccolte durante le attività di test.
 
@@ -140,7 +140,7 @@ In pratica, OntoWeb-PT viene utilizzato come:
 
 #### Descrizione dei componenti (black-box)
 
-![ComponentDiagram](./images/overview/ComponentDiagram_Overview.png)
+![ComponentDiagram](./images/1_overview/ComponentDiagram_Overview.png)
 
 - **Estensione browser (Techstack / Analyzer / Interceptor)**  
   Componente lato client usato dal penetration tester durante la navigazione.
@@ -154,7 +154,7 @@ In pratica, OntoWeb-PT viene utilizzato come:
 - **Plugin zsh**  
   Strumento da linea di comando che:
   
-  - esegue la navigazione all’interno di un namespace temporaneo,
+  - esegue la navigazione all’in
   
   - cattura il traffico in un file `.pcap` e le chiavi TLS in un log,
 

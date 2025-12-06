@@ -1,0 +1,26 @@
+sequenceDiagram
+    actor U as Utente
+    participant P as Vista di scansione (es. Analyzer One-Time)
+    participant L as Servizio Lock Globale
+    participant B as Backend Tool/Engine
+    participant N as Notifiche Globali
+
+    U->>P: Click su "Start scan"
+    P->>L: acquireLock("Analyzer One-Time")
+    
+    alt Lock disponibile o già posseduto dal modulo
+        L-->>P: lockAcquired
+        P->>B: avviaScansione(paramsCorrenti)
+        B-->>P: ack avvio / job creato
+        P->>N: mostraNotifica("Scansione avviata")
+        P-->>U: Stato UI = "scanning / running"
+
+        B-->>P: risultato / errore finale
+        P->>L: releaseLock("Analyzer One-Time")
+        L-->>P: lockRilasciato
+        P->>N: mostraNotifica("Scansione completata" o "Errore")
+    else Lock già detenuto da un altro modulo
+        L-->>P: lockDenied(ownerLabel)
+        P-->>U: Pulsante disabilitato / messaggio "Scansione in corso: {ownerLabel}"
+        P->>N: mostraNotifica("Impossibile avviare: altra scansione in corso")
+    end

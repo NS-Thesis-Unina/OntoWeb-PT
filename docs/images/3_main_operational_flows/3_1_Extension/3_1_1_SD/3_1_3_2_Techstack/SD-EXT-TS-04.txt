@@ -1,0 +1,83 @@
+sequenceDiagram
+    actor User as Utente
+    participant PopupUI as Popup UI (Techstack Analyze)
+    participant TechstackCtrl as Techstack Controller
+    participant ToolState as Tool Health Service
+    participant LockMgr as Global Lock Manager
+    participant Storage as Storage Service
+    participant Backend as Tool Backend / Ontology API
+    participant JobMon as Job Monitor
+    participant Notify as Notification Center
+
+    User->>PopupUI: Seleziona "Technology Stack > Analyze"
+    PopupUI->>TechstackCtrl: initAnalyzeWizard()
+
+    %% Step 1: Intro + verifica precondizioni
+    TechstackCtrl->>ToolState: getToolStatus()
+    ToolState-->>TechstackCtrl: ToolOn / ToolOff
+    TechstackCtrl->>LockMgr: getLockStatus()
+    LockMgr-->>TechstackCtrl: lockFree / lockBusy(ownerLabel)
+
+    alt ToolOn e lock libero
+        TechstackCtrl-->>PopupUI: enableContinueStep1()
+    else ToolOff o lock occupato
+        TechstackCtrl-->>PopupUI: disableContinueStep1(reason)
+        TechstackCtrl->>Notify: showWarning("Tool Off or scan lock active: " + reason)
+    end
+
+    User->>PopupUI: Clic su "Continue" (se abilitato)
+    PopupUI->>TechstackCtrl: loadAvailableSnapshots()
+    TechstackCtrl->>Storage: listLocalTechstackSnapshots()
+    Storage-->>TechstackCtrl: elencoSnapshot / vuoto
+
+    alt Snapshot disponibili
+        TechstackCtrl-->>PopupUI: renderSnapshotList(elencoSnapshot)
+    else Nessuno snapshot
+        TechstackCtrl-->>PopupUI: showEmptySnapshotsMessage()
+        TechstackCtrl->>Notify: showWarning("No Techstack scans available in local archive")
+    end
+
+    %% Step 2: selezione snapshot
+    User->>PopupUI: Seleziona uno snapshot e clicca "Continue"
+    PopupUI->>TechstackCtrl: selectSnapshot(snapshotId)
+    TechstackCtrl->>Storage: getSnapshotData(snapshotId)
+    Storage-->>TechstackCtrl: snapshotData
+    TechstackCtrl-->>PopupUI: renderSnapshotPreview(snapshotData)
+
+    %% Step 3: invio al backend
+    User->>PopupUI: Clic su "Send Scan"
+    PopupUI->>TechstackCtrl: sendSnapshotToBackend(snapshotId)
+
+    TechstackCtrl->>ToolState: getToolStatus()
+    ToolState-->>TechstackCtrl: ToolOn / ToolOff
+    TechstackCtrl->>LockMgr: getLockStatus()
+    LockMgr-->>TechstackCtrl: lockFree / lockBusy(ownerLabel)
+
+    alt ToolOn e nessun lock bloccante
+        TechstackCtrl->>Backend: POST /techstack/analyze(snapshotData)
+        Backend-->>TechstackCtrl: jobAccepted(jobId) / jobRejected
+
+        alt Job accettato
+            TechstackCtrl->>Notify: showInfo("Techstack analysis job enqueued")
+            TechstackCtrl->>JobMon: startMonitoring(jobId, queue="techstack")
+            TechstackCtrl-->>PopupUI: openJobSummariesDialog([jobId])
+
+            loop Finché job non completato
+                JobMon->>Backend: GET /jobs/status(jobId)
+                Backend-->>JobMon: jobStatus(jobId, state)
+                JobMon-->>PopupUI: updateJobStatus(jobId, state)
+            end
+
+            JobMon-->>TechstackCtrl: allJobsCompletedOrFailed()
+            TechstackCtrl->>JobMon: stopMonitoring(jobId)
+
+            User->>PopupUI: Clic su "OK" nel dialog Job Summaries
+            PopupUI->>TechstackCtrl: resetAnalyzeFlow()
+            TechstackCtrl-->>PopupUI: renderAnalyzeIntro()
+        else Job rifiutato / errore invio
+            TechstackCtrl->>Notify: showError("Backend did not accept Techstack job")
+        end
+    else ToolOff o lock occupato
+        TechstackCtrl-->>PopupUI: showAnalyzeBlockedState()
+        TechstackCtrl->>Notify: showWarning("Cannot send scan: Tool Off or scan lock active")
+    end

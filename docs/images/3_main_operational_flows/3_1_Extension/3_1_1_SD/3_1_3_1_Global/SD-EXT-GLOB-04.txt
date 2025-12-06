@@ -1,0 +1,19 @@
+sequenceDiagram
+    actor U as Utente
+    participant P as Popup UI
+    participant S as Storage locale
+    participant N as Notifiche Globali
+
+    U->>P: Toggle tema (es. Light -> Dark)
+    P-->>U: Aggiorna immediatamente stile UI (tema Dark)
+
+    P->>S: savePreferenzaTema("dark")
+
+    alt Salvataggio riuscito
+        S-->>P: ok
+        note right of P: Alla prossima apertura, il tema verrà riletto da storage.
+    else Errore di salvataggio (storage non disponibile / quota / permessi)
+        S-->>P: errore
+        P->>N: mostraNotifica("Impossibile salvare il tema. Uso solo per questa sessione.")
+        note right of P: Il tema resta attivo solo finché la popup è aperta, al prossimo avvio si tornerà al default.
+    end

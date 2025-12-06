@@ -1,6 +1,10 @@
 # Worker
 
+---
+
 Il worker Node.js (`node-worker`) è il componente di elaborazione asincrona dell’Engine/Tool. Non espone interfacce HTTP verso l’esterno, ma lavora “dietro le quinte” consumando job dalle code BullMQ su Redis, eseguendo le analisi e gli aggiornamenti sull’ontologia OntoWeb-PT in GraphDB e restituendo risultati strutturati tramite BullMQ. È pensato come processo stateless e scalabile orizzontalmente: più istanze possono lavorare sulle stesse code in parallelo.
+
+---
 
 ## Responsabilità
 
@@ -38,6 +42,8 @@ Il worker Node.js (`node-worker`) è il componente di elaborazione asincrona del
   
   - forwarding di tutti i log del worker alla dashboard tramite l’API
 
+---
+
 ## Tecnologie e librerie principali
 
 - Node.js (CommonJS) come runtime.
@@ -65,6 +71,8 @@ Il worker Node.js (`node-worker`) è il componente di elaborazione asincrona del
   - `makeLogger` e `onLog` per logging strutturato e forwarding.
 
 - dotenv per la configurazione via variabili d’ambiente (.env condiviso con l’API).
+
+---
 
 ## Interfacce esposte
 
@@ -107,6 +115,8 @@ Il worker non espone endpoint HTTP o WebSocket verso l’esterno. Le sue “inte
 - WebSocket verso l’API:
   
   - connessione client `socket.io` verso `LOGS_WS_URL` (namespace `/logs`), usata esclusivamente per inviare log all’API.
+
+---
 
 ## Flussi di dati
 
@@ -244,6 +254,8 @@ Monitoraggio e log
   
   - in caso di disconnessione, i log vengono semplicemente scartati (fail-safe, nessun blocco del processing).
 
+---
+
 ## Dipendenze
 
 - Redis:
@@ -281,3 +293,5 @@ Note di design
 
 - **Configurazione orientata all’operatività**  
   Parametri come il numero di worker per coda, i limiti per job “stalled”, la verbosità degli errori Redis (`QUIET_REDIS_ERRORS`) sono esposti via variabili d’ambiente. Questo consente di calibrare il comportamento del worker in base all’ambiente (sviluppo, test, produzione) senza modificare il codice.
+
+---

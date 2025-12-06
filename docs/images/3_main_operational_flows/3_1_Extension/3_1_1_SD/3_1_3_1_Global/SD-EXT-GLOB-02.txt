@@ -1,0 +1,15 @@
+sequenceDiagram
+    actor U as Utente
+    participant P as Popup UI
+    participant R as Router sezioni/sottopagine
+    participant S as Storage locale
+
+    U->>P: Click su voce barra globale (es. "Analyzer")
+    P->>R: navigateSection("Analyzer")
+    R-->>P: Render sezione Analyzer (default sottopagina)
+    P->>S: saveUltimaSezione(tabId, "Analyzer")
+
+    U->>P: Click su sottopagina (es. "Runtime Scan")
+    P->>R: navigateSubpage("Analyzer", "Runtime Scan")
+    R-->>P: Render Analyzer → Runtime Scan
+    P->>S: saveUltimaSubpagina(tabId, "Analyzer/RuntimeScan")

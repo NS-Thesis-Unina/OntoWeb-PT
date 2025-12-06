@@ -1,0 +1,20 @@
+sequenceDiagram
+    actor U as Utente
+    participant V as Vista funzionale (es. Archive, Analyze, Scan)
+    participant S as Storage/Backend (generico)
+    participant N as Notifiche Globali
+
+    U->>V: Azione (es. "Refresh archive")
+    V->>S: richiestaOperazione()
+    
+    alt Operazione riuscita
+        S-->>V: risposta OK + dati
+        V-->>U: Aggiorna contenuto UI (lista, tabelle, ecc.)
+        V->>N: mostraNotifica("Operazione completata / dati caricati")
+    else Errore (storage o backend)
+        S-->>V: errore
+        V->>N: mostraNotifica("Errore durante l'operazione (dettaglio)")
+        V-->>U: Mantiene stato precedente o mostra messaggio inline
+    end
+
+    N-->>U: Snackbar/Toast visibile per pochi secondi (non blocca la UI)

@@ -1,0 +1,63 @@
+sequenceDiagram
+    actor User
+    participant PopupUI as Popup / Interceptor UI (Send to ontology - Step 5)
+    participant Wizard as Interceptor Ontology Wizard Controller
+    participant ToolState as Tool State Service
+    participant LockService as Global Lock Service
+    participant Backend as Backend Tool / Ontology API
+    participant JobMonitor as Job Monitor Service
+    participant JobsDialog as Job Summaries Dialog
+
+    User->>PopupUI: Entra nello Step 5 "Confirm and send"
+    PopupUI-->>Wizard: initStep5(selectedRequests, resolverEnabled)
+
+    User->>PopupUI: (opzionale) Attiva/disattiva toggle "resolver"
+    PopupUI-->>Wizard: updateResolverFlag(resolverEnabled)
+
+    User->>PopupUI: Click "Send Requests"
+    PopupUI->>Wizard: sendRequests()
+    Wizard-->>PopupUI: disabilita pulsanti "Send" e "Back"
+
+    Wizard->>ToolState: getToolStatus()
+    Wizard->>LockService: checkLock()
+
+    alt Tool On e lock libero
+        ToolState-->>Wizard: TOOL_ON
+        LockService-->>Wizard: lockFree
+
+        Note over Wizard,Backend: Il controller suddivide le richieste selezionate<br/>in batch rispettando i limiti di dimensione.
+
+        loop Per ogni batch di richieste
+            Wizard->>Backend: sendBatch(batchPayload, resolverEnabled)
+            alt Batch accettato
+                Backend-->>Wizard: jobsCreated(jobIdsForBatch)
+                Wizard-->>JobMonitor: registerJobs(jobIdsForBatch)
+            else Errore su batch
+                Backend-->>Wizard: sendError(info)
+                Wizard-->>PopupUI: accumula errore parziale per il riepilogo
+            end
+        end
+
+        Wizard-->>PopupUI: mostra riepilogo (X/Y richieste accettate) + messaggio "Waiting for results from the worker..."
+        Wizard-->>JobsDialog: open()
+        Wizard->>JobMonitor: startMonitoringAll()
+    else Tool Off o lock occupato
+        ToolState-->>Wizard: TOOL_OFF (o errore)
+        LockService-->>Wizard: lockBusy(owner)
+        Wizard-->>PopupUI: mostra errore "Tool Off o scan in corso altrove" + riabilita "Send"
+        Note over PopupUI: Nessun batch viene inviato al backend.
+    end
+
+    opt Monitoraggio job
+        loop Fino a completamento di tutti i job
+            JobMonitor->>Backend: pollJobStatuses(jobIds)
+            Backend-->>JobMonitor: jobsStatusUpdate[]
+            JobMonitor-->>JobsDialog: updateJobRows(statusPerJob)
+        end
+        JobMonitor-->>JobsDialog: allJobsFinished()
+    end
+
+    User->>JobsDialog: Click "OK"
+    JobsDialog->>Wizard: closeJobSummaries()
+    Wizard->>JobMonitor: stopMonitoring()
+    Wizard-->>PopupUI: resetWizardToIntro()

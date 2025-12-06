@@ -1,6 +1,10 @@
 # API Express
 
+---
+
 L’API Express (container `node-api`) è il punto di ingresso applicativo dello stack OntoWeb-PT sul lato Engine/Tool. È il servizio che espone le API HTTP/REST e i WebSocket verso Nginx, serve la dashboard React e coordina tutti i flussi asincroni basati su Redis/BullMQ e GraphDB, senza eseguire direttamente analisi pesanti: quelle sono demandate al componente Worker.
+
+---
 
 ## Responsabilità principali
 
@@ -35,6 +39,8 @@ L’API ha quattro responsabilità fondamentali:
   - espone il bundle statico React dalla directory `dashboard` interna all’immagine  
   
   - garantisce che tutte le rotte “front-end” (`/`, `/http`, `/analyzer`…) tornino sempre `index.html`
+
+---
 
 ## Tecnologie e struttura interna
 
@@ -81,6 +87,8 @@ In fase di bootstrap, `server.js`:
 - avvia gli health monitor verso Redis e GraphDB, aggiornando un registro interno;
 
 - espone `/health` che restituisce uno snapshot di questo registro con HTTP 200/503.
+
+---
 
 ## Interfacce esposte
 
@@ -159,6 +167,8 @@ L’API è raggiunta da Nginx sulla porta 8081 e espone segmenti logici di endpo
     
     - riceve da `QueueEvents` di BullMQ gli eventi `completed` e `failed` dalle diverse code e li forwarda verso la stanza del job corrispondente.
 
+---
+
 ## Flussi di dati
 
 Dal punto di vista dei flussi, l’API si colloca al centro di più pipeline:
@@ -215,6 +225,8 @@ Dal punto di vista dei flussi, l’API si colloca al centro di più pipeline:
   
   - la dashboard sottoscrive `/logs` e riceve uno stream unificato di log API + Worker, che può visualizzare in tempo reale.
 
+---
+
 ## Dipendenze principali
 
 Per funzionare correttamente, l’API dipende da:
@@ -252,3 +264,5 @@ Per funzionare correttamente, l’API dipende da:
   - il bundle statico React deve essere presente nella directory `dashboard` del progetto Node.js al momento della build dell’immagine;  
   
   - se mancante o incompleto, il front-end non sarebbe servito correttamente, pur con API funzionanti.
+
+---

@@ -1,3 +1,5 @@
+## 1. Overview (Black-Box)
+
 - Obiettivo del sistema
 
 - Cosa fa
@@ -26,57 +28,25 @@ Per ogni componente del sistema descrivi:
 
 - dipendenze
 
-- motivazioni delle scelte
-
-Componenti tipici:
-
-- Frontend React
-
-- Backend Node.js / Express
-
-- Job queues (BullMQ)
-
-- Worker
-
-- Sistema di parsing PCAP
-
-- Ontologia + GraphDB
-
-- WebSocket server
-
-- Browser Interceptor (se esiste)
-
-- Modulo HTTP ingestion
+- (opzionale) note di design
 
 ---
 
-## **3. Flussi operativi principali**
+## 3. Flussi operativi principali
 
-Descrive passo passo cosa succede nei vari "use case".
+- Requisiti funzionali
 
-Esempi:
+- Use Cases
 
-- Import di un PCAP
-
-- Normalizzazione delle richieste
-
-- Scrittura in ontologia
-
-- Log realtime via WebSocket
-
-- Visualizzazione della dashboard
-
-- Esecuzione analizzatori automatizzati
-
-Con sequence diagram (anche descrittivi, non UML rigidi).
+- Sequence diagrams
 
 ---
 
 ## **4. Dettagli implementativi (White-Box)**
 
-Qui si va nel concreto più tecnico:
+Più tecnico:
 
-### **4.1 Backend**
+### **4.1 Engine/Tool**
 
 - Struttura delle directory
 
@@ -96,7 +66,7 @@ Qui si va nel concreto più tecnico:
 
 - Documentazione dei moduli (es. pcap_to_http_json.py, parser HTTP, ecc.)
 
-### **4.2 Frontend**
+### **4.2 Ambiente Client**
 
 - Struttura delle pagine
 
@@ -155,25 +125,3 @@ Qui si va nel concreto più tecnico:
 - Eventuali test automatici
 
 ---
-
-## **7. Known Issues & Limitazioni**
-
-- Cose ancora da migliorare
-
-- Edge cases non gestiti
-
-- Collo di bottiglia noti
-
----
-
-## **8. Conclusioni tecniche**
-
-Breve riassunto di:
-
-- robustezza del sistema
-
-- scalabilità
-
-- estensibilità
-
-- possibili evoluzioni future

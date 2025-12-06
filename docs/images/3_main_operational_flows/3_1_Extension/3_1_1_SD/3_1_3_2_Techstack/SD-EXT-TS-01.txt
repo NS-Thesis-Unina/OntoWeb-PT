@@ -1,0 +1,44 @@
+sequenceDiagram
+    actor User as Utente
+    participant PopupUI as Popup UI (Techstack Scan)
+    participant TechstackCtrl as Techstack Controller
+    participant LockMgr as Global Lock Manager
+    participant TabsAPI as Browser Tabs API
+    participant BgScanner as Techstack Background Scanner
+    participant Storage as Storage Service
+    participant Notify as Notification Center
+
+    User->>PopupUI: Seleziona "Technology Stack > Scan"
+    PopupUI->>TechstackCtrl: initScanView()
+    TechstackCtrl->>Storage: loadLastResultForContext(tabId, session, local)
+    Storage-->>TechstackCtrl: ultimoRisultato / nessuno
+    TechstackCtrl-->>PopupUI: renderScanView(ultimoRisultato)
+
+    User->>PopupUI: Clic su "Scan current tab"
+    PopupUI->>TechstackCtrl: requestTechstackScan()
+
+    TechstackCtrl->>LockMgr: checkAndAcquire("Techstack Scan")
+    alt Lock disponibile
+        LockMgr-->>TechstackCtrl: lockAcquired
+        TechstackCtrl->>TabsAPI: getActiveTab()
+        TabsAPI-->>TechstackCtrl: tabId, url
+
+        TechstackCtrl->>BgScanner: runTechstackScan(tabId, url)
+        TechstackCtrl-->>PopupUI: showScanInProgress()
+
+        BgScanner-->>TechstackCtrl: scanResult / errore
+        alt Scansione OK
+            TechstackCtrl->>Storage: saveScanResult(scanResult, contesti)
+            Storage-->>TechstackCtrl: ok
+            TechstackCtrl-->>PopupUI: showScanResult(scanResult)
+            TechstackCtrl->>Notify: showInfo("Techstack scan completed")
+        else Errore di scansione
+            TechstackCtrl->>Notify: showError("Error running Techstack scan")
+        end
+
+        TechstackCtrl->>LockMgr: releaseLock("Techstack Scan")
+    else Lock occupato
+        LockMgr-->>TechstackCtrl: lockBusy(ownerLabel)
+        TechstackCtrl-->>PopupUI: disableScanButton(ownerLabel)
+        TechstackCtrl->>Notify: showWarning("Another scan is running: " + ownerLabel)
+    end

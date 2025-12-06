@@ -1,0 +1,35 @@
+sequenceDiagram
+    actor User as Utente
+    participant PopupUI as Popup UI (Techstack Scan)
+    participant TechstackCtrl as Techstack Controller
+    participant Storage as Storage Service
+    participant Notify as Notification Center
+
+    User->>PopupUI: Apre sezione "Technology Stack > Scan"
+    PopupUI->>TechstackCtrl: initScanView()
+
+    TechstackCtrl->>Storage: loadLastForCurrentTab(tabId)
+    Storage-->>TechstackCtrl: resultTab / none
+
+    alt Risultato trovato per la tab corrente
+        TechstackCtrl-->>PopupUI: renderScanView(resultTab, source="currentTab")
+        TechstackCtrl->>Notify: showInfo("Loaded last Techstack scan for this tab")
+    else Nessun risultato per la tab corrente
+        TechstackCtrl->>Storage: loadLastGlobalSession()
+        Storage-->>TechstackCtrl: resultSession / none
+
+        alt Risultato trovato per sessione globale
+            TechstackCtrl-->>PopupUI: renderScanView(resultSession, source="globalSession")
+            TechstackCtrl->>Notify: showInfo("Loaded last Techstack scan (global session)")
+        else Nessun risultato di sessione globale
+            TechstackCtrl->>Storage: loadLastLocalArchive()
+            Storage-->>TechstackCtrl: resultLocal / none
+
+            alt Risultato trovato in archivio locale
+                TechstackCtrl-->>PopupUI: renderScanView(resultLocal, source="localArchive")
+                TechstackCtrl->>Notify: showInfo("Loaded last Techstack scan from local archive")
+            else Nessun risultato disponibile
+                TechstackCtrl-->>PopupUI: renderEmptyState("No Techstack results found")
+            end
+        end
+    end

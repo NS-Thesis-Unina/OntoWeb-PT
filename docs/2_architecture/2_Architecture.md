@@ -3,26 +3,8 @@
 ---
 
 1. [Client Environment](./2_1_ClientEnv.md)
-   
-   1. [Extension](./2_1_ClientEnv/2_1_1_Extension.md)
-   
-   2. [Dashboard](./2_1_ClientEnv/2_1_2_Dashboard.md)
-   
-   3. [ZSH Plugin](./2_1_ClientEnv/2_1_3_ZSHPlugin.md)
 
 2. [Engine/Tool](./2_2_Engine_Tool.md)
-   
-   1. [Node.js Environment](./2_2_Engine_Tool/2_2_1_NodeJSEnv.md)
-      
-      1. [API Express](./2_2_Engine_Tool/2_2_1_NodeJSEnv/2_2_1_1_APIExpress.md)
-      
-      2. [Worker](./2_2_Engine_Tool/2_2_1_NodeJSEnv/2_2_1_2_Worker.md)
-   
-   2. [Nginx](./2_2_Engine_Tool/2_2_2_Nginx.md)
-   
-   3. [Redis](./2_2_Engine_Tool/2_2_3_Redis.md)
-   
-   4. [GraphDB](./2_2_Engine_Tool/2_2_4_GraphDB.md)
 
 ---
 
@@ -53,3 +35,5 @@ Per ogni componente che compare nelle sottosezioni architetturali, la documentaz
   Come i dati vengono ricevuti, trasformati e inoltrati all’interno del componente: passaggi principali, uso di code o canali asincroni, relazione tra input, stato interno ed output.
 
 Per i nodi che rappresentano **raggruppamenti logici** (come *Client Environment*, *Engine/Tool* e *Node.js Environment*), la descrizione si concentrerà sul ruolo complessivo del gruppo, sulle relazioni tra i componenti interni e sui flussi trasversali che li attraversano, lasciando alle sottosezioni il dettaglio dei singoli elementi.
+
+---

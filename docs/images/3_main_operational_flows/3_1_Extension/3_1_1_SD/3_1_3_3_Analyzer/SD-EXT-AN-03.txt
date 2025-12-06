@@ -1,0 +1,82 @@
+sequenceDiagram
+    actor User as Utente
+    participant UI as Analyzer UI (Archive)
+    participant Controller as ArchiveController
+    participant Store as Local Storage
+
+    %% Apertura archivio One-Time
+    User ->> UI: Naviga in "Analyzer → Archive → One-Time Scan"
+    UI ->> Controller: loadOneTimeArchive()
+    Controller ->> Store: getOneTimeArchiveByContext()
+    Store -->> Controller: archiveGroups(oneTimeData) o errore
+
+    alt Caricamento OK
+        Controller -->> UI: showOneTimeArchive(archiveGroups)
+        UI -->> User: Mostra gruppi (Current Tab, Other Tabs, Global, Local)
+    else Errore di lettura
+        Controller -->> UI: showError("Errore caricando archivio One-Time")
+    end
+
+    %% Espansione e consultazione snapshot One-Time
+    User ->> UI: Espande gruppo / snapshot
+    UI ->> Controller: getSnapshotDetails(snapshotId)
+    Controller ->> Store: resolveFromLoadedArchive(snapshotId)
+    Controller -->> UI: showOneTimeSnapshotDetails(snapshotData)
+
+    %% Cancellazione singola One-Time
+    User ->> UI: Clic su "Delete" per uno snapshot
+    UI ->> User: Mostra dialog di conferma
+    User ->> UI: Conferma cancellazione
+    UI ->> Controller: deleteOneTimeSnapshot(snapshotId)
+    Controller ->> Store: deleteOneTimeSnapshot(snapshotId)
+    Store -->> Controller: ok / errore
+    alt Delete OK
+        Controller ->> Store: getOneTimeArchiveByContext()
+        Store -->> Controller: updatedArchive
+        Controller -->> UI: showOneTimeArchive(updatedArchive)
+        Controller -->> UI: showNotification("Snapshot deleted")
+    else Delete errore
+        Controller -->> UI: showError("Errore cancellando snapshot")
+    end
+
+    %% Cancellazione massiva One-Time
+    User ->> UI: Clic su "Delete All"
+    UI ->> User: Dialog conferma wipe archivio One-Time
+    User ->> UI: Conferma wipe
+    UI ->> Controller: deleteAllOneTimeSnapshots()
+    Controller ->> Store: deleteAllOneTimeSnapshots()
+    Store -->> Controller: ok / errore
+
+    alt Wipe OK
+        Controller -->> UI: showEmptyOneTimeArchive()
+        Controller -->> UI: showNotification("All One-Time snapshots deleted")
+    else Wipe errore
+        Controller -->> UI: showError("Errore cancellando archivio One-Time")
+    end
+
+    %% Archivio Runtime (pattern analogo)
+    User ->> UI: Seleziona "Runtime Scan" in Archive
+    UI ->> Controller: loadRuntimeArchive()
+    Controller ->> Store: getRuntimeRuns()
+    Store -->> Controller: runtimeRuns o errore
+
+    alt Caricamento OK
+        Controller -->> UI: showRuntimeArchive(runtimeRuns)
+    else Errore lettura
+        Controller -->> UI: showError("Errore caricando runtime archive")
+    end
+
+    %% Lazy loading dettagli di un run
+    User ->> UI: Espande un run runtime
+    UI ->> Controller: loadRuntimeRunDetails(runId)
+    Controller ->> Store: getRuntimeRunDataset(runId)
+    Store -->> Controller: runDataset o errore
+
+    alt Dettaglio OK
+        Controller -->> UI: showRuntimeRunDetails(runDataset)
+    else Errore dettaglio
+        Controller -->> UI: showError("Errore caricando dettagli run")
+        Controller -->> UI: showRetryButton(runId)
+    end
+
+    %% Delete singolo/massivo runtime (stesso pattern di One-Time)

@@ -1,0 +1,39 @@
+sequenceDiagram
+    actor User
+    participant PopupUI as Popup / Interceptor UI (Runtime Scan)
+    participant IntController as Interceptor Runtime Controller
+    participant Storage as Storage Service
+    participant DetailsDialog as Dialog Dettaglio Richiesta
+
+    User->>PopupUI: Seleziona "Interceptor → Runtime Scan"
+    PopupUI->>IntController: initRuntimeView()
+    IntController->>Storage: loadLastCompletedRun(tabId)
+
+    alt Run trovato
+        Storage-->>IntController: lastRun(summary, pagesIndex)
+        IntController-->>PopupUI: mostra riepilogo + gruppi per pagina/dominio
+    else Nessun run disponibile
+        Storage-->>IntController: notFound
+        IntController-->>PopupUI: mostra stato vuoto "No previous runtime runs available."
+    else Errore di storage
+        Storage-->>IntController: error
+        IntController-->>PopupUI: mostra errore + suggerimento "Retry"
+    end
+
+    opt Utente esplora una pagina/dominio
+        User->>PopupUI: Espande una pagina/dominio
+        PopupUI->>IntController: getPageEvents(runId, pageId)
+        IntController->>Storage: loadPageEvents(runId, pageId)
+        Storage-->>IntController: eventsList
+        IntController-->>PopupUI: mostra tabella eventi (Method, URL, Status, Status Text, Content-Type)
+    end
+
+    opt Utente apre dettaglio di una richiesta
+        User->>PopupUI: Click "Show request/response details"
+        PopupUI->>IntController: openEventDetails(eventId)
+        IntController->>Storage: loadEventDetails(eventId)
+        Storage-->>IntController: eventDetails(request, response, meta)
+        IntController-->>DetailsDialog: open(eventDetails)
+        User-->>DetailsDialog: Naviga tra tab Request/Response/Meta, copia valori
+        User->>DetailsDialog: Close()
+    end

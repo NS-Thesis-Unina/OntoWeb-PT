@@ -1,0 +1,72 @@
+sequenceDiagram
+    actor User as Utente
+    participant UI as Analyzer UI (Runtime)
+    participant Controller as RuntimeScanController
+    participant Lock as LockService
+    participant RuntimeMgr as RuntimeSessionManager
+    participant Scanner as Runtime Scanner
+    participant Store as Local Storage
+
+    %% Apertura vista Runtime
+    User ->> UI: Naviga in "Runtime Scan"
+    UI ->> Controller: initRuntimeView()
+    Controller ->> RuntimeMgr: getActiveSessionForContext()
+    RuntimeMgr -->> Controller: sessionInfo? (RUNNING o nessuna)
+    alt Sessione runtime attiva
+        Controller -->> UI: showLiveState(sessionInfo)
+    else Nessuna sessione attiva
+        Controller ->> Store: loadLastRuntimeRun()
+        Store -->> Controller: lastRun? o none
+        alt Ultimo run disponibile
+            Controller -->> UI: showRuntimeRun(lastRun)
+            Controller -->> UI: showNotification("Last runtime run loaded")
+        else Nessun run salvato
+            Controller -->> UI: showEmptyRuntimeState()
+        end
+    end
+
+    %% Avvio runtime
+    User ->> UI: Clic su "Start runtime scan"
+    UI ->> Controller: startRuntime()
+
+    Controller ->> Lock: acquire("Analyzer Runtime")
+    alt Lock disponibile
+        Lock -->> Controller: granted
+        Controller ->> RuntimeMgr: createSessionForContext()
+        RuntimeMgr -->> Controller: sessionId
+        Controller ->> Scanner: startRuntimeScan(sessionId)
+        Scanner -->> Controller: ackStarted
+        Controller -->> UI: setRuntimeState("RUNNING")
+        Controller -->> UI: resetCounters()
+
+        %% Aggiornamento live durante la navigazione
+        loop Per ogni pagina/snapshot
+            Scanner ->> Controller: runtimeSnapshot(sessionId, pageUrl, snapshotData)
+            Controller ->> RuntimeMgr: appendSnapshot(sessionId, pageUrl, snapshotData)
+            RuntimeMgr -->> Controller: updatedStats(pagesCount, snapshotsCount)
+            Controller -->> UI: updateCounters(updatedStats)
+        end
+    else Lock occupato da altro modulo
+        Lock -->> Controller: denied(ownerLabel)
+        Controller -->> UI: showLockMessage("Scan in corso: " + ownerLabel)
+        Controller -->> UI: keepRuntimeStopped()
+    end
+
+    %% Stop runtime
+    User ->> UI: Clic su "Stop runtime scan"
+    UI ->> Controller: stopRuntime(sessionId)
+    Controller -->> UI: showStoppingOverlay()
+
+    Controller ->> Scanner: stopRuntimeScan(sessionId)
+    Scanner -->> Controller: ackStopped
+    Controller ->> RuntimeMgr: closeSession(sessionId)
+    RuntimeMgr -->> Controller: runData(finalStats, pages, snapshots)
+
+    Controller ->> Store: saveRuntimeRun(runData)
+    Store -->> Controller: ok / errore
+
+    Controller ->> Lock: release("Analyzer Runtime")
+    Controller -->> UI: hideStoppingOverlay()
+    Controller -->> UI: setRuntimeState("STOPPED")
+    Controller -->> UI: showRuntimeRun(runData)
+    Controller -->> UI: showNotification("Runtime scan completed")

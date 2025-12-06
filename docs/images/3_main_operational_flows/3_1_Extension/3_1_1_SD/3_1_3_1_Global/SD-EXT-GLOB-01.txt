@@ -1,0 +1,30 @@
+sequenceDiagram
+    actor U as Utente
+    participant P as Popup UI
+    participant RS as Gestore Sessioni Runtime
+    participant S as Storage locale
+    participant R as Router sezioni/sottopagine
+
+    U->>P: Apre la popup dell'estensione
+    activate P
+
+    P->>RS: verificaSessioneLive(tabId)
+    RS-->>P: sessioneLive? (modulo, tipo, stato)
+
+    alt Sessione live attiva per la scheda
+        P->>R: navigateToRuntimeView(modulo, tipo)
+        R-->>P: Render vista runtime (Analyzer o Interceptor)
+    else Nessuna sessione live attiva
+        P->>S: loadUltimaRoute(tabId)
+        alt Route salvata trovata
+            S-->>P: ultimaRoute (sezione, sottopagina)
+            P->>R: navigate(ultimaRoute)
+            R-->>P: Render sezione/sottopagina salvata
+        else Nessuna route salvata o dato non valido
+            S-->>P: nessunDato / errore
+            P->>R: navigate(Home)
+            R-->>P: Render Home di onboarding
+        end
+    end
+
+    deactivate P

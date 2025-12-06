@@ -1,0 +1,25 @@
+sequenceDiagram
+    participant P as Popup UI
+    participant T as Servizio Stato Tool
+    participant B as Backend Tool (API health-check)
+    participant N as Notifiche Globali
+
+    P->>T: subscribeStatoTool()
+    T-->>P: statoIniziale("Checking")
+
+    loop Ogni N secondi
+        T->>B: GET /health
+        alt Tutti i componenti OK
+            B-->>T: health = UP
+            T-->>P: updateStato("Tool On")
+        else Uno o più componenti non disponibili
+            B-->>T: health = DOWN/PARTIAL
+            T-->>P: updateStato("Tool Off")
+        end
+    end
+
+    alt Cambio da "Tool On" a "Tool Off"
+        P->>N: mostraNotifica("Backend non disponibile. Alcune funzioni potrebbero essere bloccate.")
+    else Cambio da "Tool Off" a "Tool On"
+        P->>N: mostraNotifica("Backend operativo. Le funzioni di analisi sono di nuovo disponibili.")
+    end

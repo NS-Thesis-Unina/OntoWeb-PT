@@ -1,0 +1,63 @@
+sequenceDiagram
+    actor User as Utente
+    participant PopupUI as Popup UI (Techstack Archive)
+    participant TechstackCtrl as Techstack Controller
+    participant Storage as Storage Service
+    participant Notify as Notification Center
+
+    User->>PopupUI: Seleziona "Technology Stack > Archive"
+    PopupUI->>TechstackCtrl: initArchiveView()
+
+    TechstackCtrl->>Storage: loadTechstackArchive()
+    Storage-->>TechstackCtrl: {currentTab, otherTabs, sessionGlobal, localList}
+    TechstackCtrl-->>PopupUI: renderArchiveGroups(...)
+
+    User->>PopupUI: Espande uno snapshot (gruppo Local o altro)
+    PopupUI->>TechstackCtrl: requestSnapshotDetail(snapshotId)
+    TechstackCtrl-->>PopupUI: renderSnapshotDetail(snapshotId)  %% dati già inclusi nello snapshot
+    Note over PopupUI: La UI usa la stessa struttura della vista "Scan"\n(metadati, tecnologie, headers, cookies, ecc.)
+
+    alt Export JSON di uno snapshot
+        User->>PopupUI: Clic su "Export JSON"
+        PopupUI->>TechstackCtrl: exportSnapshot(snapshotId)
+        TechstackCtrl->>Storage: getSnapshotData(snapshotId)
+        Storage-->>TechstackCtrl: snapshotData
+        TechstackCtrl-->>PopupUI: triggerDownload(snapshotData, fileName)
+        TechstackCtrl->>Notify: showInfo("Techstack result exported to JSON")
+    end
+
+    alt Delete singolo snapshot
+        User->>PopupUI: Clic su "Delete" per snapshotId
+        PopupUI-->>User: Mostra dialog di conferma
+        User->>PopupUI: Conferma cancellazione
+        PopupUI->>TechstackCtrl: deleteSnapshot(snapshotId)
+        TechstackCtrl->>Storage: removeSnapshot(snapshotId)
+        Storage-->>TechstackCtrl: ok / errore
+
+        alt Cancellazione OK
+            TechstackCtrl->>Storage: loadTechstackArchive()
+            Storage-->>TechstackCtrl: archivioAggiornato
+            TechstackCtrl-->>PopupUI: renderArchiveGroups(archivioAggiornato)
+            TechstackCtrl->>Notify: showInfo("Snapshot deleted from storage")
+        else Errore cancellazione
+            TechstackCtrl->>Notify: showError("Error deleting snapshot from storage")
+        end
+    end
+
+    alt Delete All (wipe archivio locale)
+        User->>PopupUI: Clic su "Delete All" (gruppo Local)
+        PopupUI-->>User: Mostra dialog di conferma wipe
+        User->>PopupUI: Conferma wipe
+        PopupUI->>TechstackCtrl: deleteAllLocalSnapshots()
+        TechstackCtrl->>Storage: wipeLocalTechstackArchive()
+        Storage-->>TechstackCtrl: ok / errore
+
+        alt Wipe OK
+            TechstackCtrl->>Storage: loadTechstackArchive()
+            Storage-->>TechstackCtrl: archivioVuoto
+            TechstackCtrl-->>PopupUI: renderArchiveGroups(archivioVuoto)
+            TechstackCtrl->>Notify: showInfo("All Techstack scans deleted from storage")
+        else Errore wipe
+            TechstackCtrl->>Notify: showError("Error wiping Techstack archive")
+        end
+    end
