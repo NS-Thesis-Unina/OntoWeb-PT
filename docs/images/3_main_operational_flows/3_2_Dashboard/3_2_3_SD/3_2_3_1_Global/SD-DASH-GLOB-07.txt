@@ -1,0 +1,22 @@
+sequenceDiagram
+    actor U as Utente
+    participant PG as Pagina funzionale (es. Send PCAP, HTTP Requests)
+    participant API as Backend API
+    participant NC as NotificationCenter
+
+    U->>PG: Avvia un’azione (es. invio richieste, refresh dati)
+    PG->>API: HTTP request (es. POST /http/ingest, GET /http/requests)
+    activate PG
+
+    alt Operazione riuscita
+        API-->>PG: Risposta OK
+        PG->>PG: Aggiorna stato UI (dati, liste, step, ecc.)
+        PG->>NC: showSnackbar("Operazione completata con successo", "success")
+    else Errore di rete o backend
+        API-->>PG: Errore (status 4xx/5xx o timeout)
+        PG->>NC: showSnackbar("Error while executing the request.", "error")
+    end
+
+    NC-->>U: Mostra snackbar in basso (non bloccante)
+    NC->>NC: Auto-hide dopo timeout (o chiusura manuale)
+    deactivate PG

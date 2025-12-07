@@ -1,0 +1,28 @@
+sequenceDiagram
+    actor U as Utente
+    participant P as Pagina SendPCAP
+    participant A as Alert globale
+
+    %% Uso del pulsante Back
+    U->>P: Click su pulsante "Back"
+    P->>P: Verifica condizioni\n(activeStep > 0 e nessuna operazione critica in corso)
+
+    alt Può tornare indietro
+        P->>P: activeStep = activeStep - 1
+        P->>P: errorMessage = ""
+        P-->>A: Nasconde eventuale Alert
+        P-->>U: Mostra lo step precedente
+    else Non può tornare indietro
+        P-->>U: Pulsante "Back" disabilitato\nNessun cambiamento di step
+    end
+
+    %% Gestione di un errore globale
+    P->>P: Si verifica un errore di validazione o backend
+    P->>P: errorMessage = testo errore descrittivo
+    P-->>A: Render Alert severity="error" con errorMessage
+    P->>P: Scroll contenuto verso l'alto
+
+    U->>A: Click sulla "X" dell'Alert
+    A-->>P: onClose()
+    P->>P: errorMessage = ""
+    P-->>U: Alert scompare\nWizard resta nello stesso step

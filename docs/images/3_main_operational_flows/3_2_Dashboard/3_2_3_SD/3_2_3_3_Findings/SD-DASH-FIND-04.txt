@@ -1,0 +1,27 @@
+sequenceDiagram
+    actor U as Utente
+    participant P as Pagina Findings (HTTP/Analyzer/Techstack)
+    participant DG as DataGrid Findings
+    participant SVC as Findings Service\n(list*Findings)
+    participant SN as Snackbar
+
+    U->>P: Azione che innesca fetchFindings()\n(apertura, cambio pagina, ecc.)
+    activate P
+    P->>P: loading = true
+    P->>SVC: list*Findings({ offset, limit })
+
+    SVC-->>P: errore di rete / backend
+    P->>P: loading = false
+
+    alt Esistevano dati validi precedenti
+        P-->>DG: Mantieni rows e rowCount correnti\n(non sovrascrivere con dati inconsistenti)
+        DG-->>U: Continua a mostrare l'ultima lista valida
+    else Nessun dato precedente (primo caricamento fallito)
+        P->>DG: setRows([])\nsetRowCount(0)
+        DG-->>U: Mostra tabella vuota o\nmessaggio "No findings to show."
+    end
+
+    P->>SN: showSnackbar("Error while loading ... findings.")
+    SN-->>U: Mostra notifica non bloccante
+
+    deactivate P

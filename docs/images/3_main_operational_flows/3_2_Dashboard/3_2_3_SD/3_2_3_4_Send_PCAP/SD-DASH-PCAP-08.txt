@@ -1,0 +1,39 @@
+sequenceDiagram
+    participant JD as Dialog "Job Summaries"
+    participant WS as SocketService
+    participant S as HttpRequestsService
+    participant E as Store jobEvents
+
+    JD->>WS: onJobEvent(callback)
+    WS-->>JD: Registrazione listener eventi job
+
+    loop Arrivo eventi WebSocket
+        WS-->>JD: jobEvent(jobId, queue, event, data)
+        JD->>E: Aggiungi evento a jobEvents
+        JD->>JD: Aggiorna jobSummaries\n(lastEvent, completed, failed per jobId)
+    end
+
+    JD->>JD: openJobsDialog == true ?
+    alt Dialog aperto
+        loop Polling periodico (es. ogni 3 secondi)
+            JD->>E: Leggi subscribedJobIdsRef.current
+            alt Nessun jobId sottoscritto
+                JD->>JD: Arresta polling
+            else Uno o più jobId
+                loop Per ogni jobId
+                    JD->>S: getHttpIngestResult(jobId)
+                    S-->>JD: res (stato job)
+                    JD->>E: Aggiungi evento sintetico (completed/failed/update)
+                    JD->>JD: Aggiorna jobSummaries\nE rimuovi jobId se completed/failed
+                end
+            end
+        end
+    else Dialog chiuso
+        JD->>JD: Nessun polling attivo
+    end
+
+    alt jobSummaries vuoto
+        JD-->>JD: Mostra spinner centrale\n"In attesa di aggiornamenti..."
+    else jobSummaries non vuoto
+        JD-->>JD: Mostra card per ogni job\n(icone verde/rossa/gialla, queue, jobId, Completed/Failed)
+    end

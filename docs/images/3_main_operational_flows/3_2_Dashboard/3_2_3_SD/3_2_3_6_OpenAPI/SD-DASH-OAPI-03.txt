@@ -1,0 +1,30 @@
+sequenceDiagram
+    autonumber
+    participant U as Utente
+    participant P as APIExplorerPage
+    participant A as AccordionEndpoint
+    participant PR as ParamRenderer
+
+    U->>A: Clic sull'header dell'endpoint\n(Chip metodo + path + summary)
+    activate A
+    A->>P: Richiede dati endpoint\n(description, parameters, requestBody, responses)
+    P-->>A: Restituisce oggetto endpoint\n(ep.description, ep.parameters, …)
+
+    A->>A: Segna Accordion come espanso
+    A->>PR: renderParameters(ep.parameters)
+    activate PR
+
+    alt Lista parametri non vuota
+        PR->>PR: Raggruppa parametri per location\n(query, path, header, cookie, other)
+        loop Per ogni gruppo di location
+            PR->>PR: Costruisce elenco voci\n(nome, required/optional, tipo, descrizione)
+        end
+    else Nessun parametro
+        PR->>PR: Nessun gruppo da mostrare
+    end
+
+    PR-->>A: View model parametri per sezione "Parameters"
+    deactivate PR
+
+    A-->>U: Mostra pannello dettagli endpoint:\n- sezione "Description"\n- sezione "Parameters" (se presente)\n- altre sezioni (Request/Responses Body)
+    deactivate A

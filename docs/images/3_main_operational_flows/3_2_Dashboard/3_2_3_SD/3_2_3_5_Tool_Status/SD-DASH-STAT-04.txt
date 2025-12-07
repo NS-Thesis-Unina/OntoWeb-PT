@@ -1,0 +1,21 @@
+sequenceDiagram
+    actor U as Utente
+    participant TS as Pagina Tool Status
+    participant WSL as WebSocket /logs
+    participant LOG as Pannello "Real-Time Logs"
+
+    U->>TS: Apre Tool Status
+    activate TS
+
+    TS->>WSL: connect(/logs)
+
+    loop Per ogni evento di log ricevuto
+        WSL-->>TS: event "log"(entry)
+        TS->>TS: logs = last80(logs) + entry
+        TS->>LOG: aggiorna lista righe log con nuova entry in fondo
+        LOG-->>U: Mostra riga log (ts, [level], (ns), msg)
+    end
+
+    U->>TS: Abbandona Tool Status
+    TS->>WSL: disconnect(/logs)
+    deactivate TS

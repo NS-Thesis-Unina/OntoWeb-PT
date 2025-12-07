@@ -1,0 +1,61 @@
+sequenceDiagram
+    actor U as Utente
+    participant P as Pagina SendPCAP
+    participant H as HealthService
+    participant S as PcapService
+    participant A as Alert globale
+
+    U->>P: Dallo step 2, click su "Continue"
+    P->>P: Verifica prerequisiti locali (pcapFile, sslKeysFile)
+
+    alt File mancanti
+        alt PCAP mancante
+            P->>P: errorMessage = "Please select a PCAP file before continuing."
+            P->>P: activeStep = 0
+        else SSL keys mancante
+            P->>P: errorMessage = "Please select an SSL keys file before continuing."
+            P->>P: activeStep = 1
+        end
+        P-->>A: Render Alert errore
+        P->>P: Scroll contenuto verso l'alto
+    else Entrambi i file presenti
+        P->>P: checkingTool = true
+        P->>H: getHealth()
+        H-->>P: health o errore
+        P->>P: toolStatus = deriveToolStatus(health)
+
+        alt toolStatus "tool_off" o errore
+            P->>P: checkingTool = false
+            P->>P: errorMessage = "The analysis tool is currently OFF. Please enable it before continuing."
+            P-->>A: Render Alert errore
+            P->>P: Scroll contenuto verso l'alto
+        else toolStatus OK
+            P->>P: checkingTool = false
+            P->>P: loadingExtract = true
+            P-->>U: Mostra messaggio "Extracting HTTP requests from PCAP..."
+            P->>S: extractHttpRequestsFromPcap(pcapFile, sslKeysFile)
+            S-->>P: risultato (array richieste o errore)
+
+            alt Estrazione riuscita
+                P->>P: Normalizza risultato in array safe
+                P->>P: requests = arraySafe
+                P->>P: selectedRequests = []
+                P->>P: loadingExtract = false
+                P->>P: activeStep = 3
+
+                alt Nessuna richiesta estratta
+                    P->>P: errorMessage = "No HTTP requests were extracted from the PCAP."
+                    P-->>A: Render Alert errore
+                    P->>P: Scroll contenuto verso l'alto
+                else Almeno una richiesta
+                    P-->>U: Mostra step 3 con griglia di anteprima
+                end
+            else Errore durante estrazione
+                P->>P: loadingExtract = false
+                P->>P: errorMessage = messaggio backend\noppure "Failed to extract HTTP requests from PCAP."
+                P-->>A: Render Alert errore
+                P->>P: Scroll contenuto verso l'alto
+                P-->>U: Resta sullo step 2
+            end
+        end
+    end

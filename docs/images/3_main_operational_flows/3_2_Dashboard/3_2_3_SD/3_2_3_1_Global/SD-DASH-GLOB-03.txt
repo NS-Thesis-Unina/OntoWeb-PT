@@ -1,0 +1,31 @@
+sequenceDiagram
+    actor U as Utente
+    participant LS as LayoutShell (header con sotto-nav)
+    participant R as Router
+    participant FH as HTTP Findings Page
+    participant FA as Analyzer Findings Page
+    participant FT as Techstack Findings Page
+
+    U->>R: Naviga a "/findings"
+    R->>LS: render(HTTP Findings come default)
+    LS->>FH: mount(HTTP Findings Page)
+    FH-->>U: Mostra HTTP Findings
+    LS-->>U: Mostra sotto-nav: [HTTP] [Analyzer] [Techstack] (HTTP attiva)
+
+    U->>LS: Click su tab "Analyzer Findings"
+    LS->>R: navigate("/findings/analyzer")
+    activate R
+
+    R->>LS: updateRoute("/findings/analyzer")
+    LS->>FA: mount(Analyzer Findings Page)
+    FA-->>U: Mostra Analyzer Findings
+    LS-->>U: Sotto-nav aggiornata: [HTTP] [Analyzer*] [Techstack]
+
+    U->>LS: Click su tab "Techstack Findings"
+    LS->>R: navigate("/findings/techstack")
+    R->>LS: updateRoute("/findings/techstack")
+    LS->>FT: mount(Techstack Findings Page)
+    FT-->>U: Mostra Techstack Findings
+    LS-->>U: Sotto-nav aggiornata: [HTTP] [Analyzer] [Techstack*]
+
+    deactivate R

@@ -1,0 +1,38 @@
+sequenceDiagram
+    actor U as Utente
+    participant P as Pagina HTTP Findings
+    participant BD as Backdrop iniziale
+    participant DG as DataGrid Findings
+    participant SVC as HTTP Findings Service\n(listHttpFindings)
+    participant SN as Snackbar
+
+    U->>P: Apre /findings\n(o seleziona tab "HTTP Findings")
+    activate P
+
+    P->>P: initState()\nrows=[], loading=true
+    P->>BD: mostraBackdropBloccante()
+    P->>SVC: listHttpFindings({ offset:0, limit:default })
+    
+    alt Chiamata va a buon fine
+        SVC-->>P: { ids[], total, offset, limit }
+        P->>P: loading=false
+        P->>BD: nascondiBackdrop()
+
+        alt ids.length > 0
+            P->>DG: setRows(map(ids -> { id }))\nsetRowCount(total)\nsetPageFrom(offset, limit)
+            DG-->>U: Mostra tabella Findings HTTP\ncon paginazione server-side
+        else Nessun finding
+            P->>DG: setRows([])\nsetRowCount(0)
+            DG-->>U: Mostra messaggio "No findings to show."
+        end
+    else Errore nel caricamento iniziale
+        SVC-->>P: errore
+        P->>P: loading=false
+        P->>BD: nascondiBackdrop()
+        P->>SN: showSnackbar("Error while loading HTTP findings.")
+        SN-->>U: Notifica non bloccante
+        P->>DG: setRows([]) (se non esistevano dati)\nsetRowCount(0)
+        DG-->>U: Griglia vuota o "No findings to show."
+    end
+
+    deactivate P

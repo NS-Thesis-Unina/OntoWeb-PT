@@ -1,0 +1,39 @@
+sequenceDiagram
+    autonumber
+    participant U as Utente
+    participant P as APIExplorerPage
+    participant RB as RequestBodyRenderer
+    participant D as DerefEngine
+    participant S as SchemaOpenAPI
+
+    U->>P: Espande Accordion di un endpoint\nche prevede requestBody
+    P-->>RB: Passa ep.requestBody e schema radice
+
+    alt requestBody definito
+        RB->>RB: Analizza requestBody.content
+        alt Esiste application/json con schema
+            RB->>RB: Seleziona schema per "application/json"
+        else Esiste multipart/form-data con schema
+            RB->>RB: Seleziona schema per "multipart/form-data"
+        else Esiste application/x-www-form-urlencoded con schema
+            RB->>RB: Seleziona schema per "application/x-www-form-urlencoded"
+        else Nessuno dei preferiti ma c'è almeno un content con schema
+            RB->>RB: Seleziona primo content disponibile
+        else Nessun content con schema utilizzabile
+            RB-->>P: Nessun schema request body da mostrare
+            P-->>U: Nessuna sezione "Request Body"
+        end
+
+        RB->>D: deref(schemaSelezionato, S)
+        activate D
+        D->>S: Risoluzione $ref locali\n(properties, items, allOf, anyOf, oneOf, …)
+        D-->>RB: schemaDereferenziato
+        deactivate D
+
+        RB->>RB: Serializza schemaDereferenziato\nJSON.stringify(..., null, 2)
+        RB-->>P: Testo formattato per blocco <pre>
+        P-->>U: Mostra sezione "Request Body"\ncon schema JSON scrollabile
+    else requestBody assente
+        RB-->>P: Nessuna sezione da renderizzare
+        P-->>U: Non mostra "Request Body"
+    end

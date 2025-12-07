@@ -4,11 +4,11 @@
     "type": "split",
     "children": [
       {
-        "id": "7363f199734c2f7c",
+        "id": "8bf52ea9889389b8",
         "type": "tabs",
         "children": [
           {
-            "id": "8c0d13fab9cabe60",
+            "id": "9c55faead06ca874",
             "type": "leaf",
             "state": {
               "type": "empty",
@@ -176,22 +176,16 @@
       "bases:Create new base": false
     }
   },
-  "active": "8c0d13fab9cabe60",
+  "active": "25356d30903b386e",
   "lastOpenFiles": [
-    "3_main_operational_flows/3_Main_Operational_Flows.md",
     "Index.md",
-    "1_Overview.md",
-    "images/3_main_operational_flows/3_1_Extension/3_1_1_SD/3_1_3_1_Global/SD-EXT-GLOB-03.png",
-    "images/3_main_operational_flows/3_1_Extension/3_1_1_SD/3_1_3_1_Global/SD-EXT-GLOB-02.png",
-    "images/3_main_operational_flows/3_1_Extension/3_1_1_SD/3_1_3_1_Global/SD-EXT-GLOB-01.png",
-    "images/2_architecture/ComponentDiagram_NodeJSEnv.png",
-    "images/2_architecture/ComponentDiagram_Engine_Tool.png",
-    "images/2_architecture/ComponentDiagram_ClientEnv.png",
-    "images/1_overview/ComponentDiagram_Overview.png",
-    "3_main_operational_flows/3_3_ZSHPlugin.md",
-    "3_main_operational_flows/3_2_Dashboard.md",
-    "3_main_operational_flows/3_1_Extension.md",
-    "3_main_operational_flows/3_2_Dashboard/3_2_1_FR/3_2_1_1_Global.md",
+    "1_overview/1_Overview.md",
+    "2_architecture/2_1_ClientEnv/2_1_1_Extension.md",
+    "2_architecture/2_1_ClientEnv/2_1_2_Dashboard.md",
+    "2_architecture/2_1_ClientEnv/2_1_3_ZSHPlugin.md",
+    "2_architecture/2_1_ClientEnv/2_1_1_Extension/2_1_1_3_Techstack.md",
+    "2_architecture/2_1_ClientEnv/2_1_1_Extension/2_1_1_2_Interceptor.md",
+    "2_architecture/2_1_ClientEnv/2_1_1_Extension/2_1_1_1_Analyzer.md",
     "3_main_operational_flows/3_1_Extension/3_1_3_SD.md",
     "3_main_operational_flows/3_1_Extension/3_1_2_UC.md",
     "3_main_operational_flows/3_1_Extension/3_1_1_FR.md",
@@ -207,9 +201,28 @@
     "3_main_operational_flows/3_1_Extension/3_1_1_FR/3_1_1_3_Analyzer.md",
     "3_main_operational_flows/3_1_Extension/3_1_1_FR/3_1_1_2_Techstack.md",
     "3_main_operational_flows/3_1_Extension/3_1_1_FR/3_1_1_1_Global.md",
-    "2_architecture/2_Architecture.md",
-    "2_architecture/2_2_Engine_Tool.md",
-    "2_architecture/2_1_ClientEnv.md",
-    "2_architecture/2_2_Engine_Tool/2_2_4_GraphDB.md"
+    "3_main_operational_flows/3_2_Dashboard/3_2_1_FR/3_2_1_6_OpenAPI.md",
+    "3_main_operational_flows/3_2_Dashboard/3_2_1_FR/3_2_1_5_Tool_Status.md",
+    "3_main_operational_flows/3_2_Dashboard/3_2_1_FR/3_2_1_4_Send_PCAP.md",
+    "1_overview",
+    "3_2_3_SD",
+    "images/3_main_operational_flows/3_2_Dashboard/3_2_3_SD/3_2_3_6_OpenAPI/SD-DASH-OAPI-07.txt",
+    "images/3_main_operational_flows/3_2_Dashboard/3_2_3_SD/3_2_3_6_OpenAPI/SD-DASH-OAPI-07.png",
+    "images/3_main_operational_flows/3_2_Dashboard/3_2_3_SD/3_2_3_6_OpenAPI/Untitled diagram-2025-12-07-201350.png",
+    "images/3_main_operational_flows/3_2_Dashboard/3_2_3_SD/3_2_3_6_OpenAPI/SD-DASH-OAPI-06.txt",
+    "images/3_main_operational_flows/3_2_Dashboard/3_2_3_SD/3_2_3_6_OpenAPI/SD-DASH-OAPI-06.png",
+    "images/3_main_operational_flows/3_2_Dashboard/3_2_3_SD/3_2_3_6_OpenAPI/Untitled diagram-2025-12-07-201320.png",
+    "images/3_main_operational_flows/3_2_Dashboard/3_2_3_SD/3_2_3_6_OpenAPI/SD-DASH-OAPI-05.txt",
+    "images/3_main_operational_flows/3_2_Dashboard/3_2_3_SD/3_2_3_6_OpenAPI/SD-DASH-OAPI-05.png",
+    "images/3_main_operational_flows/3_2_Dashboard/3_2_3_SD/3_2_3_6_OpenAPI/Untitled diagram-2025-12-07-201228.png",
+    "images/3_main_operational_flows/3_2_Dashboard/3_2_3_SD/3_2_3_6_OpenAPI/SD-DASH-OAPI-04.txt",
+    "images/3_main_operational_flows/3_2_Dashboard/3_2_3_SD/3_2_3_6_OpenAPI/SD-DASH-OAPI-04",
+    "images/3_main_operational_flows/3_2_Dashboard/3_2_3_SD/3_2_3_6_OpenAPI/SD-DASH-OAPI-04.png",
+    "images/3_main_operational_flows/3_2_Dashboard/3_2_3_SD/3_2_3_6_OpenAPI/Untitled diagram-2025-12-07-201134.png",
+    "images/3_main_operational_flows/3_2_Dashboard/3_2_3_SD/3_2_3_6_OpenAPI/SD-DASH-OAPI-03.txt",
+    "images/3_main_operational_flows/3_2_Dashboard/3_2_3_SD/3_2_3_6_OpenAPI/SD-DASH-OAPI-03.png",
+    "images/3_main_operational_flows/3_2_Dashboard/3_2_3_SD/3_2_3_6_OpenAPI/Untitled diagram-2025-12-07-201032.png",
+    "images/3_main_operational_flows/3_2_Dashboard/3_2_3_SD/3_2_3_6_OpenAPI/SD-DASH-OAPI-02.txt",
+    "images/3_main_operational_flows/3_2_Dashboard/3_2_3_SD/3_2_3_6_OpenAPI/SD-DASH-OAPI-01.txt"
   ]
 }

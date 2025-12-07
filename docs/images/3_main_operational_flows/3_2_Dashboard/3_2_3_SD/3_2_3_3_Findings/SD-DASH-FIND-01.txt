@@ -1,0 +1,37 @@
+sequenceDiagram
+    actor U as Utente
+    participant S as Dashboard Shell (layout)
+    participant R as Router
+    participant A as AppBar Findings (sotto-nav)
+    participant P as Pagina Findings corrente
+
+    U->>S: Clic su "Findings" nella nav laterale\n(o apertura URL /findings...)
+    activate S
+    S->>R: resolveRoute(/findings[/...])
+    R-->>S: Render layout Findings (shell comune)
+
+    S->>A: mostraSottoNavigazioneSePathIniziaCon("/findings")
+    A-->>U: Mostra tab HTTP / Analyzer / Techstack
+
+    alt URL = "/findings" o "/findings/"
+        R-->>P: Render pagina HTTP Findings
+        A-->>A: evidenziaTab("HTTP Findings")\n(disabilita pulsante corrente)
+    else URL = "/findings/analyzer"
+        R-->>P: Render pagina Analyzer Findings
+        A-->>A: evidenziaTab("Analyzer Findings")
+    else URL = "/findings/techstack"
+        R-->>P: Render pagina Techstack Findings
+        A-->>A: evidenziaTab("Techstack Findings")
+    end
+
+    U->>A: Click su tab diversa (es. "Analyzer Findings")
+    A->>R: navigate("/findings/analyzer")
+    R-->>P: Render pagina Analyzer Findings\n(all'interno dello stesso layout)
+    A-->>A: Aggiorna tab attiva/disabilitata
+
+    alt Utente clicca sulla tab già attiva
+        U->>A: Click su tab corrente (es. "HTTP Findings")
+        A-->>A: Ignora (nessuna nuova navigazione)
+    end
+
+    deactivate S

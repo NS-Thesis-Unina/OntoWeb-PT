@@ -1,0 +1,40 @@
+sequenceDiagram
+    autonumber
+    participant P as APIExplorerPage
+    participant RR as ResponsesRenderer
+    participant D as DerefEngine
+    participant S as SchemaOpenAPI
+    participant U as Utente
+
+    P->>RR: renderResponses(ep.responses, S)
+    activate RR
+
+    RR->>RR: Inizializza oggetto responsesView = {}
+
+    loop Per ogni status in ep.responses
+        activate RR
+        RR->>RR: Legge resp.description
+        RR->>RR: Prova a leggere resp.content["application/json"].schema
+
+        alt Schema JSON presente per quello status
+            RR->>D: deref(schema, S)
+            activate D
+            D->>S: Risolve eventuali $ref locali
+            D-->>RR: schemaDereferenziato
+            deactivate D
+            RR->>RR: responsesView[status] =\n{ description, schema: schemaDereferenziato }
+        else Nessuno schema application/json
+            RR->>RR: responsesView[status] =\n{ description } (senza schema)
+        end
+    end
+
+    alt Almeno una response definita
+        RR-->>P: Restituisce oggetto responsesView
+        deactivate RR
+        P->>P: Serializza responsesView\nJSON.stringify(..., null, 2)
+        P-->>U: Mostra sezione "Responses Body"\ncon JSON per codici di stato
+    else Nessuna response disponibile
+        RR-->>P: Restituisce oggetto vuoto {}
+        deactivate RR
+        P-->>U: Mostra sezione "Responses Body"\ncon {}
+    end

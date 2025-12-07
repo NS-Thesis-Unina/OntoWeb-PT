@@ -1,0 +1,29 @@
+sequenceDiagram
+    actor U as Utente
+    participant JD as Dialog "Job Summaries"
+    participant P as Pagina SendPCAP
+    participant WS as SocketService
+
+    U->>JD: Click su pulsante "OK" (chiudi dialog)
+    JD-->>P: onCloseJobsDialog()
+
+    P->>P: openJobsDialog = false
+
+    P->>P: Ottieni elenco jobId ancora sottoscritti\nsubscribedJobIdsRef.current
+    loop Per ogni jobId sottoscritto
+        P->>WS: unsubscribeJob(jobId)
+        WS-->>P: Conferma o errore ignorato
+    end
+    P->>P: Svuota subscribedJobIdsRef.current
+
+    P->>P: jobEvents = []
+    P->>P: activeStep = 0
+    P->>P: pcapFile = null, sslKeysFile = null
+    P->>P: requests = [], selectedRequests = []
+    P->>P: activateResolver = false
+    P->>P: errorMessage = ""
+    P->>P: loadingExtract = false
+    P->>P: loadingSend = false
+    P->>P: checkingTool = false
+
+    P-->>U: Wizard riportato allo step 0\nPronto per un nuovo flusso "Send PCAP"

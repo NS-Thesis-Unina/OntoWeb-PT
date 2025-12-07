@@ -1,0 +1,32 @@
+sequenceDiagram
+    actor U as Utente
+    participant TS as Pagina Tool Status
+    participant CP as Card principale "Tool Status"
+    participant CAPI as StatusCard "API Server"
+    participant CRED as StatusCard "Redis"
+    participant CGDB as StatusCard "GraphDB"
+    participant CWS as StatusCard "WebSocket"
+
+    U->>TS: Visualizza Tool Status (health/toolStatus già aggiornati)
+    activate TS
+
+    TS->>CP: toolStatus, lastUpdate
+    CP-->>U: Mostra titolo "Tool Status: <toolStatus>"<br/>+ "Ultimo aggiornamento: <ora locale>"<br/>+ barra colore (verde/giallo/rosso)
+
+    TS->>CAPI: status grezzo = health.components.server
+    CAPI->>CAPI: normalizza (falsy -> "down")
+    CAPI-->>U: Mostra stato "up/down/..." + pallino colore
+
+    TS->>CRED: status grezzo = health.components.redis
+    CRED->>CRED: normalizza
+    CRED-->>U: Mostra stato + pallino
+
+    TS->>CGDB: status grezzo = health.components.graphdb
+    CGDB->>CGDB: normalizza
+    CGDB-->>U: Mostra stato + pallino
+
+    TS->>CWS: status grezzo = wsStatus
+    CWS->>CWS: normalizza ("connected"/"disconnected")
+    CWS-->>U: Mostra stato + pallino
+
+    deactivate TS

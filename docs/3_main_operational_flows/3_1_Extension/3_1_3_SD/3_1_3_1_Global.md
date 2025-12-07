@@ -3,7 +3,7 @@
 
 **SD-EXT-GLOB-01 – Apertura popup e scelta della vista iniziale (Home, contesto salvato, sessione live)**
 
-![SD-EXT-GLOB-01](../../../images/3_main_operational_flows/3_1_Extension/3_1_1_SD/3_1_3_1_Global/SD-EXT-GLOB-01.png)
+![SD-EXT-GLOB-01](../../../images/3_main_operational_flows/3_1_Extension/3_1_3_SD/3_1_3_1_Global/SD-EXT-GLOB-01.png)
 
 Descrizione (alto livello):
 
@@ -17,7 +17,7 @@ Questo diagramma mostra cosa accade quando l’utente apre la popup dell’esten
 
 **SD-EXT-GLOB-02 – Navigazione tra sezioni principali e sotto-pagine**
 
-![SD-EXT-GLOB-02](../../../images/3_main_operational_flows/3_1_Extension/3_1_1_SD/3_1_3_1_Global/SD-EXT-GLOB-02.png)
+![SD-EXT-GLOB-02](../../../images/3_main_operational_flows/3_1_Extension/3_1_3_SD/3_1_3_1_Global/SD-EXT-GLOB-02.png)
 
 Descrizione (alto livello):
 
@@ -30,7 +30,7 @@ Questo diagramma descrive la navigazione “globale” e “interna” all’est
 
 **SD-EXT-GLOB-03 – Avvio scansione con lock globale e gestione del conflitto**
 
-![SD-EXT-GLOB-03](../../../images/3_main_operational_flows/3_1_Extension/3_1_1_SD/3_1_3_1_Global/SD-EXT-GLOB-03.png)
+![SD-EXT-GLOB-03](../../../images/3_main_operational_flows/3_1_Extension/3_1_3_SD/3_1_3_1_Global/SD-EXT-GLOB-03.png)
 
 Descrizione (alto livello):
 
@@ -43,7 +43,7 @@ Questo diagramma illustra il comportamento globale del lock di scansione:
 
 **SD-EXT-GLOB-04 – Cambio tema chiaro/scuro e gestione errori di persistenza**
 
-![SD-EXT-GLOB-04](../../../images/3_main_operational_flows/3_1_Extension/3_1_1_SD/3_1_3_1_Global/SD-EXT-GLOB-04.png)
+![SD-EXT-GLOB-04](../../../images/3_main_operational_flows/3_1_Extension/3_1_3_SD/3_1_3_1_Global/SD-EXT-GLOB-04.png)
 
 Descrizione (alto livello):
 
@@ -57,7 +57,7 @@ Questo diagramma rappresenta il flusso di cambio tema globale:
 
 **SD-EXT-GLOB-05 – Polling dello stato del Tool (backend) e aggiornamento indicatore globale**
 
-![SD-EXT-GLOB-05](../../../images/3_main_operational_flows/3_1_Extension/3_1_1_SD/3_1_3_1_Global/SD-EXT-GLOB-05.png)
+![SD-EXT-GLOB-05](../../../images/3_main_operational_flows/3_1_Extension/3_1_3_SD/3_1_3_1_Global/SD-EXT-GLOB-05.png)
 
 Descrizione (alto livello):
 
@@ -70,7 +70,7 @@ Questo diagramma descrive il ciclo di monitoraggio dello stato del Tool/backend:
 
 **SD-EXT-GLOB-06 – Notifiche globali non bloccanti (scenario generico)**
 
-![SD-EXT-GLOB-06](../../../images/3_main_operational_flows/3_1_Extension/3_1_1_SD/3_1_3_1_Global/SD-EXT-GLOB-06.png)
+![SD-EXT-GLOB-06](../../../images/3_main_operational_flows/3_1_Extension/3_1_3_SD/3_1_3_1_Global/SD-EXT-GLOB-06.png)
 
 Descrizione (alto livello):
 

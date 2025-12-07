@@ -3,7 +3,7 @@
 
 **SD-EXT-INT-01 – Avvio, esecuzione e arresto di una sessione Runtime Interceptor (lock globale + pannello di stato)**
 
-![SD-EXT-INT-01](../../../images/3_main_operational_flows/3_1_Extension/3_1_1_SD/3_1_3_4_Interceptor/SD-EXT-INT-01.png)
+![SD-EXT-INT-01](../../../images/3_main_operational_flows/3_1_Extension/3_1_3_SD/3_1_3_4_Interceptor/SD-EXT-INT-01.png)
 
 Descrizione (alto livello):  
 
@@ -18,7 +18,7 @@ Questo diagramma mostra il ciclo di vita di una sessione Runtime Interceptor:
 
 **SD-EXT-INT-02 – Caricamento automatico e consultazione dell’ultima sessione Runtime Interceptor**
 
-![SD-EXT-INT-02](../../../images/3_main_operational_flows/3_1_Extension/3_1_1_SD/3_1_3_4_Interceptor/SD-EXT-INT-02.png)
+![SD-EXT-INT-02](../../../images/3_main_operational_flows/3_1_Extension/3_1_3_SD/3_1_3_4_Interceptor/SD-EXT-INT-02.png)
 
 Descrizione (alto livello):  
 
@@ -33,7 +33,7 @@ Questo diagramma descrive cosa accade quando l’utente apre **Runtime Scan** se
 
 **SD-EXT-INT-03 – Gestione dell’archivio Runtime Interceptor (lista, refresh, caricamento run, delete singolo / massivo)**
 
-![SD-EXT-INT-03](../../../images/3_main_operational_flows/3_1_Extension/3_1_1_SD/3_1_3_4_Interceptor/SD-EXT-INT-03.png)
+![SD-EXT-INT-03](../../../images/3_main_operational_flows/3_1_Extension/3_1_3_SD/3_1_3_4_Interceptor/SD-EXT-INT-03.png)
 
 Descrizione (alto livello):  
 
@@ -47,7 +47,7 @@ Questo diagramma copre le interazioni nella sottosezione **Archive** di Intercep
 
 **SD-EXT-INT-04 – Wizard “Send to ontology”: selezione scansione, website e richieste**
 
-![SD-EXT-INT-04](../../../images/3_main_operational_flows/3_1_Extension/3_1_1_SD/3_1_3_4_Interceptor/SD-EXT-INT-04.png)
+![SD-EXT-INT-04](../../../images/3_main_operational_flows/3_1_Extension/3_1_3_SD/3_1_3_4_Interceptor/SD-EXT-INT-04.png)
 
 Descrizione (alto livello):  
 
@@ -62,7 +62,7 @@ Questo diagramma descrive il percorso guidato del wizard **Send to ontology** fi
 
 **SD-EXT-INT-05 – Invio richieste a GraphDB / resolver e monitoraggio job (“Job Summaries”)**
 
-![SD-EXT-INT-05](../../../images/3_main_operational_flows/3_1_Extension/3_1_1_SD/3_1_3_4_Interceptor/SD-EXT-INT-05.png)
+![SD-EXT-INT-05](../../../images/3_main_operational_flows/3_1_Extension/3_1_3_SD/3_1_3_4_Interceptor/SD-EXT-INT-05.png)
 
 Descrizione (alto livello):  
 

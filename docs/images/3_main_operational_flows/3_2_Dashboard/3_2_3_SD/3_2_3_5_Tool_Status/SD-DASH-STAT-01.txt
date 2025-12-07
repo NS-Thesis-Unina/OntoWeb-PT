@@ -1,0 +1,23 @@
+sequenceDiagram
+    actor U as Utente
+    participant TS as Pagina Tool Status
+    participant HS as Servizio Health REST
+    participant TD as deriveToolStatus
+
+    U->>TS: Naviga a /server-status
+    activate TS
+
+    TS->>HS: getHealth()
+    alt Risposta health OK
+        HS-->>TS: health (components, ecc.)
+        TS->>TD: deriveToolStatus(health)
+        TD-->>TS: toolStatus (tool_on/checking/tool_off)
+        TS->>TS: aggiorna stato locale (health, toolStatus, lastUpdate)
+        TS-->>U: Render card principale + griglia componenti
+    else Errore o health non raggiungibile
+        HS--xTS: errore rete / timeout
+        TS->>TS: health = null<br/>toolStatus = tool_off
+        TS-->>U: Render card principale in stato "Tool Off"
+    end
+
+    deactivate TS

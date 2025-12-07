@@ -1,0 +1,27 @@
+sequenceDiagram
+    actor U as Utente
+    participant B as Browser
+    participant APP as App SPA (LayoutShell + Router)
+    participant R as Router
+    participant CP as Pagina contenuto
+
+    U->>B: Digita URL /findings/analyzer o usa un bookmark
+    B->>APP: Carica bundle SPA con location = "/findings/analyzer"
+    activate APP
+
+    APP->>R: handleInitialRoute("/findings/analyzer")
+    activate R
+    R->>APP: render(FindingsAnalyzerPage) dentro LayoutShell
+    APP->>CP: mount(AnalyzerFindingsPage)
+    CP-->>U: Mostra tabella Analyzer Findings
+    deactivate R
+
+    U->>B: Clic tasto Indietro
+    B-->>R: evento popstate("/http-requests")
+    activate R
+    R->>APP: updateRoute("/http-requests")
+    APP->>CP: mount(HttpRequestsPage)
+    CP-->>U: Mostra pagina HTTP Requests
+    deactivate R
+
+    deactivate APP

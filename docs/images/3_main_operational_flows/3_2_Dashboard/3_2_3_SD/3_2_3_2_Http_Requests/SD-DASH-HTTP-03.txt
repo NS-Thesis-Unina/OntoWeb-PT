@@ -1,0 +1,43 @@
+sequenceDiagram
+    actor U as Utente
+    participant F as Toolbar filtri
+    participant H as Pagina HTTP Requests
+    participant S as HttpRequestsService (backend)
+    participant G as DataGrid
+    participant N as Notifiche globali
+
+    %% Modifica dei campi filtro
+    U->>F: Compila/aggiorna campi filtro\n(Method, Scheme, Authority, Path, Full-text)
+    F->>H: onFiltersChange(filtersCurrent)
+    activate H
+    H->>H: normalizza valori (trim, ecc.)\naggiorna stato filtersCurrent
+    H->>F: comunica se filtersCurrent != filtersApplied\n(abilita/disabilita pulsante Apply)
+    deactivate H
+
+    %% Applicazione filtri (Apply)
+    U->>F: Clic su pulsante "Apply"
+    F->>H: onApply()
+    activate H
+    H->>H: copia filtersCurrent in filtersApplied\nreset page=0, calcola offset=0
+    H->>S: listHttpRequests(offset=0, limit=pageSize,\nfiltri=filtersApplied non vuoti)
+    activate S
+    S-->>H: { rows, total, pageMeta }
+    deactivate S
+    H->>H: aggiorna stato (rows, pagination, loading=false)
+    H->>G: aggiorna DataGrid con risultati filtrati
+    H->>N: mostra snackbar "I filtri sono stati applicati correttamente."
+    deactivate H
+
+    %% Reset filtri
+    U->>F: Clic su pulsante "Reset"
+    F->>H: onReset()
+    activate H
+    H->>H: azzera filtersCurrent e filtersApplied\n(Method=All, altri campi vuoti)
+    H->>H: reset page=0, offset=0
+    H->>S: listHttpRequests(offset=0, limit=pageSize,\nfiltri={})
+    activate S
+    S-->>H: { rows, total, pageMeta } (lista grezza)
+    deactivate S
+    H->>H: aggiorna stato con lista non filtrata
+    H->>G: render DataGrid con risultati non filtrati
+    deactivate H

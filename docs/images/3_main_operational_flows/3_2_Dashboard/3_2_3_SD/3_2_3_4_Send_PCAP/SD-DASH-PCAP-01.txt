@@ -1,0 +1,16 @@
+sequenceDiagram
+    actor U as Utente
+    participant R as Router Dashboard
+    participant P as Pagina SendPCAP
+
+    U->>R: Naviga a "/send-pcap"\n(dal menu laterale o da Home)
+    R-->>U: Aggiorna URL e mantiene layout globale
+    R->>P: Monta componente SendPcapPage
+    activate P
+    P->>P: activeStep = 0
+    P->>P: pcapFile = null, sslKeysFile = null
+    P->>P: requests = [], selectedRequests = []
+    P->>P: activateResolver = false
+    P->>P: errorMessage = ""
+    P-->>U: Render stepper con 6 passi\nStep attivo = "Upload PCAP file"
+    deactivate P

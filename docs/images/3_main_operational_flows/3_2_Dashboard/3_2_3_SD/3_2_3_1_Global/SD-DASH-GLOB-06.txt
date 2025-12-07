@@ -1,0 +1,17 @@
+sequenceDiagram
+    actor U as Utente
+    participant R as Router
+    participant HOME as HomePage
+    participant NAV as Nav laterale
+
+    U->>R: Apri URL "/"
+    activate R
+    R->>HOME: render(HomePage dentro LayoutShell)
+    HOME-->>U: Mostra descrizione OntoWeb-PT + feature card (HTTP Requests, Findings, Send PCAP, Tool Status, OpenAPI)
+    NAV-->>U: Evidenzia "Home"
+
+    U->>HOME: Click su card "Send PCAP"
+    HOME->>R: navigate("/send-pcap")
+    R-->>NAV: aggiorna sezione attiva ("Send PCAP")
+    R-->>U: Mostra pagina Send PCAP (stepper) in area contenuto, layout invariato
+    deactivate R

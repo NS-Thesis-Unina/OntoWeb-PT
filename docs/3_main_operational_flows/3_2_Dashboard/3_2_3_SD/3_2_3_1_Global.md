@@ -1,101 +1,82 @@
 # Global – Sequence Diagrams
+---
+
+**SD-DASH-GLOB-01 – Navigazione tra sezioni principali dalla barra laterale**
+
+![SD-DASH-GLOB-01](../../../images/3_main_operational_flows/3_2_Dashboard/3_2_3_SD/3_2_3_1_Global/SD-DASH-GLOB-01.png)
+
+Descrizione (alto livello):
+
+Questo diagramma mostra la navigazione principale tra le sezioni della dashboard tramite la barra laterale sinistra. L’utente clicca su una voce (es. “HTTP Requests”), il router client-side aggiorna la route e il LayoutShell rimpiazza solo l’area di contenuto con la pagina corrispondente, lasciando invariati header e nav laterale. La voce scelta viene evidenziata come sezione attiva.
 
 ---
 
-**SD-EXT-GLOB-01 – Apertura popup e scelta della vista iniziale (Home, contesto salvato, sessione live)**
+**SD-DASH-GLOB-02 – Navigazione tramite URL dirette e tasti Indietro/Avanti del browser**
 
+![SD-DASH-GLOB-02](../../../images/3_main_operational_flows/3_2_Dashboard/3_2_3_SD/3_2_3_1_Global/SD-DASH-GLOB-02.png)
 
+Descrizione (alto livello):
 
-Descrizione (testuale):  
-Questo diagramma mostra cosa accade quando l’utente apre la popup dell’estensione su una scheda del browser. La UI globale:
-
-- chiede al gestore delle sessioni runtime se esista una sessione “live” (Analyzer Runtime o Interceptor) per il tab corrente;
-
-- se esiste, porta l’utente direttamente sulla vista runtime corrispondente, ignorando l’ultima pagina salvata;
-
-- se non esiste alcuna sessione live, prova a recuperare dal conto dello storage l’ultima route associata alla scheda;
-
-- se la route è disponibile e valida, la UI naviga lì; altrimenti viene mostrata la Home di onboarding.
+Questo diagramma illustra il comportamento del routing client-side quando l’utente usa direttamente la barra degli indirizzi o i tasti Indietro/Avanti del browser. L’app SPA interpreta l’URL iniziale e rende la pagina corretta all’interno del LayoutShell; gli eventi di history (popstate) aggiornano solo l’area contenuti mantenendo coerenti header e nav laterale.
 
 ---
 
-**SD-EXT-GLOB-02 – Navigazione tra sezioni principali e sotto-pagine**
+**SD-DASH-GLOB-03 – Sotto-navigazione contestuale per Findings (HTTP / Analyzer / Techstack)**
 
+![SD-DASH-GLOB-03](../../../images/3_main_operational_flows/3_2_Dashboard/3_2_3_SD/3_2_3_1_Global/SD-DASH-GLOB-03.png)
 
+Descrizione (alto livello):
 
-Descrizione (testuale):  
-Questo diagramma descrive la navigazione “globale” e “interna” all’estensione:
-
-- l’utente usa la barra globale (Home, Technology Stack, Analyzer, Interceptor) per cambiare sezione;
-
-- il router centrale aggiorna l’area contenuto con la sezione selezionata, applicando la sottopagina di default;
-
-- ad ogni cambio di sezione o sottopagina, la UI salva nello storage locale la scelta corrente per la scheda, così da poter riprendere facilmente il contesto alla riapertura della popup.
+Questo diagramma descrive la sotto-navigazione interna alla sezione Findings. Quando l’utente si trova su una route che inizia con `/findings`, il LayoutShell mostra tre tab (HTTP, Analyzer, Techstack). I click sui tab invocano il router, che cambia solo il contenuto della pagina (lista di findings) e aggiorna lo stato della sotto-nav per evidenziare la sotto-sezione attiva.
 
 ---
 
-**SD-EXT-GLOB-03 – Avvio scansione con lock globale e gestione del conflitto**
+**SD-DASH-GLOB-04 – Cambio tema chiaro/scuro e persistenza (con degrado controllato)**
 
+![SD-DASH-GLOB-04](../../../images/3_main_operational_flows/3_2_Dashboard/3_2_3_SD/3_2_3_1_Global/SD-DASH-GLOB-04.png)
 
+Descrizione (alto livello):
 
-Descrizione (testuale):  
-Questo diagramma illustra il comportamento globale del lock di scansione:
-
-- quando l’utente preme “Start scan” in uno dei moduli (Techstack, Analyzer, Interceptor), la vista di scansione chiede al servizio di lock globale di acquisire il lock;
-
-- se il lock è libero (o coerente con il modulo che sta partendo), la scansione viene avviata verso il backend e lo stato UI passa a “scanning/running”; al termine, il modulo rilascia il lock;
-
-- se il lock è già occupato da un altro componente, il servizio nega l’acquisizione, la UI disabilita l’azione e mostra all’utente quale scansione è in corso, eventualmente con una notifica globale.
+Questo diagramma mostra come la dashboard gestisce il tema globale. All’avvio viene letta la preferenza da `localStorage` e applicato un default se la lettura fallisce. Quando l’utente cambia tema tramite il toggle nella barra superiore, il ThemeManager aggiorna immediatamente l’aspetto di tutta la UI e tenta di salvare la preferenza; eventuali errori di salvataggio producono solo un warning non bloccante, mantenendo la dashboard pienamente utilizzabile.
 
 ---
 
-**SD-EXT-GLOB-04 – Cambio tema chiaro/scuro e gestione errori di persistenza**
+**SD-DASH-GLOB-05 – Polling dello stato del Tool (health backend) e aggiornamento chip globale**
 
+![SD-DASH-GLOB-05](../../../images/3_main_operational_flows/3_2_Dashboard/3_2_3_SD/3_2_3_1_Global/SD-DASH-GLOB-05.png)
 
+Descrizione (alto livello):
 
-Descrizione (testuale):  
-Questo diagramma rappresenta il flusso di cambio tema globale:
-
-- quando l’utente usa il toggle nella barra globale, il tema viene applicato subito a tutta la UI;
-
-- in parallelo, l’estensione prova a salvare la preferenza nello storage locale;
-
-- se il salvataggio va a buon fine, il tema verrà riapplicato automaticamente nelle aperture successive;
-
-- se il salvataggio fallisce (problemi di storage o permessi), il tema rimane attivo solo per la sessione corrente e l’utente viene informato tramite una notifica non bloccante.
+Questo diagramma illustra il ciclo di polling dello stato del backend. Il chip globale “Tool Status” si registra presso un servizio di health che, a intervalli regolari, interroga l’endpoint `/health`, deriva uno stato sintetico (`tool_on`, `tool_off`, `checking`) e aggiorna il chip. In caso di errore o assenza di risposta, lo stato passa a “Tool Off” senza bloccare il resto della dashboard.
 
 ---
 
-**SD-EXT-GLOB-05 – Polling dello stato del Tool (backend) e aggiornamento indicatore globale**
+**SD-DASH-GLOB-06 – Home/Dashboard come pagina di onboarding e accesso rapido**
 
+![SD-DASH-GLOB-06](../../../images/3_main_operational_flows/3_2_Dashboard/3_2_3_SD/3_2_3_1_Global/SD-DASH-GLOB-06.png)
 
+Descrizione (alto livello):
 
-Descrizione (testuale):  
-Questo diagramma descrive il ciclo di monitoraggio dello stato del Tool/backend:
-
-- la popup si registra presso un servizio di stato che esegue periodicamente un health-check verso il backend;
-
-- in base alla risposta, il servizio aggiorna la UI globale con uno degli stati sintetici (“Checking”, “Tool On”, “Tool Off”);
-
-- quando lo stato cambia in modo significativo (da On a Off o viceversa), la UI può mostrare una notifica per rendere esplicito all’utente che alcune operazioni (Analyze, Send to ontology, ecc.) potrebbero essere bloccate o di nuovo disponibili.
+Questo diagramma descrive l’atterraggio sulla Home della dashboard e l’uso delle “feature card” come scorciatoie verso le altre sezioni. L’utente arriva su `/` o `/home`, vede la spiegazione dello strumento e le card cliccabili; selezionandone una, il router lo porta alla sezione corrispondente riutilizzando lo stesso layout globale (header + nav laterale).
 
 ---
 
-**SD-EXT-GLOB-06 – Notifiche globali non bloccanti (scenario generico)**
+**SD-DASH-GLOB-07 – Notifiche globali non bloccanti (scenario generico)**
 
+![SD-DASH-GLOB-07](../../../images/3_main_operational_flows/3_2_Dashboard/3_2_3_SD/3_2_3_1_Global/SD-DASH-GLOB-07.png)
 
+Descrizione (alto livello):
 
-Descrizione (testuale):  
-Questo diagramma cattura il modello comune di feedback per tutte le sezioni:
+Questo diagramma cattura il pattern comune di feedback nella dashboard. Qualunque pagina (HTTP Requests, Findings, Send PCAP, ecc.) dopo una chiamata al backend mostra una notifica sintetica tramite un NotificationCenter globale. Le snackbar confermano successi o segnalano errori, ma non bloccano l’interazione: l’utente può continuare a usare la UI mentre il messaggio è visibile.
 
-- l’utente esegue un’azione (refresh archivio, cancellazione, invio job, ecc.);
+---
 
-- la vista coinvolta interagisce con storage o backend;
+**SD-DASH-GLOB-08 – Degrado controllato per problemi di storage locale o health backend**
 
-- in caso di successo, aggiorna la UI e richiede una notifica di conferma;
+![SD-DASH-GLOB-08](../../../images/3_main_operational_flows/3_2_Dashboard/3_2_3_SD/3_2_3_1_Global/SD-DASH-GLOB-08.png)
 
-- in caso di errore, richiede una notifica di avviso/errore, lasciando comunque la UI utilizzabile;
+Descrizione (alto livello):
 
-- le notifiche sono di tipo non bloccante (snackbar/toast) e scompaiono automaticamente dopo un intervallo breve.
+Questo diagramma mostra come la dashboard continua a funzionare anche se si verificano problemi con lo storage locale o con il servizio di health. All’avvio, l’app tenta in parallelo di leggere il tema e di recuperare lo stato del tool; in caso di errore, ripiega su un tema di default e imposta lo stato globale su “Tool Off”, ma il LayoutShell viene comunque renderizzato e l’utente può navigare tra le pagine e usare le funzionalità core senza blocchi.
 
 ---

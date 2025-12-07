@@ -1,0 +1,38 @@
+sequenceDiagram
+    actor U as Utente
+    participant APP as AppRoot
+    participant TM as ThemeManager
+    participant LS as LocalStorage
+    participant NC as NotificationCenter
+
+    Note over APP,TM: Fase di inizializzazione
+
+    APP->>TM: initTheme()
+    activate TM
+    TM->>LS: getItem("theme")
+    alt Valore presente e leggibile
+        LS-->>TM: "dark" o "light"
+        TM->>APP: applyTheme(valore)
+    else Nessun valore o errore di lettura
+        LS-->>TM: null / errore
+        TM->>APP: applyTheme("light" come default)
+    end
+    deactivate TM
+
+    Note over U,TM: Interazione utente – cambio tema
+
+    U->>APP: Click toggle tema (es. da light a dark)
+    APP->>TM: toggleTheme()
+    activate TM
+    TM->>APP: applyTheme("dark")
+    TM->>LS: setItem("theme", "dark")
+
+    alt Salvataggio riuscito
+        LS-->>TM: ok
+    else Errore di salvataggio
+        LS-->>TM: errore
+        TM->>NC: showWarning("Impossibile salvare il tema, uso solo per la sessione corrente.")
+        NC-->>U: Mostra snackbar non bloccante
+    end
+
+    deactivate TM

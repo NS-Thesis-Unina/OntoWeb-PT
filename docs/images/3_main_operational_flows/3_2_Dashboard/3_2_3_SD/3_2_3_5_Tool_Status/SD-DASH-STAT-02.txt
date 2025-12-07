@@ -1,0 +1,41 @@
+sequenceDiagram
+    actor U as Utente
+    participant TS as Pagina Tool Status
+    participant HS as Servizio Health REST
+    participant WS as WebSocket root (stato)
+
+    U->>TS: Rimane sulla pagina Tool Status
+    activate TS
+
+    TS->>HS: getHealth() (prima chiamata)
+    HS-->>TS: health / errore
+    TS->>TS: aggiorna health/toolStatus/lastUpdate
+
+    loop Ogni ~5 secondi
+        TS->>HS: getHealth()
+        alt health OK
+            HS-->>TS: health
+            TS->>TS: aggiorna health<br/>ricalcola toolStatus<br/>aggiorna lastUpdate
+        else errore health
+            HS--xTS: errore
+            TS->>TS: health = null<br/>toolStatus = tool_off
+        end
+        TS-->>U: UI aggiornata (card + componenti)
+    end
+
+    WS-->>TS: evento "connect" o "disconnect"
+    alt WebSocket diventa connected
+        TS->>TS: wsStatus = "connected"
+        TS->>HS: getHealth() immediato
+        HS-->>TS: health
+        TS->>TS: aggiorna health/toolStatus/lastUpdate
+        TS-->>U: UI aggiornata dopo riconnessione
+    else WebSocket diventa disconnected
+        TS->>TS: wsStatus = "disconnected"
+        TS->>HS: getHealth() immediato
+        HS-->>TS: health / errore
+        TS->>TS: aggiorna stato coerente (tool_off se errore)
+        TS-->>U: UI aggiornata dopo disconnessione
+    end
+
+    deactivate TS

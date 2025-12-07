@@ -1,0 +1,16 @@
+sequenceDiagram
+    autonumber
+    participant U as Utente
+    participant P as APIExplorerPage
+    participant L as SchemaLoader
+
+    U->>P: Apre pagina /openapi
+    P->>L: Import locale di openapi.json\n(unica operazione di caricamento dati)
+    L-->>P: Restituisce schema OpenAPI
+    P->>P: Costruisce endpoints, parametri,\nrequest/response body (solo lettura)
+
+    loop Interazioni utente
+        U->>P: Espande/chiude Accordion endpoint
+        P->>P: Calcola view model locale\n(description, parameters, schemi)
+        P-->>U: Aggiorna solo la UI\n(senza chiamate agli endpoint di backend)
+    end

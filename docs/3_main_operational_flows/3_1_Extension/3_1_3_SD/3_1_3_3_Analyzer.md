@@ -3,7 +3,7 @@
 
 **SD-EXT-AN-01 – Avvio One-Time Scan Analyzer sulla scheda corrente**
 
-![SD-EXT-AN-01](../../../images/3_main_operational_flows/3_1_Extension/3_1_1_SD/3_1_3_3_Analyzer/SD-EXT-AN-01.png)
+![SD-EXT-AN-01](../../../images/3_main_operational_flows/3_1_Extension/3_1_3_SD/3_1_3_3_Analyzer/SD-EXT-AN-01.png)
 
 Descrizione (alto livello):  
 
@@ -13,7 +13,7 @@ Questo diagramma rappresenta il flusso completo di una One-Time Scan in Analyzer
 
 **SD-EXT-AN-02 – Runtime Scan Analyzer: avvio, stato live e stop**
 
-![SD-EXT-AN-02](../../../images/3_main_operational_flows/3_1_Extension/3_1_1_SD/3_1_3_3_Analyzer/SD-EXT-AN-02.png)
+![SD-EXT-AN-02](../../../images/3_main_operational_flows/3_1_Extension/3_1_3_SD/3_1_3_3_Analyzer/SD-EXT-AN-02.png)
 
 Descrizione (alto livello):  
 
@@ -23,7 +23,7 @@ Questo diagramma descrive il ciclo di vita di una Runtime Scan in Analyzer. All�
 
 **SD-EXT-AN-03 – Archivio Analyzer: caricamento, consultazione e cancellazione (One-Time e Runtime)**
 
-![SD-EXT-AN-03](../../../images/3_main_operational_flows/3_1_Extension/3_1_1_SD/3_1_3_3_Analyzer/SD-EXT-AN-03.png)
+![SD-EXT-AN-03](../../../images/3_main_operational_flows/3_1_Extension/3_1_3_SD/3_1_3_3_Analyzer/SD-EXT-AN-03.png)
 
 Descrizione (alto livello):  
 
@@ -33,7 +33,7 @@ Questo diagramma copre il comportamento dell’archivio Analyzer sia per le One-
 
 **SD-EXT-AN-04 – Workflow Analyze Analyzer (One-Time / Runtime) e monitoraggio job**
 
-![SD-EXT-AN-04](../../../images/3_main_operational_flows/3_1_Extension/3_1_1_SD/3_1_3_3_Analyzer/SD-EXT-AN-04.png)
+![SD-EXT-AN-04](../../../images/3_main_operational_flows/3_1_Extension/3_1_3_SD/3_1_3_3_Analyzer/SD-EXT-AN-04.png)
 
 Descrizione (alto livello):  
 

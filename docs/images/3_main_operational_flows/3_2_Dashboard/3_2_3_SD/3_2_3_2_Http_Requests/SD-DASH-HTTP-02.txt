@@ -1,0 +1,40 @@
+sequenceDiagram
+    actor U as Utente
+    participant H as Pagina HTTP Requests
+    participant G as DataGrid
+    participant S as HttpRequestsService (backend)
+    participant N as Notifiche globali
+
+    %% Cambio pagina
+    U->>G: Seleziona pagina successiva\n(es. da pagina 1 a pagina 2)
+    G->>H: onPageChange(newPage)
+    activate H
+    H->>H: calcola offset = newPage * pageSize\nmantiene limit = pageSize e filtersApplied
+    H->>S: listHttpRequests(offset, limit, filtri=filtersApplied)
+    alt Successo
+        activate S
+        S-->>H: { rows, total, pageMeta }
+        deactivate S
+        H->>H: aggiorna stato (rows, pagination, loading=false)
+        H->>G: aggiorna DataGrid con le nuove righe\n(spinner integrato termina)
+    else Errore
+        activate S
+        S-->>H: errore
+        deactivate S
+        H->>H: loading=false, mantiene eventuali rows precedenti
+        H->>N: mostra snackbar "Error while executing the request."
+    end
+    deactivate H
+
+    %% Cambio page size
+    U->>G: Cambia numero di righe per pagina\n(es. 100 → 50)
+    G->>H: onPageSizeChange(newPageSize=50)
+    activate H
+    H->>H: aggiorna pageSize=50, page=0\ncalcola offset=0, mantiene filtersApplied
+    H->>S: listHttpRequests(offset=0, limit=50, filtri=filtersApplied)
+    activate S
+    S-->>H: { rows, total, pageMeta }
+    deactivate S
+    H->>H: aggiorna stato (rows, pagination, loading=false)
+    H->>G: render DataGrid con prima pagina\npageSize=50
+    deactivate H

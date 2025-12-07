@@ -1,0 +1,23 @@
+sequenceDiagram
+    participant APP as AppRoot / LayoutShell
+    participant TS as ToolStatusChip
+    participant HS as HealthService
+    participant BE as Backend /health
+
+    Note over APP,TS: Montaggio header con chip Tool Status
+
+    APP->>TS: mount(ToolStatusChip)
+    TS->>HS: startPolling(interval=3s)
+    HS->>TS: setStatus("checking")
+
+    loop Ogni 3 secondi
+        HS->>BE: GET /health
+        alt Risposta OK dal backend
+            BE-->>HS: healthPayload
+            HS->>HS: deriveToolStatus(healthPayload) → tool_on / tool_off / checking
+            HS->>TS: setStatus(toolStatus)
+        else Errore o timeout
+            BE-->>HS: errore / nessuna risposta
+            HS->>TS: setStatus("tool_off")
+        end
+    end

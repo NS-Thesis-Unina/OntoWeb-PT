@@ -1,0 +1,45 @@
+sequenceDiagram
+    autonumber
+    participant PR as ParamRenderer
+    participant TR as TypeResolver
+    participant D as DerefEngine
+    participant S as SchemaOpenAPI
+
+    loop Per ogni parametro da visualizzare
+        PR->>TR: getParamType(param)
+        activate TR
+
+        alt schema diretto definito
+            TR->>TR: schema = param.schema
+        else schema in content application/json
+            TR->>TR: schema = param.content["application/json"].schema
+        else nessuno schema disponibile
+            activate TR
+            TR-->>PR: tipo = "any"
+            deactivate TR
+        end
+
+        alt schema contiene $ref locale
+            TR->>D: deref(schema, S)
+            activate D
+            D->>S: Risolve percorso "#/…"\ne verifica cicli (seen set)
+            D-->>TR: schemaDereferenziato
+            deactivate D
+            TR->>TR: Usa schemaDereferenziato
+        else nessun $ref
+            TR->>TR: Usa schema così com'è
+        end
+
+        alt schema.type == "array" e items presente
+            TR->>TR: inner = items.type o "any"\ntipo = "array<inner>"
+        else schema.type valorizzato (non array)
+            TR->>TR: tipo = schema.type\n(string, number, boolean, object,…)
+        else schema.type assente ma enum presente
+            TR->>TR: tipo = "enum"
+        else nessuna info specifica
+            TR->>TR: tipo = "object"
+        end
+
+        TR-->>PR: Ritorna stringa tipo\n(es. "string", "array<string>", "enum", …)
+        deactivate TR
+    end

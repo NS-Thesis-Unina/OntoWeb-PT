@@ -1,0 +1,30 @@
+sequenceDiagram
+    actor U as Utente
+    participant P as Pagina Findings (HTTP/Analyzer/Techstack)
+    participant DG as DataGrid Findings
+    participant SHTTP as HTTP Findings Service\n(listHttpFindings)
+    participant SAN as Analyzer Findings Service\n(listAnalyzerFindings)
+    participant STECH as Techstack Findings Service\n(listTechstackFindings)
+
+    U->>DG: Cambia pagina o page size\n(nella barra di paginazione)
+    DG->>P: onPageChange(page, pageSize)
+
+    P->>P: Calcola offset = page * pageSize\nlimit = pageSize\nmantiene eventuali filtri/params interni
+    P->>P: loading = true
+
+    alt Sottosezione = HTTP Findings
+        P->>SHTTP: listHttpFindings({ offset, limit })
+        SHTTP-->>P: { ids[], total, offset, limit }
+    else Sottosezione = Analyzer Findings
+        P->>SAN: listAnalyzerFindings({ offset, limit })
+        SAN-->>P: { ids[], total, offset, limit }
+    else Sottosezione = Techstack Findings
+        P->>STECH: listTechstackFindings({ offset, limit })
+        STECH-->>P: { ids[], total, offset, limit }
+    end
+
+    P->>P: loading = false
+    P->>DG: setRows(map(ids -> { id }))\nsetRowCount(total)\naggiorna page/pageSize da offset/limit
+    DG-->>U: Mostra nuova pagina di findings\n(spinner integrato usato solo durante il fetch)
+
+

@@ -1,0 +1,25 @@
+sequenceDiagram
+    actor U as Utente
+    participant LS as LayoutShell (header + nav)
+    participant NAV as Nav laterale
+    participant R as Router SPA
+    participant CP as Pagina contenuto
+
+    U->>LS: Apre la dashboard (qualunque route)
+    activate LS
+    LS->>R: initRouter(locationCorrente)
+    R-->>LS: Vista iniziale (es. Home, HTTP Requests, ...)
+
+    U->>NAV: Click su voce menu (es. "HTTP Requests")
+    NAV->>R: navigate("/http-requests")
+    activate R
+
+    R->>LS: updateRoute("/http-requests")
+    LS->>CP: mount(HttpRequestsPage)
+    CP-->>U: Mostra tabella richieste HTTP
+
+    R-->>NAV: notifica route attiva "/http-requests"
+    NAV-->>U: Evidenzia "HTTP Requests" come sezione corrente
+
+    deactivate R
+    deactivate LS

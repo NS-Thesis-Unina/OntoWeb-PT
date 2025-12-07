@@ -1,0 +1,49 @@
+sequenceDiagram
+    actor U as Utente
+    participant G as DataGrid (lista richieste)
+    participant H as Pagina HTTP Requests
+    participant D as Drawer dettaglio richiesta
+    participant S as HttpRequestsService (backend)
+    participant N as Notifiche globali
+
+    %% Apertura drawer
+    U->>G: Clic icona "View details" su una riga
+    G->>H: onViewDetailsClick(requestId)
+    activate H
+    H->>H: imposta selectedRequestId=requestId\napre il Drawer (open=true)
+    H->>D: monta Drawer "Request details"
+    deactivate H
+
+    %% Caricamento dettagli
+    activate D
+    D->>D: mostra spinner centrale "Loading..."
+    D->>S: getHttpRequestById(requestId)
+
+    alt Dettaglio recuperato con successo
+        activate S
+        S-->>D: dettaglio richiesta/risposta\n(uri, headers, body, meta, graph, connection...)
+        deactivate S
+        D->>D: nasconde spinner
+        D->>D: render header con:
+        D->>D: - chip Method\n- chip Status (colorato per classe codice)\n- URL canonica + pulsante "Copy URL"\n- metadati Graph e Connection authority
+        D->>D: render sezione "Request" con:
+        D->>D: - Method, Scheme, Authority, Path, QueryRaw\n- eventuali query params (name = value)\n- request headers (lista nome: valore)
+        D->>D: render sezione "Response" con:
+        D->>D: - status HTTP completo\n- response headers\n- body in riquadro scrollabile + pulsante "Copy body"
+        U->>D: (opzionale) clic su "Copy URL"/"Copy body"
+        D->>D: copia negli appunti (clipboard)\nsenza ulteriori chiamate al backend
+    else Errore nel recupero dettagli
+        activate S
+        S-->>D: errore
+        deactivate S
+        D->>D: azzera eventuali dati parziali\nnasconde spinner
+        D->>N: mostra snackbar "Error during retrieving request."
+        D->>H: richiesta chiusura Drawer
+        deactivate D
+        H->>H: set open=false\n(lista principale resta visibile)
+    end
+
+    %% Chiusura drawer da parte dell’utente
+    U->>D: Clic su X o sul backdrop
+    D->>H: onClose()
+    H->>H: set open=false, mantiene selectedRequestId\nper eventuali riaperture

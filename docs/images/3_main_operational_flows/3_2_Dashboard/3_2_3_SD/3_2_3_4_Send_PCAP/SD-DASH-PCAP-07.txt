@@ -1,0 +1,77 @@
+sequenceDiagram
+    actor U as Utente
+    participant P as Pagina SendPCAP
+    participant H as HealthService
+    participant M as Mapper (mapPcapItemsToRawItems)
+    participant B as BatchBuilder (makeBatchPayloads)
+    participant S as HttpRequestsService
+    participant WS as SocketService
+    participant SN as Snackbar
+    participant JD as Dialog "Job Summaries"
+    participant A as Alert globale
+
+    U->>P: Arriva allo step 5 "Confirm and send"
+    P-->>U: Mostra griglia preview selectedRequests\nMostra checkbox "Enable resolver..."
+
+    U->>P: Cambia valore checkbox resolver
+    P->>P: activateResolver = nuovo valore
+
+    U->>P: Click su pulsante "Send requests"
+    alt selectedRequests.length == 0
+        P->>P: errorMessage = "Please select at least one request before sending."
+        P->>P: activeStep = 4
+        P-->>A: Render Alert errore
+        P->>P: Scroll contenuto verso l'alto
+    else selectedRequests.length > 0
+        P->>P: checkingTool = true
+        P->>H: getHealth()
+        H-->>P: health o errore
+        P->>P: toolStatus = deriveToolStatus(health)
+
+        alt toolStatus "tool_off" o errore
+            P->>P: checkingTool = false
+            P->>P: errorMessage = "The analysis tool is currently OFF. Please enable it before continuing."
+            P-->>A: Render Alert errore
+            P->>P: Scroll contenuto verso l'alto
+        else toolStatus OK
+            P->>P: checkingTool = false
+            P->>P: loadingSend = true
+            P-->>U: Disabilita pulsante "Send requests"
+
+            P->>M: mapPcapItemsToRawItems(selectedRequests)
+            M-->>P: rawItems[]
+
+            P->>B: makeBatchPayloads(rawItems, graph, limiti dimensione)
+            B-->>P: batches[]
+
+            alt Nessun batch valido
+                P->>P: loadingSend = false
+                P->>P: errorMessage = "No valid HTTP requests to send."
+                P-->>A: Render Alert errore
+                P->>P: activeStep = 4
+                P->>P: Scroll contenuto verso l'alto
+            else Uno o più batch
+                loop Per ogni batch
+                    P->>S: ingestHttpRequests(batch, activateResolver)
+                    S-->>P: res (resRequest, resResolver)
+
+                    alt Errore chiamata singolo batch
+                        P->>SN: Mostra snackbar "Error while sending the request (check the console for details)."
+                    else Chiamata riuscita
+                        alt resRequest.accepted && jobId presente
+                            P->>WS: subscribeJob(res.resRequest.jobId)
+                        end
+                        alt activateResolver == true && resResolver.accepted && jobId presente
+                            P->>WS: subscribeJob(res.resResolver.jobId)
+                        end
+                    end
+                end
+
+                P->>P: Calcola X/Y job accettati (request + resolver se attivo)
+                P->>SN: Mostra snackbar\n"Requests accepted by the backend: X/Y. Waiting for results from the worker..."
+                P->>JD: openJobsDialog = true
+                P-->>U: Apre dialog "Job Summaries"
+                P->>P: loadingSend = false
+            end
+        end
+    end

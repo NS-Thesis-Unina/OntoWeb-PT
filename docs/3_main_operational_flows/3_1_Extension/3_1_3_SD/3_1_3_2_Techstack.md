@@ -3,7 +3,7 @@
 
 **SD-EXT-TS-01 – Avvio scansione Technology Stack sulla scheda corrente (Scan current tab)**
 
-![SD-EXT-TS-01](../../../images/3_main_operational_flows/3_1_Extension/3_1_1_SD/3_1_3_2_Techstack/SD-EXT-TS-01.png)
+![SD-EXT-TS-01](../../../images/3_main_operational_flows/3_1_Extension/3_1_3_SD/3_1_3_2_Techstack/SD-EXT-TS-01.png)
 
 Descrizione (alto livello):
 
@@ -18,7 +18,7 @@ La UI inizializza la vista chiedendo al controller Techstack di caricare l’ult
 
 **SD-EXT-TS-02 – Caricamento automatico dell’ultimo risultato Techstack (priorità per contesto)**
 
-![SD-EXT-TS-02](../../../images/3_main_operational_flows/3_1_Extension/3_1_1_SD/3_1_3_2_Techstack/SD-EXT-TS-02.png)
+![SD-EXT-TS-02](../../../images/3_main_operational_flows/3_1_Extension/3_1_3_SD/3_1_3_2_Techstack/SD-EXT-TS-02.png)
 
 Descrizione (alto livello):
 
@@ -33,7 +33,7 @@ Questo diagramma dettaglia la logica di caricamento automatico dell’ultimo ris
 
 **SD-EXT-TS-03 – Consultazione ed amministrazione dell’archivio Techstack (Archive, export, delete)**
 
-![SD-EXT-TS-03](../../../images/3_main_operational_flows/3_1_Extension/3_1_1_SD/3_1_3_2_Techstack/SD-EXT-TS-03.png)
+![SD-EXT-TS-03](../../../images/3_main_operational_flows/3_1_Extension/3_1_3_SD/3_1_3_2_Techstack/SD-EXT-TS-03.png)
 
 Descrizione (alto livello):
 
@@ -47,7 +47,7 @@ Questo diagramma rappresenta le interazioni nella sottosezione “Archive” di 
 
 **SD-EXT-TS-04 – Workflow “Analyze” Techstack + invio al backend e monitoraggio job**
 
-![SD-EXT-TS-04](../../../images/3_main_operational_flows/3_1_Extension/3_1_1_SD/3_1_3_2_Techstack/SD-EXT-TS-04.png)
+![SD-EXT-TS-04](../../../images/3_main_operational_flows/3_1_Extension/3_1_3_SD/3_1_3_2_Techstack/SD-EXT-TS-04.png)
 
 Descrizione (alto livello):
 

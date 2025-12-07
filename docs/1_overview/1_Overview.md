@@ -1,4 +1,5 @@
 # Obiettivo
+---
 
 L’obiettivo del sistema OntoWeb-PT è supportare il penetration tester nell’analisi delle vulnerabilità di applicazioni web, fornendo un unico punto di raccolta, normalizzazione e correlazione delle evidenze raccolte durante le attività di test.
 
@@ -27,8 +28,8 @@ OntoWeb-PT non sostituisce il penetration tester, ma fornisce un’infrastruttur
 
 ---
 
-### Cosa fa il sistema
-
+# Cosa fa il sistema
+---
 Il sistema fornisce tre macro-funzionalità principali:
 
 1. **Raccolta strutturata di evidenze di sicurezza**
@@ -63,7 +64,8 @@ Il sistema fornisce tre macro-funzionalità principali:
 
 ---
 
-### Untilizzatori e modalità di utilizzo
+# Untilizzatori e modalità di utilizzo
+---
 
 Il sistema è pensato principalmente per:
 
@@ -91,9 +93,10 @@ In pratica, OntoWeb-PT viene utilizzato come:
 
 ---
 
-#### Descrizione dei componenti (black-box)
+# Descrizione dei componenti (black-box)
+---
 
-![ComponentDiagram](./images/1_overview/ComponentDiagram_Overview.png)
+![ComponentDiagram](../images/1_overview/ComponentDiagram_Overview.png)
 
 - **Estensione browser (Techstack / Analyzer / Interceptor)**  
   Componente lato client usato dal penetration tester durante la navigazione.

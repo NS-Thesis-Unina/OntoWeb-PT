@@ -1,0 +1,32 @@
+sequenceDiagram
+    participant APP as AppRoot
+    participant TM as ThemeManager
+    participant HS as HealthService
+    participant LS as LocalStorage
+    participant BE as Backend /health
+
+    Note over APP: Avvio dell'applicazione
+
+    par Inizializzazione tema
+        APP->>TM: initTheme()
+        TM->>LS: getItem("theme")
+        alt Lettura riuscita
+            LS-->>TM: "dark" o "light"
+            TM->>APP: applyTheme(valore)
+        else Errore / accesso negato / dato corrotto
+            LS-->>TM: errore
+            TM->>APP: applyTheme("light" default)
+        end
+    and Inizializzazione stato Tool
+        APP->>HS: getHealth()
+        HS->>BE: GET /health
+        alt Risposta OK
+            BE-->>HS: healthPayload
+            HS->>APP: setToolStatus(deriveToolStatus(healthPayload))
+        else Errore / servizio non raggiungibile
+            BE-->>HS: errore
+            HS->>APP: setToolStatus("tool_off")
+        end
+    end
+
+    APP-->>APP: Render LayoutShell + nav laterale + area contenuti

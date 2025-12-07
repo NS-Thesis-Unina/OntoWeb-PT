@@ -1,0 +1,30 @@
+sequenceDiagram
+    actor U as Utente
+    participant TS as Pagina Tool Status
+    participant HS as Servizio Health REST
+    participant WS as WebSocket root
+    participant WSL as WebSocket /logs
+
+    U->>TS: Apre Tool Status
+    activate TS
+
+    %% Errore sul servizio di health
+    TS->>HS: getHealth()
+    HS--xTS: errore / timeout
+    TS->>TS: health = null<br/>toolStatus = "tool_off"
+    TS-->>U: Card principale mostra "Tool Status: tool_off"
+
+    %% Problemi sulla connessione WebSocket root
+    TS->>WS: connect(root)
+    WS--xTS: impossibile connettersi / disconnect immediato
+    TS->>TS: wsStatus = "disconnected"
+    TS-->>U: StatusCard WebSocket = "disconnected" (pallino rosso)
+
+    %% Problemi sul canale /logs
+    TS->>WSL: connect(/logs)
+    WSL--xTS: errore connessione / nessun evento
+    TS->>TS: logs rimane vuoto o con ultimi eventi validi
+    TS-->>U: Pannello "Real-Time Logs" vuoto o fermo
+
+    U->>TS: Continua a navigare o lascia la pagina
+    deactivate TS

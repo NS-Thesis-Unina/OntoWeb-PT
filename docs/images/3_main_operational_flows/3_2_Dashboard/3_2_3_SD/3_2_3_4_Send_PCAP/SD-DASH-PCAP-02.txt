@@ -1,0 +1,44 @@
+sequenceDiagram
+    actor U as Utente
+    participant P as Pagina SendPCAP
+    participant F as File chooser
+    participant A as Alert globale
+
+    %% Upload PCAP
+    U->>P: Click su "Upload PCAP file"
+    P->>F: Apri selettore file
+    F-->>U: Mostra finestra scelta file
+    U-->>F: Seleziona file PCAP
+    F-->>P: File PCAP selezionato
+    P->>P: Verifica estensione (.pcap / .pcapng)
+
+    alt Estensione PCAP valida
+        P->>P: pcapFile = file
+        P->>P: errorMessage = ""
+        P-->>U: Mostra nome file PCAP\nAbilita "Continue" per lo step 0
+    else Estensione PCAP non valida
+        P->>P: pcapFile = null
+        P->>P: errorMessage = "Invalid file type. Please select a .pcap or .pcapng file."
+        P-->>A: Render Alert errore in alto
+        P->>P: Scroll contenuto verso l'alto
+    end
+
+    %% Upload SSL keys
+    U->>P: Passa allo step 1 "Upload SSL keys file"
+    U->>P: Click su "Upload SSL keys file"
+    P->>F: Apri selettore file
+    F-->>U: Mostra finestra scelta file
+    U-->>F: Seleziona file SSL keys
+    F-->>P: File SSL keys selezionato
+    P->>P: Verifica estensione (.log / .txt)
+
+    alt Estensione SSL keys valida
+        P->>P: sslKeysFile = file
+        P->>P: errorMessage = ""
+        P-->>U: Mostra nome file SSL keys\nAbilita "Continue" per lo step 1
+    else Estensione SSL keys non valida
+        P->>P: sslKeysFile = null
+        P->>P: errorMessage = "Invalid file type. Please select a .log or .txt file."
+        P-->>A: Render Alert errore in alto
+        P->>P: Scroll contenuto verso l'alto
+    end

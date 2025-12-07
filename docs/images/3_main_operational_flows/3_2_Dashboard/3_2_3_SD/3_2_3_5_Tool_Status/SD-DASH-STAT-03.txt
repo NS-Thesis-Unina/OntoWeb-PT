@@ -1,0 +1,26 @@
+sequenceDiagram
+    actor U as Utente
+    participant TS as Pagina Tool Status
+    participant WS as WebSocket root
+    participant CWS as StatusCard "WebSocket"
+
+    U->>TS: Apre Tool Status
+    activate TS
+
+    TS->>WS: connect(root namespace)
+    
+    alt Connessione stabilita
+        WS-->>TS: evento "connect"
+        TS->>TS: wsStatus = "connected"
+        TS->>CWS: aggiorna stato("connected")
+        CWS-->>U: Mostra pallino verde + testo "connected"
+    else Connessione non riuscita / disconnessione
+        WS--xTS: evento "disconnect" / errore
+        TS->>TS: wsStatus = "disconnected"
+        TS->>CWS: aggiorna stato("disconnected")
+        CWS-->>U: Mostra pallino rosso + testo "disconnected"
+    end
+
+    U->>TS: Abbandona la pagina Tool Status
+    TS->>WS: disconnect()
+    deactivate TS

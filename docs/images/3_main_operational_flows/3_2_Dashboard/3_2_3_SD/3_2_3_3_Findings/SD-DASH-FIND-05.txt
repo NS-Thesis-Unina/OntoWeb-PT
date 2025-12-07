@@ -1,0 +1,53 @@
+sequenceDiagram
+    actor U as Utente
+    participant P as Pagina Findings (HTTP/Analyzer/Techstack)
+    participant DG as DataGrid Findings
+    participant D as DrawerWrapper "Finding details"
+    participant SHTTP as getHttpFindingById
+    participant SAN as getAnalyzerFindingById
+    participant STECH as getTechstackFindingById
+    participant SN as Snackbar
+    participant CB as Clipboard API
+
+    U->>DG: Click su icona "View details"\nper una riga
+    DG->>P: onViewDetails(id, tipoFinding)
+
+    P->>D: openDrawer()\n(init: loadingDettaglio = true)
+    D-->>U: Mostra drawer a destra con spinner centrale
+
+    alt Finding HTTP
+        P->>SHTTP: getHttpFindingById(id)
+        SHTTP-->>P: findingHttp
+    else Finding Analyzer
+        P->>SAN: getAnalyzerFindingById(id)
+        SAN-->>P: findingAnalyzer
+    else Finding Techstack
+        P->>STECH: getTechstackFindingById(id)
+        STECH-->>P: findingTechstack
+    end
+
+    alt Chiamata dettaglio OK
+        P->>P: loadingDettaglio = false
+        P->>D: renderDettaglio(finding, tipo)\nheader + sezioni
+
+        U->>D: Clic su "Copy URL" o "Copy src"
+        D->>CB: writeText(valore da copiare)
+        CB-->>D: esito (successo o errore)
+
+        U->>D: Click su icona "X" o sul backdrop
+        D-->>P: onCloseDrawer()
+        P->>D: closeDrawer()
+    else Errore nel caricamento dettaglio
+        alt HTTP
+            SHTTP-->>P: errore
+        else Analyzer
+            SAN-->>P: errore
+        else Techstack
+            STECH-->>P: errore
+        end
+
+        P->>P: loadingDettaglio = false\nfinding = null
+        P->>SN: showSnackbar("Error while retrieving finding details.")
+        SN-->>U: Notifica non bloccante
+        P->>D: closeDrawer()\n(evita contenuti parziali)
+    end
