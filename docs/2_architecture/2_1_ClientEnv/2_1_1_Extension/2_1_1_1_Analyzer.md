@@ -1,19 +1,16 @@
 # Analyzer
-
+---
 ## Panoramica
 
 Il sottosistema **Analyzer** dell’estensione si occupa di osservare e strutturare il contenuto HTML/DOM/JS delle pagine visitate dal penetration tester. Opera in due modalità principali:
-
 - **One-Time Scan**: snapshot singolo della pagina corrente.
 - **Runtime Scan**: raccolta continua di snapshot mentre l’utente naviga.
 
 Inoltre espone:
-
 - una sezione **Analyze**, che prende snapshot salvati (one-time o runtime) e li invia al Tool backend per l’analisi ontologica (coda `analyzer` su BullMQ);
 - una sezione **Archive**, che gestisce l’archivio locale di questi snapshot.
 
 Analyzer è organizzato in più layer cooperanti:
-
 - **UI React** (componenti della popup/pannello)
 - **Controller React** (`AnalyzerReactController`)
 - **Background controller** (`AnalyzerBackgroundController`)
@@ -58,14 +55,12 @@ La UI si limita a orchestrare i flussi e a presentare i risultati; non esegue al
 ### Controller React — `AnalyzerReactController`
 
 - Registra un listener su `browser.runtime.onMessage` e inoltra gli eventi verso i componenti React:
-  
   - `analyzer_scanComplete`
   - `analyzer_runtimeScanUpdate`
   - `analyzer_runtimeScanComplete`
   - `analyzer_scanError`
 
 - Espone metodi per la UI:
-  
   - `sendStartOneTimeScan(tabId)`
   - `sendStartRuntimeScan()`, `sendStopRuntimeScan()`
   - `getScanStatus()`
@@ -82,7 +77,6 @@ La UI si limita a orchestrare i flussi e a presentare i risultati; non esegue al
 - È il punto di ingresso nel background per tutti i messaggi `analyzer_*` provenienti dalla UI.
 
 - Deleghe principali verso `AnalyzerEngine`:
-  
   - `runOneTimeScan(tabId, cb)`
   - `startRuntimeScan({ onUpdate, onComplete })`
   - `stopRuntimeScan()`
@@ -92,7 +86,6 @@ La UI si limita a orchestrare i flussi e a presentare i risultati; non esegue al
   - `deleteRuntimeResultById`, `clearAllRuntimeResults()`
 
 - Re-invia verso la UI gli eventi:
-  
   - `analyzer_scanComplete`
   - `analyzer_scanError`
   - `analyzer_runtimeScanUpdate`
@@ -105,7 +98,6 @@ Non contiene logica di analisi, ma solo routing tra UI e engine.
 Qui vive la logica “pesante” del sottosistema:
 
 - **Iniezione content script**:
-  
   - One-Time:
     - verifica che l’URL della tab sia iniettabile (http/https);
     - inietta `content_script/analyzer/analyzer_onetime_injected.js`.
@@ -114,7 +106,6 @@ Qui vive la logica “pesante” del sottosistema:
     - all’avvenuto “complete” su URL http/https, inietta `content_script/analyzer/analyzer_runtime_injected.js`.
 
 - **Parsing HTML via Cheerio** (`processHtml(html)`):
-  
   - Head:
     - `title`, `meta`, `links`, `scripts` (src + inline).
   - Body:
@@ -123,7 +114,6 @@ Qui vive la logica “pesante” del sottosistema:
     - `totalElements`, profondità massima dell’albero DOM, `tagCount`.
 
 - **Gestione runtime scan**:
-  
   - stato interno:
     - `_runtimeActive`, `_runtimeStartedAt`
     - `_runtimeDataset = { url: [ { meta, results, html } ] }`
@@ -133,20 +123,16 @@ Qui vive la logica “pesante” del sottosistema:
     - `_runtimeCallbacks.onComplete({ key, run })`.
 
 - **Storage**:
-  
   - `browser.storage.local`:
-    
     - `analyzerResults_<timestamp>`: snapshot one-time (`{ meta, results, html }`).
     - `analyzerRuntime_<timestamp>`: run runtime completo (`{ startedAt, stoppedAt, dataset, ... }`).
     - `analyzerRuntime_lastKey`: puntatore all’ultimo run.
-  
+
   - `browser.storage.session`:
-    
     - `analyzer_lastResult`: ultimo snapshot globale one-time.
     - `analyzer_lastByTab`: mappa tabId → ultimo snapshot one-time per tab.
 
 - **Listener da content script**:
-  
   - `analyzer_scanResult` (one-time):
     - invocato da `analyzer_onetime_injected.js`;
     - parse HTML → salvataggio local/session → callback a `runOneTimeScan`.
@@ -155,7 +141,6 @@ Qui vive la logica “pesante” del sottosistema:
     - se `_runtimeActive`, aggiorna dataset e chiama `onUpdate`.
 
 - **API di cleanup/archivio**:
-  
   - one-time:
     - `getLocalScanResults()`
     - `deleteOneTimeResultById(resultKey)`
@@ -169,14 +154,12 @@ Qui vive la logica “pesante” del sottosistema:
 ### Content script
 
 - `analyzer_onetime_injected.js`:
-  
   - eseguito una sola volta sul tab target;
   - cattura `document.documentElement.outerHTML`;
   - invia al background:
     - `{ type: 'analyzer_scanResult', data: { html } }`.
-
+    
 - `analyzer_runtime_injected.js`:
-  
   - eseguito a ogni reiniezione durante runtime scan;
   - cattura:
     - `html`, `location.href`, `document.title`, `Date.now()`;
@@ -203,7 +186,6 @@ Entrambi sono volutamente **leggerissimi**: nessuna logica di parsing, solo racc
 ### UI React ↔ Background
 
 **Comandi dalla UI verso il background:**
-
 - `analyzer_startOneTimeScan { tabId }`
 - `analyzer_startRuntimeScan`
 - `analyzer_stopRuntimeScan`
@@ -217,14 +199,12 @@ Entrambi sono volutamente **leggerissimi**: nessuna logica di parsing, solo racc
 - `analyzer_clearAllRuntimeResults`
 
 **Eventi dal background verso la UI:**
-
 - `analyzer_scanComplete { data: { meta, results, html } }`
 - `analyzer_scanError { message }`
 - `analyzer_runtimeScanUpdate { url, totals }`
 - `analyzer_runtimeScanComplete { key, run }`
 
 ### Content script ↔ Background
-
 - `analyzer_scanResult { html }`
 - `analyzer_runtimeScanResult { html, url, title, timestamp }`
 
@@ -233,7 +213,6 @@ Entrambi sono volutamente **leggerissimi**: nessuna logica di parsing, solo racc
 ## Flussi di dati principali
 
 ### One-Time Scan
-
 1. UI (`OneTimeScanAnalyzer`) acquisisce il lock (`OWNERS.ANALYZER_ONETIME`).
 2. Identifica il tab attivo e invia `analyzer_startOneTimeScan { tabId }`.
 3. `AnalyzerEngine.runOneTimeScan`:
@@ -250,7 +229,6 @@ Entrambi sono volutamente **leggerissimi**: nessuna logica di parsing, solo racc
 7. La UI mostra i risultati e rilascia il lock.
 
 ### Runtime Scan
-
 1. UI (`RuntimeScanAnalyzer`) acquisisce il lock (`OWNERS.ANALYZER_RUNTIME`) e invia `analyzer_startRuntimeScan`.
 2. `AnalyzerEngine.startRuntimeScan`:
    - inizializza `_runtimeDataset`, `_runtimeTotalScans`, `_runtimeStartedAt`;
@@ -270,7 +248,6 @@ Entrambi sono volutamente **leggerissimi**: nessuna logica di parsing, solo racc
 ### Analyze → Invio snapshot al Tool
 
 - **Analyze One-Time**:
-  
   1. UI (`SendOneTimeScanAnalyzer`) carica gli snapshot one-time da local storage.
   2. L’utente ne sceglie uno; la UI estrae `{ meta, results, html }`.
   3. La UI chiama `toolReactController.analyzeOneTimeScan({ url, html, forms, iframes, scripts })`.
@@ -278,7 +255,6 @@ Entrambi sono volutamente **leggerissimi**: nessuna logica di parsing, solo racc
   5. La UI si sottoscrive al job tramite WebSocket (`subscribeJob(jobId)`) e, in fallback, polla `getJobResult('analyzer', jobId)`, mostrando il dialog **Job Summaries**.
 
 - **Analyze Runtime**:
-  
   - stesso flusso, ma lo snapshot di partenza viene selezionato da un run runtime (`analyzerRuntime_*`) invece che dalla lista one-time.
 
 ---
@@ -291,3 +267,5 @@ Entrambi sono volutamente **leggerissimi**: nessuna logica di parsing, solo racc
 - `scanLock` (lock globale tra Analyzer, Techstack, Interceptor)
 - `toolReactController` per l’integrazione con il Tool backend
 - React, React Router, Material UI, notistack per la UI
+
+---

@@ -1,16 +1,12 @@
 # Extension
-
 ---
-
 1. [Analyzer](./2_1_1_Extension/2_1_1_1_Analyzer.md)  
 2. [Techstack](./2_1_1_Extension/2_1_1_3_Techstack.md)  
 3. [Interceptor](./2_1_1_Extension/2_1_1_2_Interceptor.md)  
-
 ---
 
 L’estensione browser è il principale componente client di OntoWeb-PT.  
 Vive direttamente nel browser del penetration tester e ha tre responsabilità chiave:
-
 - **Osservare** il comportamento delle applicazioni web (DOM, HTML, richieste HTTP, stack tecnologico)
 - **Strutturare** queste informazioni in snapshot coerenti (scan one-shot, scan runtime, tech stack, traffico HTTP)
 - **Orchestrare** l’invio di questi dati al Tool backend per l’analisi ontologica e la generazione di finding.
@@ -18,7 +14,6 @@ Vive direttamente nel browser del penetration tester e ha tre responsabilità ch
 ## Ruolo nell’ambiente client
 
 All’interno dell’[Ambiente Client](../2_1_ClientEnv.md), l’estensione rappresenta lo strumento “vicino” all’azione: segue il tester mentre naviga l’applicazione target e gli consente di:
-
 - catturare lo stato del DOM/HTML in momenti specifici (Analyzer One-Time) o durante tutta una sessione di navigazione (Analyzer Runtime);
 - profilare lo stack tecnologico dell’applicazione (Techstack);
 - intercettare e normalizzare il traffico HTTP/HTTPS generato dal browser (Interceptor);
@@ -30,7 +25,6 @@ L’estensione è organizzata in tre sottosistemi principali, ciascuno documenta
 
 - **Analyzer**  
   Cattura e analizza la struttura HTML/DOM/JS delle pagine:
-  
   - modalità **One-Time Scan** (snapshot singolo della pagina corrente);
   - modalità **Runtime Scan** (raccolta continua di snapshot mentre si naviga);
   - sezione **Analyze** per inviare snapshot salvati all’Engine;
@@ -38,14 +32,12 @@ L’estensione è organizzata in tre sottosistemi principali, ciascuno documenta
 
 - **Techstack**  
   Raccoglie informazioni sullo stack tecnologico dell’applicazione:
-  
   - header HTTP, cookie, tecnologie lato client/server, eventuali WAF;
   - normalizza queste informazioni in un payload strutturato;
   - invia i dati al Tool, che li mappa sull’ontologia e produce finding di tipo *TechstackScan*.
 
 - **Interceptor**  
   Intercetta il traffico HTTP/HTTPS generato dal browser:
-  
   - osserva richieste e risposte (metodo, URL, header, status code, ecc.);
   - costruisce un modello normalizzato di richieste/risposte;
   - mette a disposizione questi dati per l’ingestione nel Tool (pipeline HTTP resolver).
@@ -64,14 +56,12 @@ Ogni sottosistema segue lo stesso pattern architetturale:
 
 L’interfaccia dell’estensione è implementata in React + Material UI.  
 Qui vivono i componenti principali:
-
 - la pagina **Analyzer** (con le sue sottosezioni One-Time, Runtime, Analyze, Archive),
 - la pagina **Techstack**,
 - la pagina **Interceptor**,
 - le viste di stato, wizard, stepper e riepiloghi job (“Job Summaries”).
 
 Questi componenti **non contengono logica di analisi pesante**; si occupano di:
-
 - presentare lo stato corrente e gli ultimi risultati;
 - orchestrare i flussi utente (start/stop scan, selezione snapshot, invio al Tool);
 - dialogare con:
@@ -82,13 +72,11 @@ Questi componenti **non contengono logica di analisi pesante**; si occupano di:
 ### Background scripts
 
 Per ogni sottosistema esiste un **background controller** che:
-
 - riceve comandi dalla UI React (es. “start One-Time scan”, “start/stop Runtime scan”, “lista archivi”, “delete”);
 - delega il lavoro all’engine specifico (es. `AnalyzerEngine`);
 - propaga i risultati verso tutte le UI aperte tramite `browser.runtime.sendMessage`.
 
 Esempio (Analyzer):
-
 - `AnalyzerBackgroundController` gestisce messaggi come:
   - `analyzer_startOneTimeScan`
   - `analyzer_startRuntimeScan` / `analyzer_stopRuntimeScan`
@@ -108,14 +96,11 @@ I controller di Techstack e Interceptor seguono lo stesso schema, con messaggi d
 ### Content script
 
 Quando serve accedere direttamente al DOM della pagina, l’estensione inietta content script dedicati:
-
 - **Analyzer One-Time**
-  
   - `analyzer_onetime_injected.js`  
     Estrae `document.documentElement.outerHTML` una sola volta e lo invia al background.
 
 - **Analyzer Runtime**
-  
   - `analyzer_runtime_injected.js`  
     Ogni volta che una pagina termina il caricamento (o quando il background reinietta lo script), cattura:
     - HTML completo,
@@ -130,9 +115,7 @@ Techstack e Interceptor utilizzano invece le API del browser per osservare heade
 ### Integrazione con il Tool backend
 
 L’estensione parla con il Tool tramite:
-
 - **REST API**:
-  
   - healthcheck (`/health`) per verificare se l’Engine è up;
   - endpoint di dominio per:
     - analisi Analyzer (`/analyzer/analyze`);
@@ -141,12 +124,10 @@ L’estensione parla con il Tool tramite:
   - interrogazioni dello stato dei job e dei risultati.
 
 - **WebSocket**:
-  
   - stream di log in tempo reale (namespace `/logs`);
   - eventi di job (`completed`/`failed`) per ogni `jobId` (stanze `job:<jobId>`).
 
 Questa logica è centralizzata in un controller React condiviso (es. `toolReactController`) che fornisce:
-
 - `getHealth()`, `startPolling()`, `onMessage({ onToolUpdate, onJobEvent })`;
 - `subscribeJob(jobId)` / `unsubscribeJob(jobId)`;
 - `getJobResult(queue, jobId)`;
@@ -157,7 +138,6 @@ In questo modo Analyzer, Techstack e Interceptor condividono lo stesso meccanism
 ### Coordinamento delle scansioni: scanLock
 
 Per evitare scansioni concorrenti che potrebbero sovrapporsi o confondere l’utente, l’estensione utilizza un **lock globale**:
-
 - modulo `scanLock` esporta:
   - `acquireLock(owner, label)`
   - `releaseLock(owner)`
@@ -166,7 +146,6 @@ Per evitare scansioni concorrenti che potrebbero sovrapporsi o confondere l’ut
   - costanti `OWNERS.*` (es. `OWNERS.ANALYZER_ONETIME`, `OWNERS.ANALYZER_RUNTIME`, ...).
 
 Ogni componente che avvia una scansione:
-
 - prova ad acquisire il lock;
 - se il lock è occupato, mostra un messaggio all’utente indicando chi sta eseguendo la scansione (`label`/`owner`);
 - rilascia il lock al termine o in caso di errore.

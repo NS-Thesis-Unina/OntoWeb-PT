@@ -1,11 +1,8 @@
 # Ambiente Client
-
 ---
 
 1. [Extension](./2_1_ClientEnv/2_1_1_Extension.md)
-
 2. [Dashboard](./2_1_ClientEnv/2_1_2_Dashboard.md)
-
 3. [ZSH Plugin](./2_1_ClientEnv/2_1_1_Extension.md)
 
 ---

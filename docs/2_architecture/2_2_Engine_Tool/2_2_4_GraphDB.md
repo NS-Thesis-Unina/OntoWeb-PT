@@ -1,5 +1,4 @@
 # GraphDB
-
 ---
 
 GraphDB è il componente di persistenza centrale dell’Engine/Tool e ospita il knowledge graph di OntoWeb-PT. Al suo interno viene creata una repository dedicata, chiamata “ontowebpt”, inizializzata con l’ontologia OntoWebPT. 
@@ -21,11 +20,8 @@ Dal punto di vista tecnologico, il servizio utilizza l’immagine ufficiale `ont
 ## Interfacce esposte
 
 Le interfacce esposte da GraphDB sono accessibili tramite HTTP sulla porta 7200. In particolare, il servizio mette a disposizione:  
-
 - l’endpoint di gestione delle repository `/rest/repositories`, usato per elencare, creare e verificare la presenza delle repository disponibili;
-
 - l’endpoint SPARQL per la repository “ontowebpt”, esposto su `/repositories/ontowebpt`, utilizzato per eseguire query `SELECT`, `CONSTRUCT`, `ASK` e aggiornamenti SPARQL;  
-
 - l’endpoint `/repositories/ontowebpt/statements`, usato per importare bulk di triple RDF (ad esempio l’ontologia iniziale in formato RDF/XML). 
 
 L’Ambiente Node.js accede a GraphDB utilizzando l’URL base `http://graphdb:7200`, impostato tramite la variabile d’ambiente `GRAPHDB_BASE` nei container `node-api` e `node-worker`. In questo modo, tutte le operazioni di lettura e scrittura dei dati di dominio passano attraverso query SPARQL inviate da questi componenti.

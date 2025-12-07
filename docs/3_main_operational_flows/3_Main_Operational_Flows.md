@@ -1,11 +1,8 @@
 # Main Operational Flows
-
 ---
 
 1. [Extension](./3_1_Extension.md)
-
 2. [Dashboard](./3_2_Dashboard.md)
-
 3. [ZSH Plugin](./3_3_ZSHPlugin.md)
 
 ---

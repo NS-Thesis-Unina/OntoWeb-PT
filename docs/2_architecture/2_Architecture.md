@@ -1,9 +1,7 @@
 # Architettura (grey-box)
-
 ---
 
 1. [Client Environment](./2_1_ClientEnv.md)
-
 2. [Engine/Tool](./2_2_Engine_Tool.md)
 
 ---
@@ -13,9 +11,7 @@ In questa sezione si descrive come OntoWeb-PT è strutturato internamente e come
 Dopo la vista black-box fornita nell’[Overview](../1_Overview.md), questa sezione adotta una prospettiva grey-box: esplicita la suddivisione in sottosistemi, le loro responsabilità principali e le modalità con cui si scambiano dati e comandi.
 
 L’architettura è organizzata in due macro-aree:
-
 - **Client Environment**, che raccoglie tutti i componenti eseguiti nel contesto dell’utente (estensione browser, dashboard web, plugin zsh) e descrive come questi producono, consumano e inviano informazioni all’Engine.
-
 - **Engine/Tool**, che rappresenta il backend containerizzato del sistema e include lo strato applicativo Node.js, i servizi di infrastruttura (Redis, GraphDB, Nginx) e il flusso di elaborazione asincrona.
 
 All’interno dell’Engine, il **Node.js Environment** viene descritto come sottosistema logico che raggruppa l’API server e il worker asincrono, evidenziando come condividano il modello dati, le code e l’accesso al knowledge graph pur ricoprendo ruoli diversi.

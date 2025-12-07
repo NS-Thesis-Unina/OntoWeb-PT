@@ -1,5 +1,4 @@
 # Redis
-
 ---
 
 Redis è il componente di messaggistica interna dell’Engine/Tool e viene utilizzato principalmente come backend per le code di job gestite tramite BullMQ. Non contiene logica applicativa specifica di OntoWeb-PT e non viene utilizzato come database principale dei dati di dominio: il suo ruolo è quello di fornire uno storage veloce in memoria per code, stati dei job e metadati operativi, consentendo di disaccoppiare temporalmente le richieste ricevute dal backend dalle elaborazioni più pesanti eseguite dal Worker.
@@ -9,11 +8,8 @@ Redis è il componente di messaggistica interna dell’Engine/Tool e viene utili
 ## Responsabilità
 
 Le responsabilità principali di Redis all’interno del sistema sono:
-
 - ospitare le code BullMQ su cui l’API Node.js inserisce i job asincroni (analisi techstack, analyzer HTML/JS, analisi del traffico HTTP, import di richieste da PCAP);
-
 - mantenere lo stato dei job (in coda, in esecuzione, completati, falliti) e i relativi dati tecnici necessari al Worker per riprenderli ed elaborarli;
-
 - fungere da punto di cooperazione tra `node-api` (producer dei job) e `node-worker` (consumer), senza esporre direttamente queste strutture verso l’esterno o verso l’utente finale.
 
 ---

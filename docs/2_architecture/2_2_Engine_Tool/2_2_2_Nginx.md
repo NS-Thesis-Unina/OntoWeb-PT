@@ -1,5 +1,4 @@
 # Nginx
-
 ---
 
 Nginx è il punto di ingresso dell’Engine/Tool e funge da reverse proxy HTTP e WebSocket verso il servizio applicativo Node.js. È l’unico componente dello stack esposto direttamente sulla rete frontend (porta 80) e rappresenta quindi il “front door” attraverso cui passano tutte le richieste provenienti dall’ambiente client, sia dalla dashboard web sia dall’estensione browser. Il suo ruolo è quello di instradare questo traffico verso il backend Node.js, aggiungendo gli header standard di proxying e gestendo aspetti tecnici come il supporto ai WebSocket, i timeout, la dimensione massima dei payload e gli healthcheck.
