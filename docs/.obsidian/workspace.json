@@ -4,11 +4,11 @@
     "type": "split",
     "children": [
       {
-        "id": "8bf52ea9889389b8",
+        "id": "2c2a0377e5341f17",
         "type": "tabs",
         "children": [
           {
-            "id": "9c55faead06ca874",
+            "id": "331a080ec8db2418",
             "type": "leaf",
             "state": {
               "type": "empty",
@@ -176,13 +176,14 @@
       "bases:Create new base": false
     }
   },
-  "active": "25356d30903b386e",
+  "active": "331a080ec8db2418",
   "lastOpenFiles": [
-    "Index.md",
-    "1_overview/1_Overview.md",
-    "2_architecture/2_1_ClientEnv/2_1_1_Extension.md",
     "2_architecture/2_1_ClientEnv/2_1_2_Dashboard.md",
     "2_architecture/2_1_ClientEnv/2_1_3_ZSHPlugin.md",
+    "3_main_operational_flows/3_2_Dashboard.md",
+    "1_overview/1_Overview.md",
+    "Index.md",
+    "2_architecture/2_1_ClientEnv/2_1_1_Extension.md",
     "2_architecture/2_1_ClientEnv/2_1_1_Extension/2_1_1_3_Techstack.md",
     "2_architecture/2_1_ClientEnv/2_1_1_Extension/2_1_1_2_Interceptor.md",
     "2_architecture/2_1_ClientEnv/2_1_1_Extension/2_1_1_1_Analyzer.md",
@@ -203,7 +204,6 @@
     "3_main_operational_flows/3_1_Extension/3_1_1_FR/3_1_1_1_Global.md",
     "3_main_operational_flows/3_2_Dashboard/3_2_1_FR/3_2_1_6_OpenAPI.md",
     "3_main_operational_flows/3_2_Dashboard/3_2_1_FR/3_2_1_5_Tool_Status.md",
-    "3_main_operational_flows/3_2_Dashboard/3_2_1_FR/3_2_1_4_Send_PCAP.md",
     "1_overview",
     "3_2_3_SD",
     "images/3_main_operational_flows/3_2_Dashboard/3_2_3_SD/3_2_3_6_OpenAPI/SD-DASH-OAPI-07.txt",
