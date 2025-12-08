@@ -1,0 +1,25 @@
+version "0.1"
+package "Terminal-Collector"
+purpose "Capture terminal I/O through a PTY and store it for analysis."
+
+# Options
+option  "output"   o
+        "Output file where captured data is written (default: /tmp/<capture_name>_<timestamp>.log)"
+        string
+        optional
+
+option  "capture"      c
+        "Identifier for the capture session"
+        string
+        default = "capture"
+        optional
+
+option  "verbose"           v
+        "Increase program verbosity"
+        flag
+        off
+
+option  "network"           n
+        "Enable network capture"
+        flag
+        off
