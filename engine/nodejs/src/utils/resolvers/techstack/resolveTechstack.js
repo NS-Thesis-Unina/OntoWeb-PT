@@ -493,19 +493,28 @@ async function resolveTechstack({
   };
   let totalFindings = 0;
 
-  /** @type {TechstackFindingCollector} */
+  /**
+   * @type {TechstackFindingCollector}
+   */
   function pushFinding(f) {
-    findings.push(f);
+    /** @type {TechstackFinding & { mainDomain?: string | null }} */
+    const findingWithDomain = {
+      ...f,
+      mainDomain: mainDomain || null,
+    };
+
+    findings.push(findingWithDomain);
     totalFindings += 1;
 
-    const severity = normalizeSeverity(f.severity);
+    const severity = normalizeSeverity(findingWithDomain.severity);
     stats.bySeverity[severity] = (stats.bySeverity[severity] || 0) + 1;
 
-    if (f.category) {
-      stats.byCategory[f.category] = (stats.byCategory[f.category] || 0) + 1;
+    if (findingWithDomain.category) {
+      stats.byCategory[findingWithDomain.category] =
+        (stats.byCategory[findingWithDomain.category] || 0) + 1;
     }
-    if (f.kind) {
-      stats.byKind[f.kind] = (stats.byKind[f.kind] || 0) + 1;
+    if (findingWithDomain.kind) {
+      stats.byKind[findingWithDomain.kind] = (stats.byKind[findingWithDomain.kind] || 0) + 1;
     }
   }
 
@@ -518,8 +527,38 @@ async function resolveTechstack({
 
     if (!name) continue;
 
-    const nvd = await lookupNvd(name, version);
-    const hasKnownCVE = nvd.cve.length > 0;
+    /** @type {NvdLookupResult} */
+    let nvd = { cve: [], cpe: [] };
+    let hasKnownCVE = false;
+
+    if (version) {
+      nvd = await lookupNvd(name, version);
+      hasKnownCVE = nvd.cve.length > 0;
+
+      if (hasKnownCVE) {
+        for (const cve of nvd.cve) {
+          const severity = normalizeSeverity(cve.severity);
+          pushFinding({
+            id: `tech:${name}:${version}:${cve.id}`,
+            source: 'techstack',
+            kind: 'TechnologyCVE',
+            rule: 'nvd_cve_match',
+            severity,
+            score: typeof cve.score === 'number' ? cve.score : null,
+            category: 'TechnologyVulnerability',
+            message: `Technology ${name} ${version} has known vulnerability ${cve.id} (${severity}${
+              cve.score != null ? ', score ' + cve.score : ''
+            }).`,
+            evidence: {
+              type: 'Technology',
+              name,
+              version,
+              cpe: nvd.cpe,
+            },
+          });
+        }
+      }
+    }
 
     analyzedTech.push({
       name,
@@ -528,30 +567,6 @@ async function resolveTechstack({
       cpe: nvd.cpe,
       hasKnownCVE,
     });
-
-    if (hasKnownCVE) {
-      for (const cve of nvd.cve) {
-        const severity = normalizeSeverity(cve.severity);
-        pushFinding({
-          id: `tech:${name}:${version || 'unknown'}:${cve.id}`,
-          source: 'techstack',
-          kind: 'TechnologyCVE',
-          rule: 'nvd_cve_match',
-          severity,
-          score: typeof cve.score === 'number' ? cve.score : null,
-          category: 'TechnologyVulnerability',
-          message: `Technology ${name}${version ? ' ' + version : ''} has known vulnerability ${
-            cve.id
-          } (${severity}${cve.score != null ? ', score ' + cve.score : ''}).`,
-          evidence: {
-            type: 'Technology',
-            name,
-            version: version || null,
-            cpe: nvd.cpe,
-          },
-        });
-      }
-    }
   }
 
   // === WAF analysis → NVD → Findings ===

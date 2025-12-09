@@ -34,6 +34,7 @@ SELECT
   ?vulnType
   ?severity
   ?findingCategory
+  ?mainDomain
   ?owaspCategory
   ?ruleId
   ?description
@@ -71,6 +72,7 @@ WHERE {
 
     OPTIONAL { ?scan ex:severity           ?severity . }
     OPTIONAL { ?scan ex:findingCategory    ?findingCategory . }
+    OPTIONAL { ?scan ex:mainDomain         ?mainDomain . }
     OPTIONAL { ?scan ex:owaspCategory      ?owaspCategory . }
     OPTIONAL { ?scan ex:findingRuleId      ?ruleId . }
     OPTIONAL { ?scan ex:findingDescription ?description . }

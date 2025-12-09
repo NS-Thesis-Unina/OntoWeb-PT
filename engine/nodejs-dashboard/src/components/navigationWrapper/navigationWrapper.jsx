@@ -25,6 +25,9 @@ import LogoLight from '/images/LogoLight.png';
 import Icon from '/images/icon.png';
 import { useThemeMode } from '../../theme/themeModeProvider';
 import DarkLightButton from '../darkLightButton/darkLightButton';
+import LayersIcon from '@mui/icons-material/Layers';
+import AnalyticsIcon from '@mui/icons-material/Analytics';
+import PodcastsIcon from '@mui/icons-material/Podcasts';
 
 import { getHealth, deriveToolStatus } from '../../services/healthService';
 
@@ -65,9 +68,9 @@ function NavigationWrapper({ children }) {
   const inFindings = location.pathname.startsWith('/findings');
 
   // Sub-tab route checks (used to disable the active tab)
-  const isHttpFindings = location.pathname === '/findings' || location.pathname === '/findings/';
+  const isTechstackFindings = location.pathname === '/findings' || location.pathname === '/findings/';
   const isAnalyzerFindings = location.pathname.startsWith('/findings/analyzer');
-  const isTechstackFindings = location.pathname.startsWith('/findings/techstack');
+  const isHttpFindings = location.pathname.startsWith('/findings/http');
 
   /**
    * Poll health status every 3s and derive a simple high-level status label.
@@ -130,10 +133,11 @@ function NavigationWrapper({ children }) {
                 <Button
                   className="button"
                   size="large"
-                  disabled={isHttpFindings}
+                  disabled={isTechstackFindings}
                   onClick={() => navigate('/findings')}
                 >
-                  Http Findings
+                  <LayersIcon />
+                  Techstack Findings
                 </Button>
                 <Button
                   className="button"
@@ -141,15 +145,17 @@ function NavigationWrapper({ children }) {
                   disabled={isAnalyzerFindings}
                   onClick={() => navigate('/findings/analyzer')}
                 >
+                  <AnalyticsIcon />
                   Analyzer Findings
                 </Button>
                 <Button
                   className="button"
                   size="large"
-                  disabled={isTechstackFindings}
-                  onClick={() => navigate('/findings/techstack')}
+                  disabled={isHttpFindings}
+                  onClick={() => navigate('/findings/http')}
                 >
-                  Techstack Findings
+                  <PodcastsIcon />
+                  Http Findings
                 </Button>
               </Stack>
             )}

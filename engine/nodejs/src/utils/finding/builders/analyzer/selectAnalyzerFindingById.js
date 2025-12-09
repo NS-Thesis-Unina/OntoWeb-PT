@@ -17,6 +17,7 @@ const { normalizeFindingIri } = require('../helpers/normalizeFindingIri');
  *  - ?vulnType        → vulnerability type IRI (ex:aboutVulnerabilityType)
  *  - ?severity        → ex:severity
  *  - ?findingCategory → ex:findingCategory
+ *  - ?mainDomain      → ex:mainDomain
  *  - ?owaspCategory   → ex:owaspCategory
  *  - ?ruleId          → ex:findingRuleId
  *  - ?description     → ex:findingDescription
@@ -54,6 +55,7 @@ SELECT
   ?vulnType
   ?severity
   ?findingCategory
+  ?mainDomain
   ?owaspCategory
   ?ruleId
   ?description
@@ -83,6 +85,7 @@ WHERE {
     OPTIONAL { ?scan ex:aboutVulnerabilityType ?vulnType . }
     OPTIONAL { ?scan ex:severity               ?severity . }
     OPTIONAL { ?scan ex:findingCategory        ?findingCategory . }
+    OPTIONAL { ?scan ex:mainDomain             ?mainDomain . }
     OPTIONAL { ?scan ex:owaspCategory          ?owaspCategory . }
     OPTIONAL { ?scan ex:findingRuleId          ?ruleId . }
     OPTIONAL { ?scan ex:findingDescription     ?description . }

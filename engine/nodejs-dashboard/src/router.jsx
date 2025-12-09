@@ -55,11 +55,11 @@ function Router() {
         {/* Aggregated results from different engines/sources */}
         <Route path="findings">
           {/* Default: HTTP Findings overview */}
-          <Route index element={<HttpFindings />} />
+          <Route index element={<TechstackFindings />} />
           {/* Analyzer-specific findings */}
           <Route path="analyzer" element={<AnalyzerFindings />} />
           {/* Tech stack detection findings */}
-          <Route path="techstack" element={<TechstackFindings />} />
+          <Route path="http" element={<HttpFindings />} />
         </Route>
 
         {/* -------- Tooling / Utilities -------- */}

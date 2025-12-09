@@ -57,8 +57,13 @@ async function resolveAnalyzer({
     // pageUrl is used to link HTML / Request / Finding in the ontology
     const pageUrl = url || mainDomain || '';
 
+    const rawFindings = await engine.scanCode(scripts, html, pageUrl, forms, iframes);
+
     /** @type {AnalyzerFinding[]} */
-    const findings = await engine.scanCode(scripts, html, pageUrl, forms, iframes);
+    const findings = rawFindings.map((f) => ({
+      ...f,
+      pageUrl,
+    }));
 
     const stats = { high: 0, medium: 0, low: 0 };
     for (const f of findings) {

@@ -44,7 +44,10 @@ export function formatWhen(ts, opts = {}, locale) {
  */
 export function getDomainAccurate(url) {
   const d = tldGetDomain(url);
-  return d ?? '';
+  if (url.includes('localhost')) {
+    return 'localhost';
+  }
+  return d ?? url;
 }
 
 /**

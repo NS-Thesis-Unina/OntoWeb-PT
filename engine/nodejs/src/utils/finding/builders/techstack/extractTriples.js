@@ -29,6 +29,12 @@ function addTechstackTriples(triples, findingIri, f) {
   // Always type as TechstackScan (subclass of Scan)
   triples.push(`${findingIri} a <${EX}TechstackScan> .`);
 
+  if (f.mainDomain) {
+    triples.push(
+      `${findingIri} <${EX}mainDomain> "${escapeStringLiteral(String(f.mainDomain))}" .`
+    );
+  }
+
   // More specific classes (all exist in the ontology)
   if (kind === 'TechnologyCVE' || kind === 'WafCVE') {
     triples.push(`${findingIri} a <${EX}SoftwareFinding> .`);

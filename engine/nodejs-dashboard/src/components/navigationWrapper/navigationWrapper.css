@@ -29,10 +29,12 @@
 }
 
 .nw-div .toolbar .buttons .button {
-  display: inline-block;
+  display: flex;
   border-radius: 0;
   padding-inline: 20px;
   white-space: nowrap;
+  align-items: center;
+  gap: 5px;
 }
 
 .nw-div .toolbar .buttons .options {

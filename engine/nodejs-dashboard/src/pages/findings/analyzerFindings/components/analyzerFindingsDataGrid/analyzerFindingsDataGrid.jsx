@@ -112,6 +112,7 @@ function AnalyzerFindingsDataGrid({ rows, page, loading, onPageChange }) {
   };
 
   /** Grid columns: show ID, derived rule & document, plus a details action. */
+  /** Grid columns: show ID, derived rule & document, plus a details action. */
   const columns = [
     {
       field: 'id',
@@ -136,6 +137,12 @@ function AnalyzerFindingsDataGrid({ rows, page, loading, onPageChange }) {
       flex: 1,
       minWidth: 220,
       valueGetter: (_, row) => extractAnalyzerDocument(row.id),
+    },
+    {
+      field: 'target',
+      headerName: 'Target',
+      flex: 1,
+      minWidth: 220,
     },
     {
       field: 'actions',
@@ -208,7 +215,6 @@ function AnalyzerFindingsDataGrid({ rows, page, loading, onPageChange }) {
         onPaginationModelChange={handlePaginationModelChange}
         rowCount={safePage.total}
         pageSizeOptions={[25, 50, 100]}
-        disableColumnMenu
       />
 
       <DrawerWrapper
@@ -269,6 +275,7 @@ function AnalyzerFindingsDataGrid({ rows, page, loading, onPageChange }) {
                 label="Rule"
                 value={finding.ruleId || extractAnalyzerRule(finding.id)}
               />
+              <LabelValueRow label="Target" value={finding.mainDomain} />
               <LabelValueRow label="Severity" value={finding.severity} />
               <LabelValueRow label="Category" value={finding.findingCategory} />
               <LabelValueRow label="OWASP category" value={finding.owaspCategory} />

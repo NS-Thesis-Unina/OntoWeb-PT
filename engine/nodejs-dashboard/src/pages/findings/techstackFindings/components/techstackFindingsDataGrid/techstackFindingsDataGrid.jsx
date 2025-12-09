@@ -167,6 +167,12 @@ function TechstackFindingsDataGrid({ rows, page, loading, onPageChange }) {
       valueGetter: (_, row) => extractTechstackSubject(row.id),
     },
     {
+      field: 'target',
+      headerName: 'Target',
+      flex: 1,
+      minWidth: 220,
+    },
+    {
       field: 'actions',
       headerName: '',
       sortable: false,
@@ -240,7 +246,6 @@ function TechstackFindingsDataGrid({ rows, page, loading, onPageChange }) {
         onPaginationModelChange={handlePaginationModelChange}
         rowCount={safePage.total}
         pageSizeOptions={[25, 50, 100]}
-        disableColumnMenu
       />
 
       <DrawerWrapper
@@ -306,6 +311,7 @@ function TechstackFindingsDataGrid({ rows, page, loading, onPageChange }) {
                 value={finding.ruleId || extractTechstackRuleFromId(finding.id)}
               />
               <LabelValueRow label="Severity" value={finding.severity} />
+              <LabelValueRow label="Target" value={finding.mainDomain} />   
               <LabelValueRow label="Category" value={finding.findingCategory} />
               <LabelValueRow label="Evidence type" value={finding.evidenceType} />
               <LabelValueRow label="Resolver" value={finding.resolver} />

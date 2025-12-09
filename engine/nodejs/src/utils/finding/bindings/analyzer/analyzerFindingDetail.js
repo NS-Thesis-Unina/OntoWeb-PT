@@ -61,6 +61,7 @@ function bindingsToAnalyzerFindingDetail(bindings) {
     const vulnType = valueOf(row.vulnType);
     const severity = valueOf(row.severity);
     const category = valueOf(row.findingCategory);
+    const mainDomain = valueOf(row.mainDomain);
     const owasp = valueOf(row.owaspCategory);
     const ruleId = valueOf(row.ruleId);
     const description = valueOf(row.description);
@@ -77,6 +78,7 @@ function bindingsToAnalyzerFindingDetail(bindings) {
     if (vulnType && !result.vulnerabilityType) result.vulnerabilityType = vulnType;
     if (severity && !result.severity) result.severity = severity;
     if (category && !result.findingCategory) result.findingCategory = category;
+    if (mainDomain && !result.mainDomain) result.mainDomain = mainDomain;
     if (owasp && !result.owaspCategory) result.owaspCategory = owasp;
     if (ruleId && !result.ruleId) result.ruleId = ruleId;
     if (description && !result.description) result.description = description;
@@ -199,6 +201,7 @@ function bindingsToAnalyzerFindingDetail(bindings) {
   if (!result.vulnerabilityType) delete result.vulnerabilityType;
   if (!result.severity) delete result.severity;
   if (!result.findingCategory) delete result.findingCategory;
+  if (!result.mainDomain) delete result.mainDomain;
   if (!result.owaspCategory) delete result.owaspCategory;
   if (!result.ruleId) delete result.ruleId;
   if (!result.description) delete result.description;

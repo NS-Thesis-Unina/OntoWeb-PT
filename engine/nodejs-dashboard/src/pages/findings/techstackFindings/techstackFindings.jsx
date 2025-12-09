@@ -31,7 +31,7 @@ function TechstackFindings() {
   });
   const [rows, setRows] = useState([]);
 
-  /** Fetch paginated list of finding IDs; adapt to rows. */
+  /** Fetch paginated list of finding IDs and targets; adapt to rows. */
   const fetchFindings = async (offset, limit) => {
     try {
       setLoading(true);
@@ -41,7 +41,26 @@ function TechstackFindings() {
         limit,
       });
 
-      const items = Array.isArray(res.items) ? res.items.map((id) => ({ id })) : [];
+      const ids = Array.isArray(res.items) ? res.items : [];
+
+      const items = await Promise.all(
+        ids.map(async (id) => {
+          try {
+            const detail = await techstackService.getTechstackFindingById(id);
+
+            return {
+              id,
+              target: detail?.mainDomain ?? null,
+            };
+          } catch (err) {
+            console.error('Error while loading analyzer finding detail', id, err);
+            return {
+              id,
+              target: null,
+            };
+          }
+        })
+      );
 
       setRows(items);
       setPage(res.page);

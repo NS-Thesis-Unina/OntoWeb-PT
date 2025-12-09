@@ -118,6 +118,20 @@ function addAnalyzerTriples(triples, findingIri, f) {
   // Type as AnalyzerScan
   triples.push(`${findingIri} a <${EX}AnalyzerScan> .`);
 
+  let mainDomainValue = null;
+
+  if (f.mainDomain) {
+    mainDomainValue = String(f.mainDomain);
+  } else if (f.pageUrl) {
+    mainDomainValue = String(f.pageUrl);
+  } else {
+    mainDomainValue = '';
+  }
+
+  if (mainDomainValue) {
+    triples.push(`${findingIri} <${EX}mainDomain> "${escapeStringLiteral(mainDomainValue)}" .`);
+  }
+
   const ctx = f?.contextVector || {};
 
   // === AnalyzerScan data properties defined in the ontology ===

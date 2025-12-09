@@ -1,4 +1,4 @@
-## 1. Overview (Black-Box)
+## **1. Overview (Black-Box)
 
 - Obiettivo del sistema
 
@@ -32,7 +32,7 @@ Per ogni componente del sistema descrivi:
 
 ---
 
-## 3. Flussi operativi principali
+## **3. Flussi operativi principali
 
 - Requisiti funzionali
 

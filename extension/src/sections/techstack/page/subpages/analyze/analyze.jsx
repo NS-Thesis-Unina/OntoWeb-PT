@@ -365,7 +365,10 @@ function AnalyzeTechstack() {
     setStep3LoadingSend(true);
 
     try {
-      const res = await toolReactController.analyzeTechstack(step1ScanSelected.snap.results);
+      const res = await toolReactController.analyzeTechstack({
+        ...step1ScanSelected.snap.results,
+        mainDomain: step1ScanSelected.snap.meta.url,
+      });
 
       if (res?.accepted) {
         enqueueSnackbar('Scan accepted by backend. Waiting for results from the worker...', {

@@ -49,6 +49,7 @@
  * @property {string} [vulnerabilityType]
  * @property {string} [severity]
  * @property {string} [findingCategory]
+ * @property {string} [mainDomain]
  * @property {string} [owaspCategory]
  * @property {string} [ruleId]
  * @property {string} [description]
