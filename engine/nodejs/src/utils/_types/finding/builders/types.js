@@ -20,7 +20,7 @@
  */
 
 /**
- * Base shape for any scan/finding object as seen by builders.
+ * Base shape for any finding object as seen by builders.
  * Concrete resolver-level findings should extend this shape.
  *
  * @typedef {object} FindingBase

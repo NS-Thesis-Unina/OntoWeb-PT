@@ -160,14 +160,14 @@ function mapVulnerabilityTypeIri(f) {
 }
 
 /**
- * Append generic (source-agnostic) triples for a finding (Scan metadata).
+ * Append generic (source-agnostic) triples for a finding (Finding metadata).
  * @param {string[]} triples
  * @param {string} findingIri
  * @param {AnyFinding} f
  */
 function addGenericFindingTriples(triples, findingIri, f) {
-  // Generic type: every finding is at least a Scan.
-  triples.push(`${findingIri} a <${EX}Scan> .`);
+  // Generic type: every finding is at least a Finding.
+  triples.push(`${findingIri} a <${EX}Finding> .`);
 
   const message = f?.message || f?.description;
   if (message) {

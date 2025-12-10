@@ -170,7 +170,7 @@ describe('E2E HTTP - POST /http-requests/ingest-http', () => {
     expect(ruleIds).toContain('insecure-http');
 
     expect(__state.findingsInsertSparql.length).toBeGreaterThanOrEqual(1);
-    expect(__state.findingsInsertSparql[0]).toContain('HttpScan');
+    expect(__state.findingsInsertSparql[0]).toContain('HttpFinding');
   });
 
   test('ingests multiple HTTP requests without resolver (array payload)', async () => {

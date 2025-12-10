@@ -11,7 +11,7 @@
  * Parameters accepted by buildSelectAnalyzerFindingById.
  *
  * @typedef {Object} AnalyzerFindingByIdParams
- * @property {string} id - Full IRI/URN of the AnalyzerScan finding (e.g. "urn:finding:...").
+ * @property {string} id - Full IRI/URN of the AnalyzerFinding (e.g. "urn:finding:...").
  */
 
 /**

@@ -7,17 +7,17 @@ const { sanitizeLimit, sanitizeOffset } = require('../../../sparql/pagination');
 
 /**
  * Build a paginated SPARQL SELECT that returns:
- *  - one row per TechstackScan finding detected by TechstackResolverInstance (for the current page)
- *  - a ?total column with the global COUNT(DISTINCT ?scan) repeated on each row
+ *  - one row per TechstackFinding detected by TechstackResolverInstance (for the current page)
+ *  - a ?total column with the global COUNT(DISTINCT ?finding) repeated on each row
  *
  * Output variables:
  *  - ?id    → string form of the finding IRI (subject)
  *  - ?total → total number of matching findings
  *
  * Behavior:
- *  1) Subquery #1 computes the global total of matching TechstackScan findings.
- *  2) Subquery #2 selects a stable page of ?scan IRIs (ORDER BY ?scan, LIMIT, OFFSET).
- *  3) Outer query exposes STR(?scan) as ?id, plus ?total.
+ *  1) Subquery #1 computes the global total of matching TechstackFinding.
+ *  2) Subquery #2 selects a stable page of ?finding IRIs (ORDER BY ?finding, LIMIT, OFFSET).
+ *  3) Outer query exposes STR(?finding) as ?id, plus ?total.
  *  4) The page block is OPTIONAL so that empty pages still return one row with ?total only.
  *
  * @param {TechstackFindingsPagedParams} [params={}] - Builder parameters.
@@ -32,12 +32,12 @@ PREFIX ex: <${EX}>
 
 SELECT ?id ?total
 WHERE {
-  # 1) Global total of TechstackScan findings detected by TechstackResolverInstance
+  # 1) Global total of TechstackFinding detected by TechstackResolverInstance
   {
-    SELECT (COUNT(DISTINCT ?scan) AS ?total)
+    SELECT (COUNT(DISTINCT ?finding) AS ?total)
     WHERE {
       GRAPH <${G_FINDINGS}> {
-        ?scan a ex:TechstackScan ;
+        ?finding a ex:TechstackFinding ;
               ex:detectedByResolver ex:TechstackResolverInstance .
       }
     }
@@ -46,20 +46,20 @@ WHERE {
   # 2) Page of finding IRIs (OPTIONAL to keep ?total when page is empty)
   OPTIONAL {
     {
-      SELECT DISTINCT ?scan
+      SELECT DISTINCT ?finding
       WHERE {
         GRAPH <${G_FINDINGS}> {
-          ?scan a ex:TechstackScan ;
+          ?finding a ex:TechstackFinding ;
                 ex:detectedByResolver ex:TechstackResolverInstance .
         }
       }
-      ORDER BY ?scan
+      ORDER BY ?finding
       LIMIT ${lim}
       OFFSET ${off}
     }
 
     # Expose the subject IRI as plain string
-    BIND(STR(?scan) AS ?id)
+    BIND(STR(?finding) AS ?id)
   }
 }
 `.trim();

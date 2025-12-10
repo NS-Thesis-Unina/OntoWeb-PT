@@ -20,7 +20,7 @@ function valueOf(cell) {
 }
 
 /**
- * Transform SPARQL JSON bindings into a single detailed AnalyzerScan finding object.
+ * Transform SPARQL JSON bindings into a single detailed AnalyzerFinding object.
  *
  * The query is expected to return multiple rows for the same finding (due to
  * HTML tags, fields and nested tags), so this function aggregates them:

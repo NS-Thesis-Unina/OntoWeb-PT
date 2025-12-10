@@ -8,7 +8,7 @@ const { normalizeFindingIri } = require('../helpers/normalizeFindingIri');
 
 /**
  * Build a SPARQL SELECT query that returns all relevant details for a single
- * AnalyzerScan finding identified by its IRI/URN, including related HTML
+ * AnalyzerFinding identified by its IRI/URN, including related HTML
  * Tag / Field structure (root tag + nested tags).
  *
  * Output variables:
@@ -77,33 +77,33 @@ SELECT
   ?childFieldSource
 WHERE {
   GRAPH <${G_FINDINGS}> {
-    BIND(IRI("${iri}") AS ?scan)
-    ?scan a ex:AnalyzerScan .
-    BIND(STR(?scan) AS ?id)
+    BIND(IRI("${iri}") AS ?finding)
+    ?finding a ex:AnalyzerFinding .
+    BIND(STR(?finding) AS ?id)
 
-    OPTIONAL { ?scan ex:detectedByResolver     ?resolver . }
-    OPTIONAL { ?scan ex:aboutVulnerabilityType ?vulnType . }
-    OPTIONAL { ?scan ex:severity               ?severity . }
-    OPTIONAL { ?scan ex:findingCategory        ?findingCategory . }
-    OPTIONAL { ?scan ex:mainDomain             ?mainDomain . }
-    OPTIONAL { ?scan ex:owaspCategory          ?owaspCategory . }
-    OPTIONAL { ?scan ex:findingRuleId          ?ruleId . }
-    OPTIONAL { ?scan ex:findingDescription     ?description . }
-    OPTIONAL { ?scan ex:remediation            ?remediation . }
+    OPTIONAL { ?finding ex:detectedByResolver     ?resolver . }
+    OPTIONAL { ?finding ex:aboutVulnerabilityType ?vulnType . }
+    OPTIONAL { ?finding ex:severity               ?severity . }
+    OPTIONAL { ?finding ex:findingCategory        ?findingCategory . }
+    OPTIONAL { ?finding ex:mainDomain             ?mainDomain . }
+    OPTIONAL { ?finding ex:owaspCategory          ?owaspCategory . }
+    OPTIONAL { ?finding ex:findingRuleId          ?ruleId . }
+    OPTIONAL { ?finding ex:findingDescription     ?description . }
+    OPTIONAL { ?finding ex:remediation            ?remediation . }
 
-    OPTIONAL { ?scan ex:contextType   ?contextType . }
-    OPTIONAL { ?scan ex:contextIndex  ?contextIndex . }
-    OPTIONAL { ?scan ex:contextOrigin ?contextOrigin . }
-    OPTIONAL { ?scan ex:contextSrc    ?contextSrc . }
+    OPTIONAL { ?finding ex:contextType   ?contextType . }
+    OPTIONAL { ?finding ex:contextIndex  ?contextIndex . }
+    OPTIONAL { ?finding ex:contextOrigin ?contextOrigin . }
+    OPTIONAL { ?finding ex:contextSrc    ?contextSrc . }
 
-    OPTIONAL { ?scan ex:formAction    ?formAction . }
-    OPTIONAL { ?scan ex:formMethod    ?formMethod . }
+    OPTIONAL { ?finding ex:formAction    ?formAction . }
+    OPTIONAL { ?finding ex:formMethod    ?formMethod . }
 
-    OPTIONAL { ?scan ex:codeSnippet   ?codeSnippet . }
+    OPTIONAL { ?finding ex:codeSnippet   ?codeSnippet . }
 
     # HTML root Tag(s) and nested structure
     OPTIONAL {
-      ?scan ex:relatedToHTML ?htmlTag .
+      ?finding ex:relatedToHTML ?htmlTag .
 
       OPTIONAL { ?htmlTag ex:sourceLocation ?htmlTagSource . }
 

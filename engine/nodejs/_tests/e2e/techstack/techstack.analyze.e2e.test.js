@@ -173,7 +173,7 @@ describe('E2E Techstack - POST /techstack/analyze', () => {
     const sparqlCalls = runUpdate.mock.calls.map(([query]) => query);
 
     expect(sparqlCalls.some((q) => q.includes('INSERT DATA'))).toBe(true);
-    expect(sparqlCalls.some((q) => q.includes('TechstackScan'))).toBe(true);
+    expect(sparqlCalls.some((q) => q.includes('TechstackFinding'))).toBe(true);
 
     expect(__state.findingsInsertSparql.length).toBeGreaterThanOrEqual(1);
   });

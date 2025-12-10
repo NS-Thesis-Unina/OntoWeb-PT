@@ -54,7 +54,7 @@
  */
 
 /**
- * Detailed TechstackScan finding JSON shape.
+ * Detailed TechstackFinding JSON shape.
  *
  * @typedef {Object} TechstackFindingDetail
  * @property {string} id

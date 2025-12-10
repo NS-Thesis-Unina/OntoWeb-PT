@@ -234,7 +234,7 @@ class sastEngine {
       }
 
       // -------------------------------
-      // Context vector (for AnalyzerScan)
+      // Context vector (for AnalyzerFinding)
       // -------------------------------
       /** @type {AnalyzerContextVector} */
       let contextVector = { type: 'unknown', index: null, origin: null };

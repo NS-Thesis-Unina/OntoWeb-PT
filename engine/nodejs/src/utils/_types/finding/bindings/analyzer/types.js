@@ -29,7 +29,7 @@
  */
 
 /**
- * Context information attached to AnalyzerScan (form, script, iframe, etc.).
+ * Context information attached to AnalyzerFinding (form, script, iframe, etc.).
  *
  * @typedef {Object} AnalyzerContext
  * @property {string} [type]
@@ -41,7 +41,7 @@
  */
 
 /**
- * Detailed AnalyzerScan finding JSON shape.
+ * Detailed AnalyzerFinding JSON shape.
  *
  * @typedef {Object} AnalyzerFindingDetail
  * @property {string} id

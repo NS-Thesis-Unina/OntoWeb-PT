@@ -21,7 +21,7 @@ function valueOf(cell) {
 }
 
 /**
- * Transform SPARQL JSON bindings into a single detailed TechstackScan finding object.
+ * Transform SPARQL JSON bindings into a single detailed TechstackFinding object.
  *
  * The query is expected to return multiple rows for the same finding (due to
  * software CVE/CPE, header URLs, cookies), so this function aggregates them:

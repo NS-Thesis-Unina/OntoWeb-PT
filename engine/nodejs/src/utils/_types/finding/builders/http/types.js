@@ -11,7 +11,7 @@
  * Parameters accepted by buildSelectHttpFindingById.
  *
  * @typedef {Object} HttpFindingByIdParams
- * @property {string} id - Full IRI/URN of the HttpScan finding (e.g. "urn:finding:...").
+ * @property {string} id - Full IRI/URN of the HttpFinding (e.g. "urn:finding:...").
  */
 
 /**

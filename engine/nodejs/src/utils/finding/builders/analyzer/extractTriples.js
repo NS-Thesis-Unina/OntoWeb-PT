@@ -105,7 +105,7 @@ function emitAttributeFields(triples, tagIri, tagKey, attributes, keySuffix = 'a
  * Add Analyzer (SAST / HTML) specific triples for a finding.
  *
  * This function:
- * - types the finding as ex:AnalyzerScan
+ * - types the finding as ex:AnalyzerFinding
  * - materializes contextVector data (type, origin, index, src, formAction, formMethod, ...)
  * - attaches code snippets via ex:codeSnippet
  * - creates HTML Tag / Field individuals and their relationships, including nested tags
@@ -115,8 +115,8 @@ function emitAttributeFields(triples, tagIri, tagKey, attributes, keySuffix = 'a
  * @param {AnalyzerFinding|any} f Analyzer finding payload coming from resolveAnalyzer.
  */
 function addAnalyzerTriples(triples, findingIri, f) {
-  // Type as AnalyzerScan
-  triples.push(`${findingIri} a <${EX}AnalyzerScan> .`);
+  // Type as AnalyzerFinding
+  triples.push(`${findingIri} a <${EX}AnalyzerFinding> .`);
 
   let mainDomainValue = null;
 
@@ -134,7 +134,7 @@ function addAnalyzerTriples(triples, findingIri, f) {
 
   const ctx = f?.contextVector || {};
 
-  // === AnalyzerScan data properties defined in the ontology ===
+  // === AnalyzerFinding data properties defined in the ontology ===
 
   if (ctx.type) {
     triples.push(`${findingIri} <${EX}contextType> "${escapeStringLiteral(String(ctx.type))}" .`);
@@ -170,7 +170,7 @@ function addAnalyzerTriples(triples, findingIri, f) {
     );
   }
 
-  // --- Snippets: all attached to AnalyzerScan via ex:codeSnippet ---
+  // --- Snippets: all attached to AnalyzerFinding via ex:codeSnippet ---
   const snippetParts = [];
   if (f.snippet) {
     snippetParts.push(`main:\n${String(f.snippet)}`);
@@ -216,7 +216,7 @@ function addAnalyzerTriples(triples, findingIri, f) {
     // Types for the parent Tag
     triples.push(`${tagIri} a <${EX}Tag> .`, `${tagIri} a <${EX}HTML> .`);
 
-    // Link AnalyzerScan → HTML node (parent Tag)
+    // Link AnalyzerFinding → HTML node (parent Tag)
     triples.push(`${findingIri} <${EX}relatedToHTML> ${tagIri} .`);
 
     // --- Parent Tag attributes → Field ---

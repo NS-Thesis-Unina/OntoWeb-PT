@@ -13,19 +13,19 @@ describe('buildSelectHttpFindingsPaged', () => {
     expect(occurrences).toBeGreaterThanOrEqual(2);
 
     expect(sparql).toMatch(
-      /SELECT\s*\(COUNT\(DISTINCT\s+\?scan\)\s+AS\s+\?total\)\s+WHERE\s*{\s*GRAPH\s*<[^>]+>/
+      /SELECT\s*\(COUNT\(DISTINCT\s+\?finding\)\s+AS\s+\?total\)\s+WHERE\s*{\s*GRAPH\s*<[^>]+>/
     );
 
-    expect(sparql).toContain('?scan a ex:HttpScan ;');
+    expect(sparql).toContain('?finding a ex:HttpFinding ;');
     expect(sparql).toContain('ex:detectedByResolver ex:HttpResolverInstance');
 
-    expect(sparql).toMatch(/SELECT\s+DISTINCT\s+\?scan\s+WHERE\s*{\s*GRAPH\s*<[^>]+>/);
-    expect(sparql).toMatch(/ORDER BY\s+\?scan/);
+    expect(sparql).toMatch(/SELECT\s+DISTINCT\s+\?finding\s+WHERE\s*{\s*GRAPH\s*<[^>]+>/);
+    expect(sparql).toMatch(/ORDER BY\s+\?finding/);
 
     expect(sparql).toContain('LIMIT 10');
     expect(sparql).toContain('OFFSET 0');
 
-    expect(sparql).toContain('BIND(STR(?scan) AS ?id)');
+    expect(sparql).toContain('BIND(STR(?finding) AS ?id)');
   });
 
   test('applies custom limit/offset and sanitizes negative values', () => {

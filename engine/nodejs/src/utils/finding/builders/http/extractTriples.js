@@ -18,12 +18,12 @@ function addHttpTriples(triples, findingIri, f) {
   const ctx = f?.httpContext || {};
   const ev = f?.evidence || {};
 
-  // Type as HttpScan (subclass of Scan)
-  triples.push(`${findingIri} a <${EX}HttpScan> .`);
+  // Type as HttpFinding (subclass of Finding)
+  triples.push(`${findingIri} a <${EX}HttpFinding> .`);
 
   // === Structural links to HTTP concepts ===
 
-  // HttpScan → Request
+  // HttpFinding → Request
   if (ctx.requestIri) {
     triples.push(
       `${findingIri} <${EX}httpFindingOfRequest> <${ctx.requestIri}> .`,
@@ -31,12 +31,12 @@ function addHttpTriples(triples, findingIri, f) {
     );
   }
 
-  // HttpScan → Response
+  // HttpFinding → Response
   if (ctx.responseIri) {
     triples.push(`${findingIri} <${EX}relatedToHTTP> <${ctx.responseIri}> .`);
   }
 
-  // HttpScan → URI
+  // HttpFinding → URI
   if (ctx.uriIri) {
     triples.push(`${findingIri} <${EX}relatedToHTTP> <${ctx.uriIri}> .`);
   }

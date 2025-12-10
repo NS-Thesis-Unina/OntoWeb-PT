@@ -130,7 +130,7 @@ router.get(
 /**
  * GET /analyzer/finding/list
  *
- * Paginated list of AnalyzerScan findings created by the analyzer worker.
+ * Paginated list of AnalyzerFinding created by the analyzer worker.
  * This endpoint only returns finding identifiers and summary information, not
  * the full HTML context.
  *
@@ -191,7 +191,7 @@ router.get(
 /**
  * GET /analyzer/finding/:id
  *
- * Retrieve detailed information for a single AnalyzerScan finding.
+ * Retrieve detailed information for a single AnalyzerFinding.
  *
  * The SPARQL query aggregates:
  * - scalar fields (severity, category, etc.)

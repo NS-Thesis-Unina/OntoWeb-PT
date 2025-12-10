@@ -8,9 +8,9 @@ describe('buildSelectAnalyzerFindingById', () => {
 
     const sparql = buildSelectAnalyzerFindingById({ id: rawId });
 
-    expect(sparql).toContain(`BIND(IRI("${normalized}") AS ?scan)`);
+    expect(sparql).toContain(`BIND(IRI("${normalized}") AS ?finding)`);
     expect(sparql).toContain('SELECT');
-    expect(sparql).toContain('ex:AnalyzerScan');
+    expect(sparql).toContain('ex:AnalyzerFinding');
     expect(sparql).toContain('?id');
     expect(sparql).toContain('?severity');
     expect(sparql).toContain('?codeSnippet');

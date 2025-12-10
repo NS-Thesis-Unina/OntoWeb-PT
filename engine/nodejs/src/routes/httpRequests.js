@@ -278,7 +278,7 @@ router.get(
 /**
  * GET /http-requests/finding/list
  *
- * Paginated list of HttpScan findings detected by the HTTP resolver.
+ * Paginated list of HttpFinding detected by the HTTP resolver.
  * This endpoint only returns finding identifiers and summary metadata.
  *
  * Query parameters:
@@ -337,7 +337,7 @@ router.get(
 /**
  * GET /http-requests/finding/:id
  *
- * Retrieve detailed information for a single HttpScan finding.
+ * Retrieve detailed information for a single HttpFinding.
  *
  * The detail includes:
  * - scalar attributes (severity, rule, evidence)

@@ -6,7 +6,7 @@ describe('buildSelectTechstackFindingsPaged', () => {
 
     expect(sparql).toMatch(/PREFIX\s+ex:\s+</);
 
-    expect(sparql).toMatch(/a\s+ex:TechstackScan\s*;/);
+    expect(sparql).toMatch(/a\s+ex:TechstackFinding\s*;/);
     expect(sparql).toMatch(/ex:detectedByResolver\s+ex:TechstackResolverInstance\s*\./);
 
     expect(sparql).toMatch(/LIMIT\s+25\b/);

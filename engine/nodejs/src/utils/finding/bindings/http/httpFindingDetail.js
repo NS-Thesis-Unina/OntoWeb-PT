@@ -17,7 +17,7 @@ function valueOf(cell) {
 }
 
 /**
- * Transform SPARQL JSON bindings into a single detailed HttpScan finding object.
+ * Transform SPARQL JSON bindings into a single detailed HttpFinding object.
  *
  * The query is expected to return multiple rows for the same finding (one per
  * related HTTP entity), so this function aggregates them:

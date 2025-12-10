@@ -11,7 +11,7 @@
  * Parameters accepted by buildSelectTechstackFindingById.
  *
  * @typedef {Object} TechstackFindingByIdParams
- * @property {string} id - Full IRI/URN of the TechstackScan finding (e.g. "urn:finding:...").
+ * @property {string} id - Full IRI/URN of the TechstackFinding (e.g. "urn:finding:...").
  */
 
 /**

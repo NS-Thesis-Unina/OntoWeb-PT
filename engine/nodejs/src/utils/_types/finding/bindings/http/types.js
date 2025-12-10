@@ -11,7 +11,7 @@
  */
 
 /**
- * Detailed HttpScan finding JSON shape.
+ * Detailed HttpFinding JSON shape.
  *
  * @typedef {Object} HttpFindingDetail
  * @property {string} id

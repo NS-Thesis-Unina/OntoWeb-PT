@@ -12,7 +12,7 @@ describe('bindingsToHttpFindingDetail', () => {
   test('aggregates scalar fields, http info and relatedHttp from multiple rows', () => {
     const bindings = [
       {
-        id: lit('urn:scan:1'),
+        id: lit('urn:finding:1'),
         resolver: lit('ex:HttpResolverInstance'),
         vulnType: lit('ex:InsecureCookie'),
         severity: lit('high'),
@@ -27,7 +27,7 @@ describe('bindingsToHttpFindingDetail', () => {
         relatedHttp: lit('urn:req:1'),
       },
       {
-        id: lit('urn:scan:1'),
+        id: lit('urn:finding:1'),
         resolver: lit('ex:OtherResolver'),
         vulnType: lit('ex:SomethingElse'),
         severity: lit('low'),
@@ -46,7 +46,7 @@ describe('bindingsToHttpFindingDetail', () => {
     const detail = bindingsToHttpFindingDetail(bindings);
 
     expect(detail).not.toBeNull();
-    expect(detail.id).toBe('urn:scan:1');
+    expect(detail.id).toBe('urn:finding:1');
 
     expect(detail.resolver).toBe('ex:HttpResolverInstance');
     expect(detail.vulnerabilityType).toBe('ex:InsecureCookie');
@@ -69,7 +69,7 @@ describe('bindingsToHttpFindingDetail', () => {
   test('drops empty http and relatedHttp when no data available', () => {
     const bindings = [
       {
-        id: lit('urn:scan:empty'),
+        id: lit('urn:finding:empty'),
         severity: lit('medium'),
       },
     ];
@@ -77,7 +77,7 @@ describe('bindingsToHttpFindingDetail', () => {
     const detail = bindingsToHttpFindingDetail(bindings);
 
     expect(detail).not.toBeNull();
-    expect(detail.id).toBe('urn:scan:empty');
+    expect(detail.id).toBe('urn:finding:empty');
 
     expect(detail.severity).toBe('medium');
 
@@ -88,7 +88,7 @@ describe('bindingsToHttpFindingDetail', () => {
   test('ignores non-numeric responseStatus values', () => {
     const bindings = [
       {
-        id: lit('urn:scan:status'),
+        id: lit('urn:finding:status'),
         httpMethod: lit('GET'),
         requestUrl: lit('https://example.com'),
         responseStatus: lit('not-a-number'),
@@ -98,7 +98,7 @@ describe('bindingsToHttpFindingDetail', () => {
     const detail = bindingsToHttpFindingDetail(bindings);
 
     expect(detail).not.toBeNull();
-    expect(detail.id).toBe('urn:scan:status');
+    expect(detail.id).toBe('urn:finding:status');
 
     expect(detail.http).toEqual({
       method: 'GET',

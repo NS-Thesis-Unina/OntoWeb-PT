@@ -27,7 +27,7 @@ function extractTriplesForSingleFinding(f = {}, index = 0) {
   /** @type {string[]} */
   const triples = [];
 
-  // Generic metadata (Scan + shared properties)
+  // Generic metadata (Finding + shared properties)
   addGenericFindingTriples(triples, findingIri, f);
 
   const source = (f?.source || '').toLowerCase();

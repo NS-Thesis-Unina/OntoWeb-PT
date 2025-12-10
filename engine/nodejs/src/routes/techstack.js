@@ -129,7 +129,7 @@ router.get(
 /**
  * GET /techstack/finding/list
  *
- * Paginated list of TechstackScan findings detected by the Techstack resolver.
+ * Paginated list of TechstackFinding detected by the Techstack resolver.
  * This endpoint only returns finding identifiers and summary information
  * (no detailed evidence).
  *
@@ -190,7 +190,7 @@ router.get(
 /**
  * GET /techstack/finding/:id
  *
- * Retrieve detailed information for a single TechstackScan finding.
+ * Retrieve detailed information for a single TechstackFinding.
  *
  * The SPARQL query aggregates:
  * - scalar fields (severity, rule id, description, etc.)

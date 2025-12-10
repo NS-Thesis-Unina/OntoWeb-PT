@@ -8,7 +8,7 @@ const { normalizeFindingIri } = require('../helpers/normalizeFindingIri');
 
 /**
  * Build a SPARQL SELECT query that returns all relevant details for a single
- * TechstackScan finding identified by its IRI/URN, including:
+ * TechstackFinding finding identified by its IRI/URN, including:
  *
  *  - Generic finding metadata (severity, category, rule, description, remediation)
  *  - Evidence type (Technology/WAF/Header/Cookie)
@@ -63,30 +63,30 @@ SELECT
   ?cookieExpiration
 WHERE {
   GRAPH <${G_FINDINGS}> {
-    BIND(IRI("${iri}") AS ?scan)
-    ?scan a ex:TechstackScan .
-    BIND(STR(?scan) AS ?id)
+    BIND(IRI("${iri}") AS ?finding)
+    ?finding a ex:TechstackFinding .
+    BIND(STR(?finding) AS ?id)
 
-    OPTIONAL { ?scan ex:detectedByResolver     ?resolver . }
-    OPTIONAL { ?scan ex:aboutVulnerabilityType ?vulnType . }
+    OPTIONAL { ?finding ex:detectedByResolver     ?resolver . }
+    OPTIONAL { ?finding ex:aboutVulnerabilityType ?vulnType . }
 
-    OPTIONAL { ?scan ex:severity           ?severity . }
-    OPTIONAL { ?scan ex:findingCategory    ?findingCategory . }
-    OPTIONAL { ?scan ex:mainDomain         ?mainDomain . }
-    OPTIONAL { ?scan ex:owaspCategory      ?owaspCategory . }
-    OPTIONAL { ?scan ex:findingRuleId      ?ruleId . }
-    OPTIONAL { ?scan ex:findingDescription ?description . }
-    OPTIONAL { ?scan ex:remediation        ?remediation . }
-    OPTIONAL { ?scan ex:evidenceType       ?evidenceType . }
+    OPTIONAL { ?finding ex:severity           ?severity . }
+    OPTIONAL { ?finding ex:findingCategory    ?findingCategory . }
+    OPTIONAL { ?finding ex:mainDomain         ?mainDomain . }
+    OPTIONAL { ?finding ex:owaspCategory      ?owaspCategory . }
+    OPTIONAL { ?finding ex:findingRuleId      ?ruleId . }
+    OPTIONAL { ?finding ex:findingDescription ?description . }
+    OPTIONAL { ?finding ex:remediation        ?remediation . }
+    OPTIONAL { ?finding ex:evidenceType       ?evidenceType . }
 
     # Technology / WAF evidence on the finding
-    OPTIONAL { ?scan ex:technologyName    ?technologyName . }
-    OPTIONAL { ?scan ex:technologyVersion ?technologyVersion . }
-    OPTIONAL { ?scan ex:cpe               ?cpeLiteral . }
+    OPTIONAL { ?finding ex:technologyName    ?technologyName . }
+    OPTIONAL { ?finding ex:technologyVersion ?technologyVersion . }
+    OPTIONAL { ?finding ex:cpe               ?cpeLiteral . }
 
     # CVE individual as vulnerability type
     OPTIONAL {
-      ?scan ex:aboutVulnerabilityType ?cveIri .
+      ?finding ex:aboutVulnerabilityType ?cveIri .
       OPTIONAL { ?cveIri ex:cveId        ?cveId . }
       OPTIONAL { ?cveIri ex:cvssScore    ?cvssScore . }
       OPTIONAL { ?cveIri ex:cvssSeverity ?cvssSeverity . }
@@ -100,15 +100,15 @@ WHERE {
 
     # Header evidence
     OPTIONAL {
-      ?scan ex:refersToHeader ?headerIri .
+      ?finding ex:refersToHeader ?headerIri .
       OPTIONAL { ?headerIri ex:fieldName ?headerFieldName . }
-      OPTIONAL { ?scan     ex:headerName ?headerName . }
-      OPTIONAL { ?scan     ex:headerUrl  ?headerUrl . }
+      OPTIONAL { ?finding     ex:headerName ?headerName . }
+      OPTIONAL { ?finding     ex:headerUrl  ?headerUrl . }
     }
 
     # Cookie evidence
     OPTIONAL {
-      ?scan ex:refersToCookie ?cookieIri .
+      ?finding ex:refersToCookie ?cookieIri .
       OPTIONAL { ?cookieIri ex:cookieName      ?cookieName . }
       OPTIONAL { ?cookieIri ex:cookieDomain    ?cookieDomain . }
       OPTIONAL { ?cookieIri ex:cookiePath      ?cookiePath . }

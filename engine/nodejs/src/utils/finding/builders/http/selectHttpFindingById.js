@@ -8,7 +8,7 @@ const { normalizeFindingIri } = require('../helpers/normalizeFindingIri');
 
 /**
  * Build a SPARQL SELECT query that returns all relevant details for a single
- * HttpScan finding identified by its IRI/URN.
+ * HttpFinding identified by its IRI/URN.
  *
  * Output variables:
  *  - ?id                 → string form of the finding IRI
@@ -52,24 +52,24 @@ SELECT
   ?relatedHttp
 WHERE {
   GRAPH <${G_FINDINGS}> {
-    BIND(IRI("${iri}") AS ?scan)
-    ?scan a ex:HttpScan .
-    BIND(STR(?scan) AS ?id)
+    BIND(IRI("${iri}") AS ?finding)
+    ?finding a ex:HttpFinding .
+    BIND(STR(?finding) AS ?id)
 
-    OPTIONAL { ?scan ex:detectedByResolver     ?resolver . }
-    OPTIONAL { ?scan ex:aboutVulnerabilityType ?vulnType . }
-    OPTIONAL { ?scan ex:severity               ?severity . }
-    OPTIONAL { ?scan ex:findingCategory        ?findingCategory . }
-    OPTIONAL { ?scan ex:owaspCategory          ?owaspCategory . }
-    OPTIONAL { ?scan ex:findingRuleId          ?ruleId . }
-    OPTIONAL { ?scan ex:findingDescription     ?description . }
-    OPTIONAL { ?scan ex:remediation            ?remediation . }
-    OPTIONAL { ?scan ex:httpMethod             ?httpMethod . }
-    OPTIONAL { ?scan ex:requestUrl             ?requestUrl . }
-    OPTIONAL { ?scan ex:responseStatus         ?responseStatus . }
+    OPTIONAL { ?finding ex:detectedByResolver     ?resolver . }
+    OPTIONAL { ?finding ex:aboutVulnerabilityType ?vulnType . }
+    OPTIONAL { ?finding ex:severity               ?severity . }
+    OPTIONAL { ?finding ex:findingCategory        ?findingCategory . }
+    OPTIONAL { ?finding ex:owaspCategory          ?owaspCategory . }
+    OPTIONAL { ?finding ex:findingRuleId          ?ruleId . }
+    OPTIONAL { ?finding ex:findingDescription     ?description . }
+    OPTIONAL { ?finding ex:remediation            ?remediation . }
+    OPTIONAL { ?finding ex:httpMethod             ?httpMethod . }
+    OPTIONAL { ?finding ex:requestUrl             ?requestUrl . }
+    OPTIONAL { ?finding ex:responseStatus         ?responseStatus . }
 
     # Linked HTTP entities (Request, Response, headers, URI, etc.)
-    OPTIONAL { ?scan ex:relatedToHTTP ?relatedHttp . }
+    OPTIONAL { ?finding ex:relatedToHTTP ?relatedHttp . }
   }
 }
 `.trim();

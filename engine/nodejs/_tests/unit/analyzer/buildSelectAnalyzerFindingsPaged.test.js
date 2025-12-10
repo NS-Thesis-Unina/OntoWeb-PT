@@ -6,7 +6,7 @@ describe('buildSelectAnalyzerFindingsPaged', () => {
 
     expect(sparql).toContain('PREFIX ex: <');
     expect(sparql).toContain('SELECT ?id ?total');
-    expect(sparql).toContain('ORDER BY ?scan');
+    expect(sparql).toContain('ORDER BY ?finding');
     expect(sparql).toContain('LIMIT 25');
     expect(sparql).toContain('OFFSET 50');
   });

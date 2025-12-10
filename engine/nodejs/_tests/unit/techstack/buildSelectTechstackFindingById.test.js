@@ -8,10 +8,10 @@ describe('buildSelectTechstackFindingById', () => {
     const normalizedSuffix = encodeURIComponent('http:cors-misconfig:req-1');
     const expectedIri = `urn:finding:${normalizedSuffix}`;
 
-    expect(sparql).toContain(`BIND(IRI("${expectedIri}") AS ?scan)`);
+    expect(sparql).toContain(`BIND(IRI("${expectedIri}") AS ?finding)`);
 
     expect(sparql).toMatch(/PREFIX\s+ex:\s+</);
     expect(sparql).toContain('GRAPH <');
-    expect(sparql).toContain('a ex:TechstackScan');
+    expect(sparql).toContain('a ex:TechstackFinding');
   });
 });

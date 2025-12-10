@@ -26,8 +26,8 @@ function addTechstackTriples(triples, findingIri, f) {
   const ev = f?.evidence || {};
   const kind = f?.kind || null;
 
-  // Always type as TechstackScan (subclass of Scan)
-  triples.push(`${findingIri} a <${EX}TechstackScan> .`);
+  // Always type as TechstackFinding (subclass of Finding)
+  triples.push(`${findingIri} a <${EX}TechstackFinding> .`);
 
   if (f.mainDomain) {
     triples.push(

@@ -46,8 +46,8 @@ describe('GET /http-requests/finding/list (integration)', () => {
       head: { vars: ['id', 'total'] },
       results: {
         bindings: [
-          { id: lit('urn:scan:1'), total: lit('2') },
-          { id: lit('urn:scan:2'), total: lit('2') },
+          { id: lit('urn:finding:1'), total: lit('2') },
+          { id: lit('urn:finding:2'), total: lit('2') },
         ],
       },
     });
@@ -66,7 +66,7 @@ describe('GET /http-requests/finding/list (integration)', () => {
 
     expect(res.status).toBe(200);
 
-    expect(res.body.items).toEqual(['urn:scan:1', 'urn:scan:2']);
+    expect(res.body.items).toEqual(['urn:finding:1', 'urn:finding:2']);
 
     expect(res.body.page).toEqual({
       limit: 1,
