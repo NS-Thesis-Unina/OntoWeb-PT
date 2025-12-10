@@ -1,6 +1,8 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+#include <stddef.h>
+
 
 /**
  * @brief Enable or disable verbose output.
@@ -27,6 +29,7 @@ int verbose(const char * restrict format, ...);
  * 
  * @return char* 
  */
-char* get_parent_shell_path();
+int get_parent_shell_path (char *out, size_t out_size);
+
 
 #endif
