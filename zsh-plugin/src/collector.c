@@ -23,13 +23,125 @@
 #include "utils.h"
 
 
+// Modify to include also the others
+// TODO: Tutta sta roba si può levare perché basta la detect shell sul padre
+// TODO: improve code quality
+// TODO: You can check by SUDO_COMMAND
+// https://www.sudo.ws/docs/man/sudo.man/#ENVIRONMENT
+static int read_comm(pid_t pid, char *buf, size_t size) {
+    char path[256];
+    snprintf(path, sizeof(path), "/proc/%d/comm", pid);
+    FILE *f = fopen(path, "r");
+    if (!f) return -1;
+
+    fgets(buf, size, f);
+    buf[strcspn(buf, "\n")] = 0;
+    fclose(f);
+    return 0;
+}
+
+
+// check it
+static pid_t read_ppid(pid_t pid) {
+    char path[256], key[32];
+    snprintf(path, sizeof(path), "/proc/%d/status", pid);
+
+    FILE *f = fopen(path, "r");
+    if (!f) return -1;
+
+    pid_t ppid = -1;
+
+    while (fscanf(f, "%31s", key) == 1) {
+        if (strcmp(key, "PPid:") == 0) {
+            fscanf(f, "%d", &ppid);
+            break;
+        }
+        // skip rest of line
+        fscanf(f, "%*[^\n]\n");
+    }
+
+    fclose(f);
+    return ppid;
+}
+
 // https://stackoverflow.com/questions/3357737/dropping-root-privileges
 // TODO: modificare path, modificare soluzione
-int drop_root_privileges(void)
-{ }
+// If root, drop priv only if sudo, otherwise no.
 
+// https://stackoverflow.com/questions/4598001/how-do-you-find-the-original-user-through-multiple-sudo-and-su-commands
+// It appear a fork, so it is necessary check the father of the father for the shell.
+int drop_root_privileges(void) {
+    uid_t uid = getuid();
+    if (uid != 0)
+        return 0;
 
+    pid_t pid = getpid();
 
+    pid = read_ppid(pid);
+    char name[64];
+    read_comm(pid, name, sizeof(name));
+
+    if (strcmp(name, "sudo") == 0) {
+        gid_t gid;
+        uid_t uid;
+
+        if ((uid = geteuid()) == 0) {
+            const char *sudo_uid = secure_getenv("SUDO_UID");
+            if (sudo_uid == NULL) {
+                printf("environment variable `SUDO_UID` not found\n");
+                return -1;
+            }
+            errno = 0;
+            uid = (uid_t)strtoll(sudo_uid, NULL, 10);
+            if (errno != 0) {
+                perror("under-/over-flow in converting `SUDO_UID` to integer");
+                return -1;
+            }
+        }
+
+        // again, in case your program is invoked using sudo
+        if ((gid = getegid()) == 0) {
+            const char *sudo_gid = secure_getenv("SUDO_GID");
+            if (sudo_gid == NULL) {
+                printf("environment variable `SUDO_GID` not found\n");
+                return -1;
+            }
+            errno = 0;
+            gid = (gid_t)strtoll(sudo_gid, NULL, 10);
+            if (errno != 0) {
+                perror("under-/over-flow in converting `SUDO_GID` to integer");
+                return -1;
+            }
+        }
+
+        if (setgroups(0, NULL) != 0) {
+            perror("setgroups");
+            return -1;
+        }
+
+        if (setgid(gid) != 0) {
+            perror("setgid");
+            return -1;
+        }
+        if (setuid(uid) != 0) {
+            perror("setgid");
+            return -1;
+        }
+
+        // change your directory to somewhere else, just in case if you are in a
+        // TODO: Check why this works
+        const char *sudo_home = secure_getenv("SUDO_HOME");
+        if (!sudo_home) {
+            // TODO: Change with user
+            setenv("HOME", "/home/nda",1);
+        }
+
+        return 1;
+    }
+        
+    return 0;
+    
+}
 
 
 // vedere come gestire questa variabile
@@ -41,8 +153,9 @@ static int global_master_fd = -1;
 
 /* -------------------------------------------
    SYNC PTY WINDOW SIZE WITH REAL TERMINAL
-   TODO: Improve ... Penso che la gestione della ioctl così sia sbagliata -> potrebbe esserci una race condition
 -------------------------------------------- */
+// TODO: Improve ... Penso che la gestione della ioctl così sia sbagliata -> potrebbe esserci una race condition
+// https://pvs-studio.com/en/blog/posts/cpp/0950/
 void update_winsize() {
     if (global_master_fd < 0) return;
 
@@ -63,7 +176,6 @@ static void sig_handler(int sig) {
 int main(int argc, char ** argv) {
     printf("Program invoked as: %s\n", argv[0]);
 
-    
     /* ------------------------------------------------------------------
         TODO: consider dynamic allocation for improved flexibility. 
         IDK (Lasciamo così, ci sono troppe cose da fare.)
@@ -93,7 +205,15 @@ int main(int argc, char ** argv) {
     }
     verbose("Capture name: %s\n", capture_name);
 
-    drop_root_privileges();
+    if (tool_input.network_flag){
+        if (unshare(CLONE_NEWNET) == -1) {
+            perror("[ERROR] unshare(CLONE_NEWNET) failed");
+            return -1;
+        }
+    }
+
+    int ret = drop_root_privileges();
+    printf("%d\n", ret);
 
     /* ------------------------------------------------------------------
         Determine output directory:
@@ -101,6 +221,7 @@ int main(int argc, char ** argv) {
          - Otherwise generate /tmp/<name>_<timestamp>.
     ------------------------------------------------------------------- */
     /* TODO: Valutare funzione append dei path */
+    /* TODO: Validazione dell'input */
     if (!tool_input.output_given){
         time_t rawtime;
         struct tm *timeinfo;
