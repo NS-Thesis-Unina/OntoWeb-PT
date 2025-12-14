@@ -8,6 +8,7 @@ import {
   Chip,
   CircularProgress,
   Divider,
+  Drawer,
   IconButton,
   Paper,
   Stack,
@@ -28,6 +29,8 @@ import DarkLightButton from '../darkLightButton/darkLightButton';
 import LayersIcon from '@mui/icons-material/Layers';
 import AnalyticsIcon from '@mui/icons-material/Analytics';
 import PodcastsIcon from '@mui/icons-material/Podcasts';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import MenuIcon from '@mui/icons-material/Menu';
 
 import { getHealth, deriveToolStatus } from '../../services/healthService';
 
@@ -50,6 +53,8 @@ import { getHealth, deriveToolStatus } from '../../services/healthService';
  * Responsiveness:
  *   - `useMediaQuery('(max-width:900px)')` switches the left rail between
  *     full-labeled buttons and compact icon-only buttons.
+ *   - `useMediaQuery('(max-width:650px)')` switches the left rail between
+ *     compact icon-only buttons and top-left menu.
  *
  * Accessibility:
  *   - The brand logo is clickable and navigates to `/home`.
@@ -58,6 +63,7 @@ import { getHealth, deriveToolStatus } from '../../services/healthService';
 function NavigationWrapper({ children }) {
   const { mode } = useThemeMode();
   const isUnder900 = useMediaQuery('(max-width:900px)');
+  const isUnder650 = useMediaQuery('(max-width:650px)');
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -68,9 +74,12 @@ function NavigationWrapper({ children }) {
   const inFindings = location.pathname.startsWith('/findings');
 
   // Sub-tab route checks (used to disable the active tab)
-  const isTechstackFindings = location.pathname === '/findings' || location.pathname === '/findings/';
+  const isTechstackFindings =
+    location.pathname === '/findings' || location.pathname === '/findings/';
   const isAnalyzerFindings = location.pathname.startsWith('/findings/analyzer');
   const isHttpFindings = location.pathname.startsWith('/findings/http');
+
+  const [openDrawer, setOpenDrawer] = useState(false);
 
   /**
    * Poll health status every 3s and derive a simple high-level status label.
@@ -101,6 +110,19 @@ function NavigationWrapper({ children }) {
     };
   }, []);
 
+  const handleCloseDrawer = () => {
+    setOpenDrawer(false);
+  };
+
+  const handleOpenDrawer = () => {
+    setOpenDrawer(true);
+  };
+
+  const drawerNavigate = (path) => {
+    navigate(path);
+    setOpenDrawer(false);
+  };
+
   return (
     <div className="nw-div">
       {/* ======= TOP APP BAR (brand, context tabs, tool status, theme toggle) ======= */}
@@ -113,6 +135,9 @@ function NavigationWrapper({ children }) {
             alt="Logo"
             onClick={() => navigate('/home')}
           />
+          <IconButton className="menu" size="large" onClick={handleOpenDrawer}>
+            <MenuIcon />
+          </IconButton>
           <img
             className="logo logo-mobile"
             src={Icon}
@@ -137,7 +162,7 @@ function NavigationWrapper({ children }) {
                   onClick={() => navigate('/findings')}
                 >
                   <LayersIcon />
-                  Techstack Findings
+                  {!isUnder650 && 'Techstack Findings'}
                 </Button>
                 <Button
                   className="button"
@@ -146,7 +171,7 @@ function NavigationWrapper({ children }) {
                   onClick={() => navigate('/findings/analyzer')}
                 >
                   <AnalyticsIcon />
-                  Analyzer Findings
+                  {!isUnder650 && 'Analyzer Findings'}
                 </Button>
                 <Button
                   className="button"
@@ -155,7 +180,7 @@ function NavigationWrapper({ children }) {
                   onClick={() => navigate('/findings/http')}
                 >
                   <PodcastsIcon />
-                  Http Findings
+                  {!isUnder650 && 'Http Findings'}
                 </Button>
               </Stack>
             )}
@@ -164,11 +189,12 @@ function NavigationWrapper({ children }) {
             <div className="options">
               <Chip
                 label={
-                  toolStatus === 'checking'
+                  !isUnder650 &&
+                  (toolStatus === 'checking'
                     ? 'Tool Checking'
                     : toolStatus === 'tool_on'
                     ? 'Tool On'
-                    : 'Tool Off'
+                    : 'Tool Off')
                 }
                 icon={
                   toolStatus === 'checking' ? (
@@ -233,8 +259,8 @@ function NavigationWrapper({ children }) {
                 OpenAPI
               </Button>
             </Stack>
-          ) : (
-            // Mobile: compact icon-only rail
+          ) : !isUnder650 ? (
+            // Middle: compact icon-only rail
             <Stack
               className="stack"
               direction="column"
@@ -272,6 +298,75 @@ function NavigationWrapper({ children }) {
                 <ApiIcon fontSize="large" />
               </IconButton>
             </Stack>
+          ) : (
+            //Mobile: top-left menu
+            <Drawer open={openDrawer}>
+              <Stack
+                className="stack"
+                direction="column"
+                style={{ minWidth: '100vw', display: 'flex' }}
+                divider={<Divider className="divider" orientation="horizontal" />}
+              >
+                <Button className="button-drawer-close" size="large" onClick={handleCloseDrawer}>
+                  <ChevronLeftIcon className="icon-drawer" fontSize="large" />
+                </Button>
+                <Divider className="divider" />
+                <Button
+                  className="button-drawer"
+                  size="large"
+                  onClick={() => drawerNavigate('/home')}
+                >
+                  <HomeIcon className="icon-drawer" fontSize="large" />
+                  Home
+                </Button>
+
+                <Button
+                  className="button-drawer"
+                  size="large"
+                  onClick={() => drawerNavigate('/http-requests')}
+                >
+                  <HttpIcon className="icon-drawer" fontSize="large" />
+                  Requests
+                </Button>
+
+                <Button
+                  className="button-drawer"
+                  size="large"
+                  onClick={() => drawerNavigate('/findings')}
+                >
+                  <BugReportIcon className="icon-drawer" fontSize="large" />
+                  Findings
+                </Button>
+
+                <Button
+                  className="button-drawer"
+                  size="large"
+                  onClick={() => drawerNavigate('/send-pcap')}
+                >
+                  <SendIcon className="icon-drawer" fontSize="large" />
+                  Send PCAP
+                </Button>
+
+                <Button
+                  className="button-drawer"
+                  size="large"
+                  onClick={() => drawerNavigate('/server-status')}
+                >
+                  <CheckCircleIcon className="icon-drawer" fontSize="large" />
+                  Tool Status
+                </Button>
+
+                <Button
+                  className="button-drawer"
+                  size="large"
+                  onClick={() => drawerNavigate('/openapi')}
+                >
+                  <ApiIcon className="icon-drawer" fontSize="large" />
+                  OpenAPI
+                </Button>
+                <Divider className="divider" />
+              </Stack>
+            </Drawer>
           )}
           <Divider className="divider" orientation="horizontal" />
         </Paper>

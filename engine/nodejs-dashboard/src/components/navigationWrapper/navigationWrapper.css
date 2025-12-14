@@ -68,6 +68,29 @@
   gap: 20px;
 }
 
+.button-drawer {
+  display: flex;
+  position: relative;
+  justify-content: start;
+  width: 100%;
+  border-radius: 0;
+  padding: 20px !important;
+}
+
+.button-drawer-close {
+  display: flex;
+  position: relative;
+  justify-content: start;
+  width: 100%;
+  border-radius: 0;
+  height: 60px;
+}
+
+.icon-drawer {
+  position: absolute;
+  left: 10px;
+}
+
 .nw-div .content-div .right-div {
   display: block;
   width: 100%;
@@ -84,6 +107,11 @@
 }
 .nw-div .toolbar .logo-mobile {
   display: none;
+}
+
+.nw-div .toolbar .menu {
+  display: none;
+  margin-right: 5px;
 }
 
 .nw-div .toolbar .buttons .options .toolstatus-chip {
@@ -122,5 +150,23 @@
   }
   .nw-div .toolbar .logo-mobile {
     display: block;
+  }
+  .nw-div .toolbar .menu {
+    display: none;
+  }
+}
+
+@media (max-width: 650px) {
+  .nw-div .content-div .left-div {
+    display: none;
+  }
+  .nw-div .toolbar .menu {
+    display: flex;
+  }
+  .nw-div .toolbar {
+    padding: 0px;
+  }
+  .nw-div .toolbar .options .MuiChip-label {
+    margin-right: -12px;
   }
 }
