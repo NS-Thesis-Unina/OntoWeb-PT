@@ -1,105 +1,186 @@
-# WebPT Engine
+# OntoWeb-PT Engine / Tool
 
-Il **WebPT Engine** è il motore di analisi semantica e orchestrazione del progetto **OntoWebPT**.  
-Gestisce la comunicazione con l’ontologia (tramite **GraphDB**), l’elaborazione asincrona di job su **Redis**, e fornisce API HTTP per l’interazione con l’estensione browser.
+Questa cartella contiene l’**Engine / Tool** di **OntoWeb-PT**, ovvero il backend completo della piattaforma.
+
+L’engine è responsabile di:
+- esposizione delle **API REST** e **WebSocket**;
+- gestione asincrona delle analisi tramite **job system**;
+- persistenza semantica dei risultati su **GraphDB (RDF/OWL)**;
+- orchestrazione dei servizi tramite **Docker Compose**;
+- esposizione del servizio tramite **Nginx reverse proxy**;
+- serving della **Dashboard Web**.
 
 ---
 
-## ⚙️ Inizializzazione e avvio
+## High-level overview
 
-### ✅ Prerequisiti
-- **Docker** e **Docker Compose** installati  
-- **Node.js LTS** installato per l’esecuzione dei processi applicativi  
+L’engine è composto dai seguenti servizi principali:
+
+- **node-api**
+  - Server Express
+  - API REST
+  - WebSocket gateway
+  - Health checks
+  - Serving Dashboard
+
+- **node-worker**
+  - Esecuzione job asincroni
+  - Resolver (Techstack, Analyzer, HTTP)
+  - Persistenza su GraphDB
+  - Emissione eventi e log
+
+- **Redis**
+  - Queue BullMQ
+  - Stato temporaneo job
+  - Coordinamento API ↔ Worker
+
+- **GraphDB**
+  - Repository RDF (`ontowebpt`)
+  - Storage ontologico
+  - Query SPARQL
+
+- **Nginx**
+  - Reverse proxy
+  - Gestione upload PCAP
+  - Ingresso unico HTTP
 
 ---
 
-### 1️⃣ Avvio dei servizi di base
+## Repository structure
 
-Posizionarsi nella cartella:
+```
+engine/
+├── docker-compose.yml # Orchestrazione completa dei servizi
+├── graphdb/
+│ ├── ontology.rdf # Ontologia OWL/RDF
+│ └── repository.ttl # Configurazione repository GraphDB
+├── nginx/
+│ └── nginx.conf # Reverse proxy configuration
+├── nodejs/
+│ ├── Dockerfile # Build API + Worker
+│ ├── .env # Configurazione backend
+│ └── src/ # Codice API + Worker
+└── nodejs-dashboard/
+├── .env # Configurazione Dashboard (Vite)
+└── src/ # Codice frontend Dashboard
+```
+
+---
+
+## Quick start
+
+Per avviare **tutto l’engine** (API, Worker, Redis, GraphDB, Nginx):
 
 ```bash
 cd engine
-```
-
-Avviare i container:
-
-```bash
 docker compose up -d
 ```
 
-Questo comando avvia:
+### Verifica
 
-- **Redis** (con persistenza AOF e healthcheck)
-- **GraphDB** (con volume persistente della home)
+- API health: http://localhost/health
+- Dashboard: http://localhost/
+- GraphDB UI: http://localhost:7200
 
-Verifica stato:
+---
+
+## Primo avvio: cosa succede
+
+Al primo `docker compose up`:
+1. Redis e GraphDB vengono avviati
+2. Il container `graphdb-init`:
+   - verifica la disponibilità di GraphDB
+   - crea il repository `ontowebpt` se non esiste
+   - importa l’ontologia `ontology.rdf` se assente
+3. `node-api` si collega a Redis e GraphDB
+4. `node-worker` si registra sulle code BullMQ
+5. Nginx espone l’ingresso HTTP su `http://localhost/`
+
+Lo script di bootstrap di GraphDB è **idempotente**:
+- se repository e ontologia esistono, non vengono ricreati.
+
+---
+
+## Configurazione
+
+La configurazione principale del backend è centralizzata in:
+
+`engine/nodejs/.env`
+
+
+Qui è possibile configurare:
+- logging
+- porte e CORS
+- GraphDB e Redis
+- code, retry e backoff
+- concorrenza worker
+- URI dell’ontologia
+- chiavi API esterne (es. NVD)
+
+**Attenzione**  
+Modificare le variabili prima del primo avvio, oppure ricostruire le immagini Docker dopo la modifica.
+
+**Per una descrizione completa delle variabili**:  
+[Deployment → Backend Configuration](../docs/6_deployment/6_3_Backend_Configuration.md)
+
+---
+
+## Dashboard
+
+La Dashboard è:
+- sviluppata in nodejs-dashboard/ (Vite)
+- precompilata e servita direttamente da node-api
+
+Se modifichi la dashboard:
+1. aggiorna .env in nodejs-dashboard
+2. esegui npm run build
+3. copia dist/ nella cartella servita dall’API
+4. ricostruisci le immagini Docker
+
+---
+
+## Logs & debugging
+
+### Logs dei container
 ```bash
-docker compose ps
+docker logs -f node-api
+docker logs -f node-worker
+docker logs -f graphdb-init
+```
+
+### Tool Status
+
+La Dashboard espone una pagina dedicata che mostra:
+- stato API
+- stato Redis
+- stato GraphDB
+- stato WebSocket
+- log in tempo reale via WebSocket
+
+---
+
+## Shutdown & reset
+
+```bash
+docker compose down
+```
+
+**Reset completo (distrugge i dati RDF e Redis):**
+```bash
+docker compose down -v
 ```
 
 ---
 
-### 2️⃣ Preparazione di GraphDB
+## Documentation
 
-1. Aprire l’interfaccia Web di GraphDB (default: [http://localhost:7200](http://localhost:7200)).  
-2. Creare una **repository** con nome `ontowebpt`.  
-3. Importare l’ontologia del progetto:  
-   ```
-   onto/ontology.rdf
-   ```
-4. L’ontologia definisce il vocabolario semantico usato dall’Engine (classi, proprietà, individui).
+Per i dettagli architetturali e operativi completi:
 
----
+- [Architecture](../docs/2_architecture/2_Architecture.md)
+- [Implementation Details](../docs/4_implementation_details/4_Implementation_Details.md)
+- [End-to-End Flows](../docs/5_end_to_end_system_flows/5_End_To_End_System_Flows.md)
+- [Deployment & Setup](../docs/6_deployment/6_Deployment.md)
 
-### 3️⃣ Configurazione dell’applicazione
-
-Entrare nella cartella Node.js:
-
-```bash
-cd nodejs
-```
-
-Verificare/aggiornare il file `.env` con:
-- Host e porte di GraphDB e Redis  
-- Nomi delle code  
-- Concorrenza dei worker  
-- Prefissi ontologici e grafo applicativo  
-
-Installare le dipendenze:
-
-```bash
-npm install
-```
+[Documentazione completa](./README.md)
 
 ---
-
-### 4️⃣ Avvio degli esecutori
-
-Avviare l’**Executor API**:
-
-```bash
-npm run dev:api
-```
-
-Avviare l’**Executor Worker**:
-
-```bash
-npm run dev:worker
-```
-
-A regime:
-- L’API gestisce richieste e letture sincrone da GraphDB  
-- Il Worker consuma i job dalle code Redis e applica aggiornamenti sul grafo semantico  
-
----
-
-### 5️⃣ Verifiche rapide
-
-- **GraphDB** → [http://localhost:7200](http://localhost:7200)  
-- **Redis** → porta 6379  
-- **API** → in ascolto sulla porta definita in `.env` (es. `SERVER_PORT=8081`)  
-- **Worker** → attivo con concorrenza configurata (`CONCURRENCY_WORKER_*`)  
-
----
-
-📖 **Torna al progetto principale:** [OntoWebPT Root README](../README.md)
