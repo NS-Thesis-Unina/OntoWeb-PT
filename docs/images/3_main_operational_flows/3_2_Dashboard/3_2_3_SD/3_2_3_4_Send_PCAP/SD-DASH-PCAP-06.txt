@@ -10,7 +10,7 @@ sequenceDiagram
         P-->>U: Pulsante "Continue" disabilitato
     else requests.length > 0
         G-->>U: Mostra righe con checkbox di selezione
-        P-->>U: Pulsante "Continue" inizialmente disabilitato\n(selectedRequests vuoto)
+        P-->>U: Pulsante "Continue" inizialmente disabilitato (selectedRequests vuoto)
     end
 
     U->>G: Seleziona o deseleziona una o più righe

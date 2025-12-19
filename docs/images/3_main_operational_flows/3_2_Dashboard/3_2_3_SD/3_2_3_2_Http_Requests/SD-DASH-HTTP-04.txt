@@ -5,7 +5,7 @@ sequenceDiagram
     participant G as DataGrid
     participant N as Notifiche globali
 
-    U->>H: Innesca caricamento lista\n(apertura pagina, Apply o Reset filtri,\n cambio pagina/pageSize)
+    U->>H: Innesca caricamento lista (apertura pagina, Apply o Reset filtri, cambio pagina/pageSize)
     activate H
     H->>S: listHttpRequests(offset, limit, filtri)
 
@@ -15,14 +15,14 @@ sequenceDiagram
         S-->>H: rows=[] , total=0
         deactivate S
         H->>H: loading=false, aggiorna stato con rows vuote
-        H->>G: render DataGrid senza righe\nmostra messaggio "No requests to show."
+        H->>G: render DataGrid senza righe mostra messaggio "No requests to show."
     else Errore di rete/backend
         activate S
         S-->>H: errore
         deactivate S
         H->>H: loading=false, non altera eventuali rows precedenti
         H->>N: mostra snackbar "Error while executing the request."
-        H->>G: mantiene l’ultima lista valida (se presente)\noppure griglia vuota strutturata
+        H->>G: mantiene l’ultima lista valida (se presente) oppure griglia vuota strutturata
     end
 
     deactivate H

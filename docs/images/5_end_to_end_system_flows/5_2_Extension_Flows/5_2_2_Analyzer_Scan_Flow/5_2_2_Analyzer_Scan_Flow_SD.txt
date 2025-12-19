@@ -1,0 +1,23 @@
+sequenceDiagram
+    participant U as User
+    participant E as Extension
+    participant N as Nginx
+    participant A as API Server
+    participant R as Redis Queue
+    participant W as Worker
+    participant G as GraphDB
+    participant WS as WebSocket
+
+    U->>E: Start Analyzer Scan
+    E->>E: DOM capture & script extraction
+    E->>N: POST /analyze/analyzer
+    N->>A: Forward request
+    A->>A: Validate & normalize payload
+    A->>R: Enqueue sast-analyze job
+    A-->>E: Ack + jobId
+
+    W->>R: Fetch job
+    W->>W: Execute AnalyzerResolver (SAST)
+    W-->>WS: Job progress events / logs
+    W->>G: Persist AnalyzerFindings + HTML/URI links
+    W-->>WS: Job completed

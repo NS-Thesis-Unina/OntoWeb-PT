@@ -12,11 +12,11 @@ sequenceDiagram
     loop Per ogni path in schema.paths
         B->>B: Itera su chiavi di pathItem
         alt Chiave = metodo HTTP valido
-            B->>B: Crea oggetto endpoint\n(method, path, summary, description,…)
-            B->>B: Legge pathItem.parameters\n(parametri livello path)
-            B->>B: Legge info.parameters\n(parametri livello operation)
-            B->>B: Merge parametri path + operation\n(con override operation)
-            B->>B: Determina tag principale\n(info.tags[0] o "General")
+            B->>B: Crea oggetto endpoint (method, path, summary, description,…)
+            B->>B: Legge pathItem.parameters (parametri livello path)
+            B->>B: Legge info.parameters (parametri livello operation)
+            B->>B: Merge parametri path + operation (con override operation)
+            B->>B: Determina tag principale (info.tags[0] o "General")
             B->>B: Aggiunge endpoint al gruppo tag
         else Chiave non è un metodo (es. parameters)
             B->>B: Ignora entry
@@ -27,4 +27,4 @@ sequenceDiagram
     deactivate B
 
     P->>P: Aggiorna stato endpointsByTag
-    P-->>U: Renderizza sezioni per tag\nognuna con lista di Accordion endpoint
+    P-->>U: Renderizza sezioni per tag ognuna con lista di Accordion endpoint

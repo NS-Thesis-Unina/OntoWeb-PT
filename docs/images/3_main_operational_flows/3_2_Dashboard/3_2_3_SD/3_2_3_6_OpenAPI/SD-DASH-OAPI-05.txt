@@ -6,7 +6,7 @@ sequenceDiagram
     participant D as DerefEngine
     participant S as SchemaOpenAPI
 
-    U->>P: Espande Accordion di un endpoint\nche prevede requestBody
+    U->>P: Espande Accordion di un endpoint che prevede requestBody
     P-->>RB: Passa ep.requestBody e schema radice
 
     alt requestBody definito
@@ -26,13 +26,13 @@ sequenceDiagram
 
         RB->>D: deref(schemaSelezionato, S)
         activate D
-        D->>S: Risoluzione $ref locali\n(properties, items, allOf, anyOf, oneOf, …)
+        D->>S: Risoluzione $ref locali (properties, items, allOf, anyOf, oneOf, …)
         D-->>RB: schemaDereferenziato
         deactivate D
 
-        RB->>RB: Serializza schemaDereferenziato\nJSON.stringify(..., null, 2)
+        RB->>RB: Serializza schemaDereferenziato JSON.stringify(..., null, 2)
         RB-->>P: Testo formattato per blocco <pre>
-        P-->>U: Mostra sezione "Request Body"\ncon schema JSON scrollabile
+        P-->>U: Mostra sezione "Request Body" con schema JSON scrollabile
     else requestBody assente
         RB-->>P: Nessuna sezione da renderizzare
         P-->>U: Non mostra "Request Body"

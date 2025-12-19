@@ -10,7 +10,7 @@ sequenceDiagram
     U->>G: Clic icona "View details" su una riga
     G->>H: onViewDetailsClick(requestId)
     activate H
-    H->>H: imposta selectedRequestId=requestId\napre il Drawer (open=true)
+    H->>H: imposta selectedRequestId=requestId apre il Drawer (open=true)
     H->>D: monta Drawer "Request details"
     deactivate H
 
@@ -21,29 +21,29 @@ sequenceDiagram
 
     alt Dettaglio recuperato con successo
         activate S
-        S-->>D: dettaglio richiesta/risposta\n(uri, headers, body, meta, graph, connection...)
+        S-->>D: dettaglio richiesta/risposta (uri, headers, body, meta, graph, connection...)
         deactivate S
         D->>D: nasconde spinner
         D->>D: render header con:
-        D->>D: - chip Method\n- chip Status (colorato per classe codice)\n- URL canonica + pulsante "Copy URL"\n- metadati Graph e Connection authority
+        D->>D: - chip Method - chip Status (colorato per classe codice) - URL canonica + pulsante "Copy URL" - metadati Graph e Connection authority
         D->>D: render sezione "Request" con:
-        D->>D: - Method, Scheme, Authority, Path, QueryRaw\n- eventuali query params (name = value)\n- request headers (lista nome: valore)
+        D->>D: - Method, Scheme, Authority, Path, QueryRaw - eventuali query params (name = value) - request headers (lista nome: valore)
         D->>D: render sezione "Response" con:
-        D->>D: - status HTTP completo\n- response headers\n- body in riquadro scrollabile + pulsante "Copy body"
+        D->>D: - status HTTP completo - response headers - body in riquadro scrollabile + pulsante "Copy body"
         U->>D: (opzionale) clic su "Copy URL"/"Copy body"
-        D->>D: copia negli appunti (clipboard)\nsenza ulteriori chiamate al backend
+        D->>D: copia negli appunti (clipboard) senza ulteriori chiamate al backend
     else Errore nel recupero dettagli
         activate S
         S-->>D: errore
         deactivate S
-        D->>D: azzera eventuali dati parziali\nnasconde spinner
+        D->>D: azzera eventuali dati parziali nasconde spinner
         D->>N: mostra snackbar "Error during retrieving request."
         D->>H: richiesta chiusura Drawer
         deactivate D
-        H->>H: set open=false\n(lista principale resta visibile)
+        H->>H: set open=false (lista principale resta visibile)
     end
 
     %% Chiusura drawer da parte dell’utente
     U->>D: Clic su X o sul backdrop
     D->>H: onClose()
-    H->>H: set open=false, mantiene selectedRequestId\nper eventuali riaperture
+    H->>H: set open=false, mantiene selectedRequestId per eventuali riaperture

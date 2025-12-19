@@ -1,0 +1,32 @@
+sequenceDiagram
+    participant U as User
+    participant E as Extension (Interceptor)
+    participant N as Nginx
+    participant A as API Server
+    participant R as Redis Queue
+    participant W as Worker
+    participant H as HttpResolver
+    participant G as GraphDB
+    participant WS as WebSocket
+    participant D as Dashboard
+
+    U->>E: Enable Interceptor
+    loop Continuous browsing
+        E->>E: Capture HTTP req/res events (buffer)
+    end
+
+    E->>N: POST /http/batch (batched events)
+    N->>A: Forward request
+    A->>A: Validate & normalize batch
+    A->>R: Enqueue http-ingest job
+    A-->>E: Ack + jobId (or batchId)
+
+    W->>R: Fetch job
+    W->>W: Normalize HTTP records
+    opt Optional analysis enabled
+        W->>H: Execute HttpResolver rules
+        H-->>W: HttpFindings (optional)
+    end
+    W-->>WS: Job progress events / logs
+    W->>G: Persist Requests/Responses (+ Findings)
+    W-->>WS: Job completed

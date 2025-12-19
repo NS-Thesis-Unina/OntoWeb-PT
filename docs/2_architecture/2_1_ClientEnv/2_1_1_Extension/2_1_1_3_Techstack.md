@@ -278,7 +278,7 @@ Il flusso di una one-time scan è:
 	- header (o famiglia di header) coinvolta;
 	- breve descrizione;
 	- lista di URL in cui è stata riscontrata la condizione.
-	1. **Raccolta storage (localStorage / sessionStorage)**
+	- **Raccolta storage (localStorage / sessionStorage)**
 	   Tramite messaggi al content script:
 	   - `action: 'dumpLocalStorage'` → riceve lista `{ key, value }`;
 	   - `action: 'dumpSessionStorage'` → stessa struttura.

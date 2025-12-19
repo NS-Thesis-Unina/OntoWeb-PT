@@ -1,8 +1,8 @@
 # Architettura (grey-box)
 ---
 
-1. [Client Environment](./2_1_ClientEnv.md)
-2. [Engine/Tool](./2_2_Engine_Tool.md)
+- [Client Environment](./2_1_ClientEnv.md)
+- [Engine/Tool](./2_2_Engine_Tool.md)
 
 ---
 

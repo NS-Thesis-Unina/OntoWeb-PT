@@ -1,0 +1,40 @@
+sequenceDiagram
+    participant U as User
+    participant D as Dashboard (Tool Status)
+    participant N as Nginx
+    participant A as API Server
+    participant R as Redis
+    participant G as GraphDB
+    participant WS as WebSocket (root)
+    participant L as WebSocket (/logs)
+    participant W as Worker (log source)
+
+    U->>D: Open Tool Status page
+
+    %% --- WebSocket connectivity (root) ---
+    D->>WS: Connect (root namespace)
+    WS-->>D: connect
+    D->>D: wsStatus = connected (trigger health refresh)
+
+    %% --- WebSocket logs stream (/logs) ---
+    D->>L: Connect (/logs namespace)
+    L-->>D: log events (ts, level, ns, msg)
+    D->>D: Append to rolling buffer (keep last ~80)
+
+    %% --- Periodic REST health polling ---
+    loop Every 5s (and when wsStatus flips)
+        D->>N: GET /health
+        N->>A: Forward request
+        A->>A: Aggregate component checks
+        A->>R: Redis probe (ping/conn check)
+        R-->>A: ok/down
+        A->>G: GraphDB probe (light query/conn check)
+        G-->>A: ok/down
+        A-->>D: 200 OK { ok, components: { server, redis, graphdb } }
+        D->>D: deriveToolStatus(health) Render StatusCards + main badge
+    end
+
+    %% --- Optional: worker emits logs into /logs stream ---
+    W-->>L: log (worker namespace)
+    L-->>D: log event
+    D->>D: Display in Real-Time Logs panel

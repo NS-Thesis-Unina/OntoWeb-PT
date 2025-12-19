@@ -1,0 +1,22 @@
+sequenceDiagram
+    participant U as User
+    participant E as Extension
+    participant N as Nginx
+    participant A as API Server
+    participant R as Redis Queue
+    participant W as Worker
+    participant G as GraphDB
+    participant WS as WebSocket
+
+    U->>E: Start Techstack Analysis
+    E->>N: POST /analyze/techstack
+    N->>A: Forward request
+    A->>A: Validate & normalize payload
+    A->>R: Enqueue techstack-analyze job
+    A-->>E: Ack + jobId
+
+    W->>R: Fetch job
+    W->>W: Execute TechstackResolver
+    W-->>WS: Job progress events
+    W->>G: Persist Techstack Findings
+    W-->>WS: Job completed

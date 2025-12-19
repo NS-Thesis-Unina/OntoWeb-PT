@@ -17,16 +17,16 @@ sequenceDiagram
     G-->>P: onViewDetails(requestId)
     P->>D: Apri Drawer con dati della richiesta selezionata
     activate D
-    D-->>U: Mostra sezioni Request/Response\n(method, URI, query params, headers, body)
+    D-->>U: Mostra sezioni Request/Response (method, URI, query params, headers, body)
 
     alt Body presente
         U->>D: Click su pulsante "Copy body"
         D->>D: Copia body in clipboard (se consentito dal browser)
     else Body assente
-        D-->>U: Mostra testo "No body"\nPulsante "Copy body" disabilitato
+        D-->>U: Mostra testo "No body" Pulsante "Copy body" disabilitato
     end
 
     U->>D: Chiude il Drawer
     D-->>P: onClose()
     deactivate D
-    P-->>U: La griglia resta invariata\nLo step non cambia
+    P-->>U: La griglia resta invariata Lo step non cambia

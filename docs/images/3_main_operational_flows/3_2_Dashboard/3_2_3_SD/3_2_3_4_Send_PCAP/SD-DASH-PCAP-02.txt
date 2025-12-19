@@ -15,7 +15,7 @@ sequenceDiagram
     alt Estensione PCAP valida
         P->>P: pcapFile = file
         P->>P: errorMessage = ""
-        P-->>U: Mostra nome file PCAP\nAbilita "Continue" per lo step 0
+        P-->>U: Mostra nome file PCAP Abilita "Continue" per lo step 0
     else Estensione PCAP non valida
         P->>P: pcapFile = null
         P->>P: errorMessage = "Invalid file type. Please select a .pcap or .pcapng file."
@@ -35,7 +35,7 @@ sequenceDiagram
     alt Estensione SSL keys valida
         P->>P: sslKeysFile = file
         P->>P: errorMessage = ""
-        P-->>U: Mostra nome file SSL keys\nAbilita "Continue" per lo step 1
+        P-->>U: Mostra nome file SSL keys Abilita "Continue" per lo step 1
     else Estensione SSL keys non valida
         P->>P: sslKeysFile = null
         P->>P: errorMessage = "Invalid file type. Please select a .log or .txt file."

@@ -1,0 +1,33 @@
+sequenceDiagram
+    participant U as User
+    participant D as Dashboard
+    participant N as Nginx
+    participant A as API Server
+    participant G as GraphDB
+
+    %% --- List / pagination ---
+    U->>D: Open Findings page (Techstack / Analyzer / HTTP)
+    D->>N: GET /findings?type=X&offset=0&limit=100&filters...
+    N->>A: Forward request
+    A->>A: Validate params + build query
+    A->>G: Query findings (IDs + page metadata)
+    G-->>A: items[] + total/page
+    A-->>D: 200 OK (items + page)
+
+    %% --- Optional row enrichment (client-driven) ---
+    loop For visible rows (best-effort)
+        D->>N: GET /findings/X/:id (compact detail)
+        N->>A: Forward request
+        A->>G: Query finding detail
+        G-->>A: Finding summary fields
+        A-->>D: 200 OK (summary)
+    end
+
+    %% --- Drawer detail ---
+    U->>D: Click a row -> open drawer
+    D->>N: GET /findings/X/:id (full detail)
+    N->>A: Forward request
+    A->>G: Query finding + correlations (HTML/URI/Request/Resolver/etc.)
+    G-->>A: Finding + linked entities
+    A-->>D: 200 OK (detail payload)
+    D->>D: Render drawer (severity, context, evidence, links)

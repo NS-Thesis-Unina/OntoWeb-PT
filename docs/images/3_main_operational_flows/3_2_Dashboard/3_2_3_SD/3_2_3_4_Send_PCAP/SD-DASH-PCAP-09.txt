@@ -9,7 +9,7 @@ sequenceDiagram
 
     P->>P: openJobsDialog = false
 
-    P->>P: Ottieni elenco jobId ancora sottoscritti\nsubscribedJobIdsRef.current
+    P->>P: Ottieni elenco jobId ancora sottoscritti subscribedJobIdsRef.current
     loop Per ogni jobId sottoscritto
         P->>WS: unsubscribeJob(jobId)
         WS-->>P: Conferma o errore ignorato
@@ -26,4 +26,4 @@ sequenceDiagram
     P->>P: loadingSend = false
     P->>P: checkingTool = false
 
-    P-->>U: Wizard riportato allo step 0\nPronto per un nuovo flusso "Send PCAP"
+    P-->>U: Wizard riportato allo step 0 Pronto per un nuovo flusso "Send PCAP"

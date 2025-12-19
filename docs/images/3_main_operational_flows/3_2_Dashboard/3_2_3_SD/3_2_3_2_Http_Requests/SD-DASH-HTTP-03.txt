@@ -7,19 +7,19 @@ sequenceDiagram
     participant N as Notifiche globali
 
     %% Modifica dei campi filtro
-    U->>F: Compila/aggiorna campi filtro\n(Method, Scheme, Authority, Path, Full-text)
+    U->>F: Compila/aggiorna campi filtro (Method, Scheme, Authority, Path, Full-text)
     F->>H: onFiltersChange(filtersCurrent)
     activate H
-    H->>H: normalizza valori (trim, ecc.)\naggiorna stato filtersCurrent
-    H->>F: comunica se filtersCurrent != filtersApplied\n(abilita/disabilita pulsante Apply)
+    H->>H: normalizza valori (trim, ecc.) aggiorna stato filtersCurrent
+    H->>F: comunica se filtersCurrent != filtersApplied (abilita/disabilita pulsante Apply)
     deactivate H
 
     %% Applicazione filtri (Apply)
     U->>F: Clic su pulsante "Apply"
     F->>H: onApply()
     activate H
-    H->>H: copia filtersCurrent in filtersApplied\nreset page=0, calcola offset=0
-    H->>S: listHttpRequests(offset=0, limit=pageSize,\nfiltri=filtersApplied non vuoti)
+    H->>H: copia filtersCurrent in filtersApplied reset page=0, calcola offset=0
+    H->>S: listHttpRequests(offset=0, limit=pageSize, filtri=filtersApplied non vuoti)
     activate S
     S-->>H: { rows, total, pageMeta }
     deactivate S
@@ -32,9 +32,9 @@ sequenceDiagram
     U->>F: Clic su pulsante "Reset"
     F->>H: onReset()
     activate H
-    H->>H: azzera filtersCurrent e filtersApplied\n(Method=All, altri campi vuoti)
+    H->>H: azzera filtersCurrent e filtersApplied (Method=All, altri campi vuoti)
     H->>H: reset page=0, offset=0
-    H->>S: listHttpRequests(offset=0, limit=pageSize,\nfiltri={})
+    H->>S: listHttpRequests(offset=0, limit=pageSize, filtri={})
     activate S
     S-->>H: { rows, total, pageMeta } (lista grezza)
     deactivate S

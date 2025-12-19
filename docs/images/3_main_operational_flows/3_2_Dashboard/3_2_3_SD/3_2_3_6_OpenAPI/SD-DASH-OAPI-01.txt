@@ -8,21 +8,21 @@ sequenceDiagram
     U->>R: Clic su voce nav "OpenAPI" / URL /openapi
     R->>P: Monta componente APIExplorerPage
     activate P
-    P->>P: Inizializza stato\nschema = null, endpointsByTag = {}, loading = true
+    P->>P: Inizializza stato schema = null, endpointsByTag = {}, loading = true
     P->>L: importSchema("openapi.json")
 
     alt Import schema OK
         activate L
         L-->>P: Restituisce schema OpenAPI
         deactivate L
-        P->>P: schema = payload\nloading = false
+        P->>P: schema = payload loading = false
         P->>P: Costruisce endpoints e gruppi per tag
-        P-->>U: Mostra titolo, descrizione,\nlista gruppi di endpoint
+        P-->>U: Mostra titolo, descrizione, lista gruppi di endpoint
     else Errore import schema
         activate L
         L-->>P: Errore caricamento
         deactivate L
-        P->>P: schema resta null\nloading resta true (o fallback)
+        P->>P: schema resta null loading resta true (o fallback)
         P-->>U: Mostra solo spinner di loading
     end
 

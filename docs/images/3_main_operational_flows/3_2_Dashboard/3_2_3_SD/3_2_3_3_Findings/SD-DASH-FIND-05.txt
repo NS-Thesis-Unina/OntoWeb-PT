@@ -9,10 +9,10 @@ sequenceDiagram
     participant SN as Snackbar
     participant CB as Clipboard API
 
-    U->>DG: Click su icona "View details"\nper una riga
+    U->>DG: Click su icona "View details" per una riga
     DG->>P: onViewDetails(id, tipoFinding)
 
-    P->>D: openDrawer()\n(init: loadingDettaglio = true)
+    P->>D: openDrawer() (init: loadingDettaglio = true)
     D-->>U: Mostra drawer a destra con spinner centrale
 
     alt Finding HTTP
@@ -28,7 +28,7 @@ sequenceDiagram
 
     alt Chiamata dettaglio OK
         P->>P: loadingDettaglio = false
-        P->>D: renderDettaglio(finding, tipo)\nheader + sezioni
+        P->>D: renderDettaglio(finding, tipo) header + sezioni
 
         U->>D: Clic su "Copy URL" o "Copy src"
         D->>CB: writeText(valore da copiare)
@@ -46,8 +46,8 @@ sequenceDiagram
             STECH-->>P: errore
         end
 
-        P->>P: loadingDettaglio = false\nfinding = null
+        P->>P: loadingDettaglio = false finding = null
         P->>SN: showSnackbar("Error while retrieving finding details.")
         SN-->>U: Notifica non bloccante
-        P->>D: closeDrawer()\n(evita contenuti parziali)
+        P->>D: closeDrawer() (evita contenuti parziali)
     end

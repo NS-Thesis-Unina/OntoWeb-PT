@@ -11,7 +11,7 @@ sequenceDiagram
     participant A as Alert globale
 
     U->>P: Arriva allo step 5 "Confirm and send"
-    P-->>U: Mostra griglia preview selectedRequests\nMostra checkbox "Enable resolver..."
+    P-->>U: Mostra griglia preview selectedRequests Mostra checkbox "Enable resolver..."
 
     U->>P: Cambia valore checkbox resolver
     P->>P: activateResolver = nuovo valore
@@ -68,7 +68,7 @@ sequenceDiagram
                 end
 
                 P->>P: Calcola X/Y job accettati (request + resolver se attivo)
-                P->>SN: Mostra snackbar\n"Requests accepted by the backend: X/Y. Waiting for results from the worker..."
+                P->>SN: Mostra snackbar "Requests accepted by the backend: X/Y. Waiting for results from the worker..."
                 P->>JD: openJobsDialog = true
                 P-->>U: Apre dialog "Job Summaries"
                 P->>P: loadingSend = false

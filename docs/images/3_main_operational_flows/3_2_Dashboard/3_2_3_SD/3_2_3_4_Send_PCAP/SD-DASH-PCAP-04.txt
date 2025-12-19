@@ -52,7 +52,7 @@ sequenceDiagram
                 end
             else Errore durante estrazione
                 P->>P: loadingExtract = false
-                P->>P: errorMessage = messaggio backend\noppure "Failed to extract HTTP requests from PCAP."
+                P->>P: errorMessage = messaggio backend oppure "Failed to extract HTTP requests from PCAP."
                 P-->>A: Render Alert errore
                 P->>P: Scroll contenuto verso l'alto
                 P-->>U: Resta sullo step 2

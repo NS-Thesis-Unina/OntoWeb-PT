@@ -17,7 +17,7 @@ import './index.css';
 import ThemeModeProvider from './theme/themeModeProvider';
 import { SnackbarProvider } from 'notistack';
 import Router from './router.jsx';
-import { BrowserRouter, Routes } from 'react-router-dom'; // Routes is currently unused but harmless.
+import { BrowserRouter } from 'react-router-dom';
 
 /**
  * Mount the React app onto the #root container and compose global context.

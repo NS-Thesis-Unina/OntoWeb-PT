@@ -5,19 +5,19 @@ sequenceDiagram
     participant A as AccordionEndpoint
     participant PR as ParamRenderer
 
-    U->>A: Clic sull'header dell'endpoint\n(Chip metodo + path + summary)
+    U->>A: Clic sull'header dell'endpoint (Chip metodo + path + summary)
     activate A
-    A->>P: Richiede dati endpoint\n(description, parameters, requestBody, responses)
-    P-->>A: Restituisce oggetto endpoint\n(ep.description, ep.parameters, …)
+    A->>P: Richiede dati endpoint (description, parameters, requestBody, responses)
+    P-->>A: Restituisce oggetto endpoint (ep.description, ep.parameters, …)
 
     A->>A: Segna Accordion come espanso
     A->>PR: renderParameters(ep.parameters)
     activate PR
 
     alt Lista parametri non vuota
-        PR->>PR: Raggruppa parametri per location\n(query, path, header, cookie, other)
+        PR->>PR: Raggruppa parametri per location (query, path, header, cookie, other)
         loop Per ogni gruppo di location
-            PR->>PR: Costruisce elenco voci\n(nome, required/optional, tipo, descrizione)
+            PR->>PR: Costruisce elenco voci (nome, required/optional, tipo, descrizione)
         end
     else Nessun parametro
         PR->>PR: Nessun gruppo da mostrare
@@ -26,5 +26,5 @@ sequenceDiagram
     PR-->>A: View model parametri per sezione "Parameters"
     deactivate PR
 
-    A-->>U: Mostra pannello dettagli endpoint:\n- sezione "Description"\n- sezione "Parameters" (se presente)\n- altre sezioni (Request/Responses Body)
+    A-->>U: Mostra pannello dettagli endpoint: - sezione "Description" - sezione "Parameters" (se presente) - altre sezioni (Request/Responses Body)
     deactivate A

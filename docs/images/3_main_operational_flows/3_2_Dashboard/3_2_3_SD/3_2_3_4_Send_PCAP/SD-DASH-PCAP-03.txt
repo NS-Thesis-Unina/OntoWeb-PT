@@ -5,10 +5,10 @@ sequenceDiagram
     participant A as Alert globale
 
     U->>P: Click su pulsante "Continue"
-    P->>P: Verifica prerequisiti locali dello step\n(file presenti, richieste selezionate, ecc.)
+    P->>P: Verifica prerequisiti locali dello step (file presenti, richieste selezionate, ecc.)
 
     alt Prerequisiti locali NON soddisfatti
-        P-->>U: Mantiene lo step corrente\nPulsante "Continue" disabilitato
+        P-->>U: Mantiene lo step corrente Pulsante "Continue" disabilitato
     else Prerequisiti locali soddisfatti
         P->>P: checkingTool = true
         P-->>U: Aggiorna etichetta pulsante a "Checking tool..."
@@ -19,12 +19,12 @@ sequenceDiagram
         alt toolStatus diverso da "tool_off"
             P->>P: checkingTool = false
             P-->>U: Ripristina etichetta pulsante "Continue"
-            P->>P: Esegue logica dello step\n(avanzamento, estrazione o invio)
+            P->>P: Esegue logica dello step (avanzamento, estrazione o invio)
         else toolStatus "tool_off" o errore
             P->>P: checkingTool = false
             P->>P: errorMessage = "The analysis tool is currently OFF. Please enable it before continuing."
             P-->>A: Render Alert errore
             P->>P: Scroll contenuto verso l'alto
-            P-->>U: activeStep invariato\nPulsante "Continue" riabilitato
+            P-->>U: activeStep invariato Pulsante "Continue" riabilitato
         end
     end

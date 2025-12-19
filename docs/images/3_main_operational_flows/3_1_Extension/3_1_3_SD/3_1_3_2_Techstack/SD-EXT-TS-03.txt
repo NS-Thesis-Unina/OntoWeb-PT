@@ -15,7 +15,7 @@ sequenceDiagram
     User->>PopupUI: Espande uno snapshot (gruppo Local o altro)
     PopupUI->>TechstackCtrl: requestSnapshotDetail(snapshotId)
     TechstackCtrl-->>PopupUI: renderSnapshotDetail(snapshotId)  %% dati già inclusi nello snapshot
-    Note over PopupUI: La UI usa la stessa struttura della vista "Scan"\n(metadati, tecnologie, headers, cookies, ecc.)
+    Note over PopupUI: La UI usa la stessa struttura della vista "Scan" (metadati, tecnologie, headers, cookies, ecc.)
 
     alt Export JSON di uno snapshot
         User->>PopupUI: Clic su "Export JSON"

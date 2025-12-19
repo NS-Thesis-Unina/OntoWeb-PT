@@ -1,8 +1,8 @@
 # Extension
 ---
-1. [Analyzer](./2_1_1_Extension/2_1_1_1_Analyzer.md)  
-2. [Techstack](./2_1_1_Extension/2_1_1_3_Techstack.md)  
-3. [Interceptor](./2_1_1_Extension/2_1_1_2_Interceptor.md)  
+- [Analyzer](./2_1_1_Extension/2_1_1_1_Analyzer.md)  
+- [Techstack](./2_1_1_Extension/2_1_1_3_Techstack.md)  
+- [Interceptor](./2_1_1_Extension/2_1_1_2_Interceptor.md)  
 ---
 
 L’estensione browser è il principale componente client di OntoWeb-PT.  

@@ -214,7 +214,7 @@ Lato content script, Interceptor è diviso in due livelli:
      - inoltra ogni evento al background tramite `browser.runtime.sendMessage({ type: 'interceptor_capture', payload })`;
    - notifica al contesto pagina lo stato del bridge/flags (`owpt_bridge_ready`, `owpt_update_flags`).
 
-1. **`interceptor_page.js`** (script “page context”):
+2. **`interceptor_page.js`** (script “page context”):
    - vive direttamente nella pagina e modifica in modo trasparente:
      - `window.fetch`;
      - `XMLHttpRequest` (open/setRequestHeader/send);

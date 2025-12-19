@@ -5,7 +5,7 @@ sequenceDiagram
 
     %% Uso del pulsante Back
     U->>P: Click su pulsante "Back"
-    P->>P: Verifica condizioni\n(activeStep > 0 e nessuna operazione critica in corso)
+    P->>P: Verifica condizioni (activeStep > 0 e nessuna operazione critica in corso)
 
     alt Può tornare indietro
         P->>P: activeStep = activeStep - 1
@@ -13,7 +13,7 @@ sequenceDiagram
         P-->>A: Nasconde eventuale Alert
         P-->>U: Mostra lo step precedente
     else Non può tornare indietro
-        P-->>U: Pulsante "Back" disabilitato\nNessun cambiamento di step
+        P-->>U: Pulsante "Back" disabilitato Nessun cambiamento di step
     end
 
     %% Gestione di un errore globale
@@ -25,4 +25,4 @@ sequenceDiagram
     U->>A: Click sulla "X" dell'Alert
     A-->>P: onClose()
     P->>P: errorMessage = ""
-    P-->>U: Alert scompare\nWizard resta nello stesso step
+    P-->>U: Alert scompare Wizard resta nello stesso step

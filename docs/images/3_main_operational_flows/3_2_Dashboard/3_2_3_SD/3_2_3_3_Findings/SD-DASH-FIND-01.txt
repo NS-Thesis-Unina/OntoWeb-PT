@@ -5,7 +5,7 @@ sequenceDiagram
     participant A as AppBar Findings (sotto-nav)
     participant P as Pagina Findings corrente
 
-    U->>S: Clic su "Findings" nella nav laterale\n(o apertura URL /findings...)
+    U->>S: Clic su "Findings" nella nav laterale (o apertura URL /findings...)
     activate S
     S->>R: resolveRoute(/findings[/...])
     R-->>S: Render layout Findings (shell comune)
@@ -15,7 +15,7 @@ sequenceDiagram
 
     alt URL = "/findings" o "/findings/"
         R-->>P: Render pagina HTTP Findings
-        A-->>A: evidenziaTab("HTTP Findings")\n(disabilita pulsante corrente)
+        A-->>A: evidenziaTab("HTTP Findings") (disabilita pulsante corrente)
     else URL = "/findings/analyzer"
         R-->>P: Render pagina Analyzer Findings
         A-->>A: evidenziaTab("Analyzer Findings")
@@ -26,7 +26,7 @@ sequenceDiagram
 
     U->>A: Click su tab diversa (es. "Analyzer Findings")
     A->>R: navigate("/findings/analyzer")
-    R-->>P: Render pagina Analyzer Findings\n(all'interno dello stesso layout)
+    R-->>P: Render pagina Analyzer Findings (all'interno dello stesso layout)
     A-->>A: Aggiorna tab attiva/disabilitata
 
     alt Utente clicca sulla tab già attiva

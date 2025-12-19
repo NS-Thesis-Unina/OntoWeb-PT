@@ -8,13 +8,13 @@
  * Architectural Notes:
  * - All pages live under the root layout at "/".
  * - The "findings" section exposes nested routes for the different sources
- *   of findings (HTTP, Analyzer, Techstack).
+ *   of findings (Techstack, Analyzer, HTTP).
  * - URLs are human-readable and reflect the product surface:
  *     /home, /http-requests, /findings, /server-status, /send-pcap, /openapi
  *
  * Navigation:
  * - <Home /> is accessible at both "/" and "/home" for convenience.
- * - <HttpFindings /> is the default child of "/findings".
+ * - <TechstackFindings /> is the default child of "/findings".
  */
 
 import { Routes, Route } from 'react-router-dom';
@@ -54,11 +54,11 @@ function Router() {
         {/* -------- Findings -------- */}
         {/* Aggregated results from different engines/sources */}
         <Route path="findings">
-          {/* Default: HTTP Findings overview */}
+          {/* Default: Tech stack detection findings*/}
           <Route index element={<TechstackFindings />} />
           {/* Analyzer-specific findings */}
           <Route path="analyzer" element={<AnalyzerFindings />} />
-          {/* Tech stack detection findings */}
+          {/* HTTP Findings overview */}
           <Route path="http" element={<HttpFindings />} />
         </Route>
 

@@ -22,19 +22,19 @@ sequenceDiagram
             D->>S: Risolve eventuali $ref locali
             D-->>RR: schemaDereferenziato
             deactivate D
-            RR->>RR: responsesView[status] =\n{ description, schema: schemaDereferenziato }
+            RR->>RR: responsesView[status] = { description, schema: schemaDereferenziato }
         else Nessuno schema application/json
-            RR->>RR: responsesView[status] =\n{ description } (senza schema)
+            RR->>RR: responsesView[status] = { description } (senza schema)
         end
     end
 
     alt Almeno una response definita
         RR-->>P: Restituisce oggetto responsesView
         deactivate RR
-        P->>P: Serializza responsesView\nJSON.stringify(..., null, 2)
-        P-->>U: Mostra sezione "Responses Body"\ncon JSON per codici di stato
+        P->>P: Serializza responsesView JSON.stringify(..., null, 2)
+        P-->>U: Mostra sezione "Responses Body" con JSON per codici di stato
     else Nessuna response disponibile
         RR-->>P: Restituisce oggetto vuoto {}
         deactivate RR
-        P-->>U: Mostra sezione "Responses Body"\ncon {}
+        P-->>U: Mostra sezione "Responses Body" con {}
     end

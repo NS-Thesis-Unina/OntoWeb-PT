@@ -9,7 +9,7 @@ sequenceDiagram
     R->>H: Monta componente HttpRequestsPage (/http-requests)
     activate H
 
-    H->>H: inizializza stato (page=0, pageSize=100,\nfiltersApplied={}, initialLoad=true, loading=true)
+    H->>H: inizializza stato (page=0, pageSize=100, filtersApplied={}, initialLoad=true, loading=true)
     H->>H: mostra Backdrop con spinner (tabella nascosta)
 
     H->>S: listHttpRequests(offset=0, limit=100, filtri={})
@@ -17,21 +17,21 @@ sequenceDiagram
     S-->>H: { rows, total, pageMeta }
     deactivate S
 
-    H->>H: aggiorna stato (rows, pagination,\nloading=false, initialLoad=false)
+    H->>H: aggiorna stato (rows, pagination, loading=false, initialLoad=false)
     H->>H: nasconde Backdrop
     H->>G: render DataGrid con rows e rowCount
 
     deactivate H
 
     %% Reload successivo (paginazione o filtri) – nessun Backdrop
-    U->>G: Interazione che provoca reload\n(es. cambio pagina o Apply filtri)
+    U->>G: Interazione che provoca reload (es. cambio pagina o Apply filtri)
     G->>H: onPageChange/onFiltersApplied(...)
     activate H
-    H->>H: calcola offset/limit, mantiene filtersApplied\nimposta loading=true (senza Backdrop)
+    H->>H: calcola offset/limit, mantiene filtersApplied imposta loading=true (senza Backdrop)
     H->>S: listHttpRequests(offset, limit, filtriApplied)
     activate S
     S-->>H: nuovi { rows, total, pageMeta }
     deactivate S
     H->>H: aggiorna stato (rows, pagination, loading=false)
-    H->>G: aggiorna DataGrid\n(spinner integrato nella griglia)
+    H->>G: aggiorna DataGrid (spinner integrato nella griglia)
     deactivate H

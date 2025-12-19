@@ -1,0 +1,57 @@
+sequenceDiagram
+    participant U as User
+    participant D as Dashboard (Send PCAP)
+    participant N as Nginx
+    participant A as API Server
+    participant P as Python Parser (tshark + sslkeys)
+    participant R as Redis Queue
+    participant W as Worker
+    participant G as GraphDB
+    participant WS as WebSocket
+
+    %% --- Phase 0: Health gate (simplified) ---
+    U->>D: Wizard "Continue"
+    D->>A: GET /health (gate)
+    A-->>D: Tool status OK
+
+    %% --- Phase 1: Upload + Extraction (sync) ---
+    U->>D: Upload PCAP + SSL keys Start extraction
+    D->>N: POST /pcap/extract (multipart: pcap + sslkeys)
+    N->>A: Forward request
+    A->>A: Validate files + store temp
+    A->>P: Run extraction (tshark + keylog)
+    P-->>A: Extracted HTTP requests/responses
+    A-->>D: 200 OK + extracted requests list
+    D->>D: Preview extracted requests User selects subset
+
+    %% --- Phase 2: Send selected requests (sync ack) ---
+    U->>D: Confirm & Send selected requests (optional: activateResolver)
+    D->>N: POST /http/ingest (batched) activateResolver=true|false
+    N->>A: Forward request
+    A->>A: Validate + normalize batch
+
+    A->>R: Enqueue http-requests-writes job
+    alt activateResolver = true
+        A->>R: Enqueue resolver job (http/analyze)
+    end
+    A-->>D: Ack + jobId(s)
+
+    %% --- Phase 3: Processing + Persistence (async) ---
+    W->>R: Fetch ingestion job
+    W->>W: Normalize + build RDF/SPARQL writes
+    W-->>WS: Job progress / logs
+    W->>G: Persist Requests/Responses
+    W-->>WS: Ingestion job completed
+
+    alt activateResolver = true
+        W->>R: Fetch resolver job
+        W->>W: Execute resolver rules
+        W-->>WS: Resolver progress / logs
+        W->>G: Persist HttpFinding links
+        W-->>WS: Resolver job completed
+    end
+
+    %% --- Phase 4: Client feedback ---
+    WS-->>D: completed/failed events update Job Summaries dialog
+    D->>A: GET /jobs/:id (poll fallback)
+    A-->>D: Job state (completed/failed)

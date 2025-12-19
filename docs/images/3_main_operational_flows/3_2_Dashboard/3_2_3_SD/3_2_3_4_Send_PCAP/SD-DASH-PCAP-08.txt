@@ -10,7 +10,7 @@ sequenceDiagram
     loop Arrivo eventi WebSocket
         WS-->>JD: jobEvent(jobId, queue, event, data)
         JD->>E: Aggiungi evento a jobEvents
-        JD->>JD: Aggiorna jobSummaries\n(lastEvent, completed, failed per jobId)
+        JD->>JD: Aggiorna jobSummaries (lastEvent, completed, failed per jobId)
     end
 
     JD->>JD: openJobsDialog == true ?
@@ -24,7 +24,7 @@ sequenceDiagram
                     JD->>S: getHttpIngestResult(jobId)
                     S-->>JD: res (stato job)
                     JD->>E: Aggiungi evento sintetico (completed/failed/update)
-                    JD->>JD: Aggiorna jobSummaries\nE rimuovi jobId se completed/failed
+                    JD->>JD: Aggiorna jobSummaries E rimuovi jobId se completed/failed
                 end
             end
         end
@@ -33,7 +33,7 @@ sequenceDiagram
     end
 
     alt jobSummaries vuoto
-        JD-->>JD: Mostra spinner centrale\n"In attesa di aggiornamenti..."
+        JD-->>JD: Mostra spinner centrale "In attesa di aggiornamenti..."
     else jobSummaries non vuoto
-        JD-->>JD: Mostra card per ogni job\n(icone verde/rossa/gialla, queue, jobId, Completed/Failed)
+        JD-->>JD: Mostra card per ogni job (icone verde/rossa/gialla, queue, jobId, Completed/Failed)
     end
