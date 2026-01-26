@@ -70,7 +70,7 @@ Questi meccanismi migliorano l’osservabilità e riducono errori in avvio “a 
 ## Immagine Node.js e dipendenze di runtime
 
 Il `nodejs/Dockerfile` costruisce un’immagine unica riutilizzata da **node-api** e **node-worker** con:
-- base: `node:22-bookworm-slim`
+- base: `node:22-trixie`
 - installazione strumenti di supporto:
     - `python3` (necessario per lo script PCAP)
     - `tshark` (necessario per parsing traffico)
