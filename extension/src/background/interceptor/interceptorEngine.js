@@ -224,21 +224,64 @@ class InterceptorEngine {
   //                          Capture Session: Stop
   // ============================================================================
 
-  async stop() {
+  _hasResponse(entry) {
+    const r = entry?.response;
+    if (!r || typeof r !== 'object') return false;
+
+    if ('networkError' in r) return false;
+
+    return (
+      'status' in r ||
+      'statusText' in r ||
+      'headers' in r ||
+      'body' in r ||
+      'bodySize' in r
+    );
+  }
+
+  _filterDatasetWithResponses(dataset) {
+    const out = {};
+    let totalEvents = 0;
+    let totalBytes = 0;
+
+    for (const [pageUrl, entries] of Object.entries(dataset || {})) {
+      const kept = (entries || []).filter((e) => this._hasResponse(e));
+      if (!kept.length) continue;
+
+      out[pageUrl] = kept;
+      totalEvents += kept.length;
+
+      for (const e of kept) {
+        const reqSize = e?.request?.bodySize || 0;
+        const resSize = e?.response?.bodySize || 0;
+        totalBytes += reqSize + resSize;
+      }
+    }
+
+    return {
+      dataset: out,
+      pagesCount: Object.keys(out).length,
+      totalEvents,
+      totalBytes,
+    };
+  }
+
+    async stop() {
     if (!this._active) {
       return { ok: false, error: 'Interceptor not active.' };
     }
 
     const stoppedAt = Date.now();
 
-    // Build run structure
+    const filtered = this._filterDatasetWithResponses(this._dataset);
+
     const run = {
       startedAt: this._startedAt,
       stoppedAt,
-      totalEvents: this._totalEvents,
-      pagesCount: Object.keys(this._dataset).length,
-      totalBytes: this._totalBytes,
-      dataset: this._dataset,
+      totalEvents: filtered.totalEvents,
+      pagesCount: filtered.pagesCount,
+      totalBytes: filtered.totalBytes,
+      dataset: filtered.dataset,
     };
 
     const key = `${DATASET_KEY_PREFIX}${stoppedAt}`;
@@ -365,17 +408,17 @@ class InterceptorEngine {
 
   _ingestDirect(entry, pageUrl) {
     try {
+      if (!this._hasResponse(entry)) return;
+
       const url = pageUrl || entry?.meta?.pageUrl || '(unknown_page)';
 
       if (!this._dataset[url]) this._dataset[url] = [];
       this._dataset[url].push(entry);
 
-      // Totals
       this._totalEvents += 1;
 
       const reqSize = entry?.request?.bodySize || 0;
       const resSize = entry?.response?.bodySize || 0;
-
       this._totalBytes += reqSize + resSize;
 
       this._emitUpdate();

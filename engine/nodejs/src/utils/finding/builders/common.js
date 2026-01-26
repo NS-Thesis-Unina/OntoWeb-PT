@@ -166,7 +166,6 @@ function mapVulnerabilityTypeIri(f) {
  * @param {AnyFinding} f
  */
 function addGenericFindingTriples(triples, findingIri, f) {
-  // Generic type: every finding is at least a Finding.
   triples.push(`${findingIri} a <${EX}Finding> .`);
 
   const message = f?.message || f?.description;
@@ -211,8 +210,13 @@ function addGenericFindingTriples(triples, findingIri, f) {
   }
 
   const vulnTypeIri = mapVulnerabilityTypeIri(f);
+  const UNKNOWN_VULN = `<${EX}UnknownVulnerabilityType>`;
+
   if (vulnTypeIri) {
     triples.push(`${findingIri} <${EX}aboutVulnerabilityType> ${vulnTypeIri} .`);
+  } else {
+    triples.push(`${findingIri} <${EX}aboutVulnerabilityType> ${UNKNOWN_VULN} .`);
+    triples.push(`${UNKNOWN_VULN} a <${EX}Vulnerabilities> .`);
   }
 }
 

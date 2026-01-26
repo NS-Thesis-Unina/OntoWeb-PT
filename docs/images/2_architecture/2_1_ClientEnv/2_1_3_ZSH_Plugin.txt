@@ -1,0 +1,11 @@
+flowchart TB
+    U["Operator"] -- capture_activate --> Z["ZSH Plugin"]
+    Z -- spawns --> CAP["Capture tool<br>(tcpdump / equivalent)"]
+    CAP --> PCAP["traffic.pcap"]
+    Z --> KEY["sslkeys.log"] & META["session metadata"]
+    PCAP --> D["Dashboard<br>Send PCAP wizard"]
+    KEY --> D
+    META -. optional .-> D
+    D -- REST upload --> API["Engine/Tool API"]
+    API -- pcap parsing (tshark) --> OUT["HTTP requests JSON"]
+    API -- ingest job --> KG[("GraphDB")]

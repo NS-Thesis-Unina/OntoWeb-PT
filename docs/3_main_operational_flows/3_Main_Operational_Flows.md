@@ -3,15 +3,14 @@
 
 - [Extension](./3_1_Extension.md)
 - [Dashboard](./3_2_Dashboard.md)
-- [ZSH Plugin](./3_3_ZSHPlugin.md)
 
 ---
 
 La sezione della documentazione “Main Operational Flows” descrive il modo in cui il sistema viene effettivamente usato dal penetration tester nelle attività di tutti i giorni. Se nella sezione di Architettura abbiamo descritto i componenti e le loro responsabilità a livello strutturale (che cosa esiste e come è collegato), qui ci concentriamo invece sul comportamento: quali funzioni sono offerte, come vengono attivate, quali passi compie l’utente e quali scambi avvengono tra client ed engine lungo il flusso operativo.
 
-Il focus è volutamente “dal punto di vista dell’utente”: non entriamo nei dettagli implementativi di singole funzioni interne, ma descriviamo cosa può fare il penetration tester con i tre elementi dell’ambiente client (Estensione browser, Dashboard e Plugin ZSH) e come questi strumenti orchestrano le interazioni con l’engine (analisi, code di job, knowledge graph) durante una sessione di lavoro reale.
+Il focus è volutamente “dal punto di vista dell’utente”: non entriamo nei dettagli implementativi di singole funzioni interne, ma descriviamo cosa può fare il penetration tester con i tre elementi dell’ambiente client (Estensione browser, Dashboard) e come questi strumenti orchestrano le interazioni con l’engine (analisi, code di job, knowledge graph) durante una sessione di lavoro reale.
 
-Per ogni macro-componente client (Extension, Dashboard, ZSH Plugin) la documentazione segue sempre la stessa struttura in tre livelli complementari:
+Per ogni macro-componente client (Extension, Dashboard) la documentazione segue sempre la stessa struttura in tre livelli complementari:
 
 - i Functional Requirements (FR), che elencano in modo sistematico le funzionalità offerte e i vincoli di comportamento attesi;
 
@@ -20,7 +19,5 @@ Per ogni macro-componente client (Extension, Dashboard, ZSH Plugin) la documenta
 - i Sequence Diagrams (SD), che traducono quegli scenari in sequenze di messaggi tra attori (utente, client, engine) per chiarire tempi e direzioni delle interazioni.
 
 Nel caso dell’Estensione e della Dashboard, i FR, gli UC e i diagrammi di sequenza sono ulteriormente suddivisi per ambito funzionale (Global, Techstack, Analyzer, Interceptor per l’estensione; Global, Http Requests, Findings, Send PCAP, Tool Status, OpenAPI per la dashboard). Questa suddivisione permette di isolare i flussi principali di ogni “modulo” funzionale, mantenendo leggibile la descrizione e facilitando il collegamento con i requisiti di sicurezza e gli obiettivi di test.
-
-Il Plugin ZSH, essendo uno strumento più mirato e monolitico, viene invece descritto in un’unica vista di Functional Requirements, Use Cases e Sequence Diagrams incentrata sul suo ruolo specifico: automatizzare la navigazione in un ambiente isolato, produrre i file di cattura e metterli a disposizione per le successive analisi via dashboard.
 
 ---

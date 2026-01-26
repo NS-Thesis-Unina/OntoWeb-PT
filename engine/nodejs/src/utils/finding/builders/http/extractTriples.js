@@ -31,6 +31,11 @@ function addHttpTriples(triples, findingIri, f) {
     );
   }
 
+  // Request → HttpFinding
+  triples.push(
+    `<${ctx.requestIri}> <${EX}hasHttpFinding> ${findingIri} .`
+  );
+
   // HttpFinding → Response
   if (ctx.responseIri) {
     triples.push(`${findingIri} <${EX}relatedToHTTP> <${ctx.responseIri}> .`);

@@ -58,7 +58,6 @@
       - **3.2.3.4.** [Send PCAP](./3_main_operational_flows/3_2_Dashboard/3_2_3_SD/3_2_3_4_Send_PCAP.md)
       - **3.2.3.5.** [Tool Status](./3_main_operational_flows/3_2_Dashboard/3_2_3_SD/3_2_3_5_Tool_Status.md)
       - **3.2.3.6.** [OpenAPI](./3_main_operational_flows/3_2_Dashboard/3_2_3_SD/3_2_3_6_OpenAPI.md)
-  - **3.3.** [ZSH Plugin](./3_main_operational_flows/3_3_ZSHPlugin.md)
 
 - **4.** [Implementation Details](./4_implementation_details/4_Implementation_Details.md)
   - **4.1.** [Repository Build Process](./4_implementation_details/4_1_Repository_Build_Process.md)
@@ -135,4 +134,16 @@
 	- **6.7.** [Hardware and Software Requirements](./6_deployment/6_7_Hardware_Software_Requirements.md)
 	- **6.8.** [Advanced Configuration](./6_deployment/6_8_Advanced_Configuration.md)
 	- **6.9.** [Extension Installation](./6_deployment/6_9_Extension_Installation.md)
+	
+- **7.** [Evaluation](./7_evaluation/7_Evaluation.md)
+  - **7.1.** [Ontology](./7_evaluation/7_1_Ontology.md)
+    - **7.1.1.** [Evaluation Datasets](./7_evaluation/7_1_Ontology/7_1_1_Evaluation_Datasets.md)
+    - **7.1.2.** [Ontology Conformance Check](./7_evaluation/7_1_Ontology/7_1_2_Evaluation_Ontology_Conformance_Check.md)
+    - **7.1.3.** [Named Graph Integrity](./7_evaluation/7_1_Ontology/7_1_3_Evaluation_Named_Graph_Integrity.md)
+    - **7.1.4.** [SHACL Constraint Validation](./7_evaluation/7_1_Ontology/7_1_4_SHACL_Constraint_Validation.md)
+    - **7.1.5.** [CQ-Based Evaluation](./7_evaluation/7_1_Ontology/7_1_5_CQ_Based_Evaluation.md)
+    - **7.1.6.** [OOPS!-Based Evaluation](./7_evaluation/7_1_Ontology/7_1_6_OOPS_Evaluation.md)
+    - **7.1.7.** [Ontologies Comparison and Integration](./7_evaluation/7_1_Ontology/7_1_7_Ontologies_Comparison_Integration.md)
+    - **7.1.8.** [Related Works Evaluation](./7_evaluation/7_1_Ontology/7_1_8_Related_Works_Evaluation.md)
+
 ---

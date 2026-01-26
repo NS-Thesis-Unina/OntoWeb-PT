@@ -42,6 +42,9 @@ A seconda del tuo obiettivo, puoi seguire uno dei percorsi suggeriti:
 - [Architecture](./2_architecture/2_Architecture.md)
 - [Main Operational Flows](./3_main_operational_flows/3_Main_Operational_Flows.md)
 - [Implementation Details](./4_implementation_details/4_Implementation_Details.md)
+- [End-To-End System Flows](./5_end_to_end_system_flows/5_End_To_End_System_Flows.md)
+- [Deployment](./6_deployment/6_Deployment.md)
+- [Evaluation](./7_evaluation/7_Evaluation.md)
 
 ---
 
@@ -99,6 +102,13 @@ Guida completa al deployment e alla configurazione:
 - Worker, code e osservabilità
 - Configurazioni avanzate
 - Installazione Extension
+
+---
+
+### 7. [Evaluation](./7_evaluation/7_Evaluation.md)
+Validazione delle fondamenta **ontology-driven** di OntoWeb-PT con focus su:
+- **semantic persistence** in GraphDB (rappresentazioni ontology-conformant e disciplina dei named graphs),
+- **retrieval SPARQL** coerente con i casi d’uso (question answering e competency questions).
 
 ---
 

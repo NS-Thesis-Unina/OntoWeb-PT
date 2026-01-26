@@ -168,25 +168,34 @@ def run_tshark(pcap_path, sslkeys_path):
     """
     Run tshark on the provided PCAP file, using the TLS key log file
     to decrypt HTTP/1.1 and HTTP/2 traffic, and export selected fields as JSON.
-
-    Environment variables:
-    - TSHARK_BIN: path or name of the tshark executable (default: "tshark")
-
-    Returns:
-      A Python object obtained by json.loads(stdout), typically a list of packets.
-
-    Raises:
-      RuntimeError on execution failure or JSON parse errors.
     """
     tshark_bin = os.getenv("TSHARK_BIN", "tshark")
 
     cmd = [
         tshark_bin,
         "-r", pcap_path,
+
+        # TLS decryption
         "-o", f"tls.keylog_file:{sslkeys_path}",
+
+        # ✅ Reassembly / desegmentation (CRUCIALE per vedere http.file_data)
+        # TCP
+        "-o", "tcp.desegment_tcp_streams:TRUE",
+        # TLS (utile quando i TLS records / app-data sono segmentati)
+        "-o", "tls.desegment_ssl_records:TRUE",
+        "-o", "tls.desegment_ssl_application_data:TRUE",
+        # HTTP (headers/body + chunked + gzip/deflate)
+        "-o", "http.desegment_headers:TRUE",
+        "-o", "http.desegment_body:TRUE",
+        "-o", "http.dechunk_body:TRUE",
+        "-o", "http.decompress_body:TRUE",
+
+        "-o", "tcp.reassemble_out_of_order:TRUE",
+
         # Broad display filter: capture every packet with http or http2.
         "-Y", "http || http2",
         "-T", "json",
+
         # Common fields
         "-e", "frame.number",
         "-e", "ip.src",
@@ -194,6 +203,7 @@ def run_tshark(pcap_path, sslkeys_path):
         "-e", "tcp.srcport",
         "-e", "tcp.dstport",
         "-e", "tcp.stream",
+
         # HTTP/1.x request
         "-e", "http.request.full_uri",
         "-e", "http.request.method",
@@ -203,6 +213,7 @@ def run_tshark(pcap_path, sslkeys_path):
         "-e", "http.user_agent",
         "-e", "http.cookie",
         "-e", "http.referer",
+
         # HTTP/1.x response
         "-e", "http.response.code",
         "-e", "http.response.phrase",
@@ -213,15 +224,19 @@ def run_tshark(pcap_path, sslkeys_path):
         "-e", "http.location",
         "-e", "http.content_length_header",
         "-e", "http.request_in",
+
         # HTTP/1.x body (if available)
         "-e", "http.file_data",
+
         # HTTP/2 common
         "-e", "http2.streamid",
+
         # HTTP/2 request headers
         "-e", "http2.headers.method",
         "-e", "http2.headers.scheme",
         "-e", "http2.headers.authority",
         "-e", "http2.headers.path",
+
         # HTTP/2 response headers
         "-e", "http2.headers.status",
         "-e", "http2.headers.server",
@@ -229,7 +244,7 @@ def run_tshark(pcap_path, sslkeys_path):
         "-e", "http2.headers.set_cookie",
         "-e", "http2.headers.location",
         "-e", "http2.headers.content_length",
-        # IMPORTANT: we do not rely on http2.request_in (not available in some builds)
+
         # HTTP/2 body (if available)
         "-e", "http2.body.reassembled.data",
     ]
@@ -237,20 +252,14 @@ def run_tshark(pcap_path, sslkeys_path):
     print(f"[DEBUG] Running: {' '.join(cmd)}", file=sys.stderr)
 
     try:
-        result = subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
-        )
+        result = subprocess.run(cmd, capture_output=True, text=True)
     except FileNotFoundError as e:
         raise RuntimeError(f"Cannot find tshark binary '{tshark_bin}': {e}")
     except Exception as e:
         raise RuntimeError(f"Error executing tshark: {e}")
 
     if result.returncode != 0:
-        raise RuntimeError(
-            f"tshark failed with code {result.returncode}: {result.stderr}"
-        )
+        raise RuntimeError(f"tshark failed with code {result.returncode}: {result.stderr}")
 
     if not result.stdout.strip():
         print("[DEBUG] tshark returned empty stdout", file=sys.stderr)
@@ -523,31 +532,45 @@ def attach_http2_response(req, layers):
 def extract_http_from_packets(tshark_data):
     """
     Single pass over the list of tshark packets to build HttpRequest objects.
-
-    Strategy:
-    - For each packet, try to interpret it as an HTTP request:
-        * If successful, store the request in a map keyed by a logical tuple.
-    - For each packet, also check if it carries an HTTP response:
-        * For HTTP/1.x: join by frame.number (via http.request_in)
-        * For HTTP/2  : join by (tcp.stream, streamid)
-    - When a matching request is found, attach response metadata and body.
-
-    Returns:
-      List of HttpRequest dicts (some may have a "response" field, some may not).
+    Returns: List of HttpRequest dicts (some may have a "response" field, some may not).
     """
     requests_map = {}
+
+    pending_http1_body = {}  # key ("http1", req_frame) -> body_b64
+    pending_http2_body = {}  # key ("http2", tcp_stream, streamid) -> body_b64
+
+    def keep_longest(pending_map, key, body_b64):
+        prev = pending_map.get(key)
+        if (prev is None) or (len(body_b64) > len(prev)):
+            pending_map[key] = body_b64
 
     for pkt in tshark_data:
         layers = pkt.get("_source", {}).get("layers", {})
 
         # 1) If it is a request, create it.
         key, req_obj = http_request_from_layers(layers)
-        if key and req_obj:
-            # If the key already exists, keep the first request we saw.
-            if key not in requests_map:
-                requests_map[key] = req_obj
+        if key and req_obj and key not in requests_map:
+            requests_map[key] = req_obj
 
-        # 2) If it is an HTTP/1.x response, link it using http.request_in.
+        # ---------------------------
+        # HTTP/1.x response handling
+        # ---------------------------
+        req_frame = first_or_none(layers.get("http.request_in"))
+        if req_frame:
+            k = ("http1", req_frame)
+            req = requests_map.get(k)
+
+            # body might appear even when http.response.code is missing on that frame
+            body_b64 = byte_sequence_field_to_base64(layers.get("http.file_data"))
+            if body_b64:
+                if req is not None and "response" in req:
+                    # attach immediately if response already exists
+                    if "body" not in req["response"]:
+                        req["response"]["body"] = body_b64
+                else:
+                    # store pending
+                    keep_longest(pending_http1_body, k, body_b64)
+
         status_http1 = first_or_none(layers.get("http.response.code"))
         if status_http1:
             req_frame = first_or_none(layers.get("http.request_in"))
@@ -556,17 +579,37 @@ def extract_http_from_packets(tshark_data):
                 req = requests_map.get(k)
                 if req is not None:
                     attach_http1_response(req, layers)
+                    # if we collected a pending body on other frames, attach it now
+                    pending = pending_http1_body.get(k)
+                    if pending and "body" not in req.get("response", {}):
+                        req["response"]["body"] = pending
 
-        # 3) If it is an HTTP/2 response, link it using (tcp.stream, streamid).
+        # ---------------------------
+        # HTTP/2 response handling
+        # ---------------------------
+        tcp_stream = first_or_none(layers.get("tcp.stream"))
+        streamid = first_or_none(layers.get("http2.streamid")) or "0"
+
+        # body-only frames (DATA) may carry reassembled body without status headers
+        body2_b64 = byte_sequence_field_to_base64(layers.get("http2.body.reassembled.data"))
+        if body2_b64 and tcp_stream is not None:
+            k2 = ("http2", tcp_stream, streamid)
+            req2 = requests_map.get(k2)
+            if req2 is not None and "response" in req2:
+                if "body" not in req2["response"]:
+                    req2["response"]["body"] = body2_b64
+            else:
+                keep_longest(pending_http2_body, k2, body2_b64)
+
         status_http2 = first_or_none(layers.get("http2.headers.status"))
-        if status_http2:
-            streamid = first_or_none(layers.get("http2.streamid")) or "0"
-            tcp_stream = first_or_none(layers.get("tcp.stream"))
-            if tcp_stream is not None:
-                k2 = ("http2", tcp_stream, streamid)
-                req2 = requests_map.get(k2)
-                if req2 is not None:
-                    attach_http2_response(req2, layers)
+        if status_http2 and tcp_stream is not None:
+            k2 = ("http2", tcp_stream, streamid)
+            req2 = requests_map.get(k2)
+            if req2 is not None:
+                attach_http2_response(req2, layers)
+                pending = pending_http2_body.get(k2)
+                if pending and "body" not in req2.get("response", {}):
+                    req2["response"]["body"] = pending
 
     return list(requests_map.values())
 
@@ -605,13 +648,20 @@ def main():
 
     http_requests = extract_http_from_packets(tshark_data)
 
+    # 🔹 KEEP ONLY REQUESTS THAT HAVE A RESPONSE
+    http_requests_with_response = [
+        req for req in http_requests if "response" in req
+    ]
+
     print(
-        f"[DEBUG] Built {len(http_requests)} HttpRequest objects (with responses where available)",
+        f"[DEBUG] Built {len(http_requests)} HttpRequest objects, "
+        f"{len(http_requests_with_response)} with response",
         file=sys.stderr,
     )
 
-    # Output: list of HttpRequest objects, ready for /http-requests/ingest-http.
-    print(json.dumps(http_requests))
+    # Output: only HttpRequest objects that include a response
+    print(json.dumps(http_requests_with_response))
+
 
 
 if __name__ == "__main__":
