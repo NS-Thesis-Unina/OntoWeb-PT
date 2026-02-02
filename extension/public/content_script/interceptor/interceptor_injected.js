@@ -21,6 +21,10 @@
  */
 
 (function () {
+
+  if (window.__owptInterceptorBridgeInstalled) return;
+  window.__owptInterceptorBridgeInstalled = true;
+
   const apiX = typeof browser !== 'undefined' ? browser : chrome;
   const FLAGS_KEY = 'interceptor_flags';
 

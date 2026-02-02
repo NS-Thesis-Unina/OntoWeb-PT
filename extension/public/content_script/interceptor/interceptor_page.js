@@ -463,7 +463,7 @@
                   },
                 });
               } catch {}
-            });
+            }, { once: true });
 
             return origSend.call(this, body);
           };
