@@ -145,5 +145,6 @@
     - **7.1.6.** [OOPS!-Based Evaluation](./7_evaluation/7_1_Ontology/7_1_6_OOPS_Evaluation.md)
     - **7.1.7.** [Ontologies Comparison and Integration](./7_evaluation/7_1_Ontology/7_1_7_Ontologies_Comparison_Integration.md)
     - **7.1.8.** [Related Works Evaluation](./7_evaluation/7_1_Ontology/7_1_8_Related_Works_Evaluation.md)
+    - **7.1.9.** [CQ-based TBox Coverage Evaluation (HTTP Modeling)](./7_evaluation/7_1_Ontology/7_1_9_CQ_TBox_Coverage_Evaluation.md)
 
 ---

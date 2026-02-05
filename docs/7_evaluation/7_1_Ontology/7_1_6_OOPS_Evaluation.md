@@ -1,8 +1,8 @@
 # OOPS!-Based Ontology Quality Evaluation (OntoWeb-PT)
 ---
 
-- [OOPS Report (scan #1)](./assets/5_OOPS_Evaluation/1_OOPS_Report.md)
-- [OOPS Report (scan #2)](./assets/5_OOPS_Evaluation/2_OOPS_Report.md)
+- [OOPS Report (scan #1)](./assets/7_1_6_OOPS_Evaluation/1_OOPS_Report.md)
+- [OOPS Report (scan #2)](./assets/7_1_6_OOPS_Evaluation/2_OOPS_Report.md)
 
 ---
 

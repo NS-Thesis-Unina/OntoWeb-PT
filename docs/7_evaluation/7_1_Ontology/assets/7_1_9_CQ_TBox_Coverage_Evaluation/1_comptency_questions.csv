@@ -1,0 +1,190 @@
+cq_id;use_case;scenario_step;dimension;question;required_features
+CQ-001;UC-HTTP-1;;Retrieval;Which HTTP messages are described in the dataset?;message
+CQ-002;UC-HTTP-1;;Retrieval;Which HTTP requests are present?;request
+CQ-003;UC-HTTP-1;;Retrieval;Which HTTP responses are present?;response
+CQ-004;UC-HTTP-1;;Retrieval;For each request, what is the associated response?;request,response,req_resp_link
+CQ-005;UC-HTTP-1;;Validation;Are there requests without an associated response?;request,req_resp_link
+CQ-006;UC-HTTP-1;;Validation;Are there responses not linked to any request?;response,req_resp_link
+CQ-007;UC-HTTP-1;;Retrieval;What is the method used for each request?;request,method,method_name
+CQ-008;UC-HTTP-1;;Retrieval;Which HTTP methods appear in the requests?;method
+CQ-009;UC-HTTP-1;;Quantification;How many requests were made in total?;request
+CQ-010;UC-HTTP-1;;Quantification;How many responses were recorded in total?;response
+CQ-011;UC-HTTP-1;;Quantification;How many requests use each method (GET/POST/...)?;request,method
+CQ-012;UC-HTTP-1;;Retrieval;What is the status code of each response?;response,status,status_code_number
+CQ-013;UC-HTTP-1;;Quantification;How many responses have each status code?;response,status,status_code_number
+CQ-014;UC-HTTP-1;;Retrieval;Which requests have prodotto a response con code 2xx?;response,status_code_number
+CQ-015;UC-HTTP-1;;Retrieval;Which requests have prodotto a response con errore lato client (4xx)?;response,status_code_number
+CQ-016;UC-HTTP-1;;Retrieval;Which requests have prodotto a response con errore lato server (5xx)?;response,status_code_number
+CQ-017;UC-HTTP-1;;Retrieval;What is the phrase of reason (reason phrase) of the response, se present?;response,reason_phrase
+CQ-018;UC-HTTP-1;;Retrieval;What is the version of the protocollo HTTP riportata For each message?;message,http_version
+CQ-019;UC-HTTP-1;;Classification;Which responses rientrano in the categoria 'informational' (1xx)?;status_categories,response
+CQ-020;UC-HTTP-1;;Classification;Which responses rientrano in the categoria 'successful' (2xx)?;status_categories,response
+CQ-021;UC-HTTP-1;;Classification;Which responses rientrano in the categoria 'redirection' (3xx)?;status_categories,response
+CQ-022;UC-HTTP-1;;Classification;Which responses rientrano in the categoria 'client error' (4xx)?;status_categories,response
+CQ-023;UC-HTTP-1;;Classification;Which responses rientrano in the categoria 'server error' (5xx)?;status_categories,response
+CQ-024;UC-HTTP-2;;Retrieval;What is the'destination URI (URL) of each request?;request,request_uri
+CQ-025;UC-HTTP-2;;Retrieval;Which requests puntano a a given URL esatto?;request,request_uri
+CQ-026;UC-HTTP-2;;Retrieval;Which requests puntano a a given host/authority?;request,uri_authority
+CQ-027;UC-HTTP-2;;Retrieval;What is the'authority (host[:porta]) of a URL?;uri_authority
+CQ-028;UC-HTTP-2;;Retrieval;What is the path (path) dell'URL richiesto?;uri_path
+CQ-029;UC-HTTP-2;;Retrieval;What is the scheme (http/https) dell'URL richiesto?;uri_scheme
+CQ-030;UC-HTTP-2;;Retrieval;What is the stringa of query dell'URL richiesto?;uri_query
+CQ-031;UC-HTTP-2;;Retrieval;What is the fragment (#...) dell'URL richiesto, se present?;uri_fragment
+CQ-032;UC-HTTP-2;;Quantification;How many requests were made to each host?;request,uri_authority
+CQ-033;UC-HTTP-2;;Quantification;How many requests were made to each path?;request,uri_path
+CQ-034;UC-HTTP-2;;Retrieval;Which requests have a URL con query not vuota?;request,uri_query
+CQ-035;UC-HTTP-2;;Retrieval;Which requests have a fragment nell'URL?;request,uri_fragment
+CQ-036;UC-HTTP-2;;Retrieval;Which parameters of query are present nell'URL of a request?;request,query_params
+CQ-037;UC-HTTP-2;;Retrieval;Which are i nomi unici of the parameters of query observed?;query_params
+CQ-038;UC-HTTP-2;;Quantification;How many times does each name of parameter of query appear?;query_params
+CQ-039;UC-HTTP-2;;Retrieval;For a given name of parameter of query, which values were observed?;query_params
+CQ-040;UC-HTTP-2;;Retrieval;Which requests contain a certo parameter of query (indipendentemente dal value)?;request,query_params
+CQ-041;UC-HTTP-2;;Retrieval;Which requests contain a certo parameter of query con a value specific?;request,query_params
+CQ-042;UC-HTTP-2;;Validation;Are there parameters of query without name o without value?;query_params
+CQ-043;UC-HTTP-2;;Retrieval;For each request, which coppie (name,value) of parameters of query are present?;request,query_params
+CQ-044;UC-HTTP-2;;Retrieval;Which GET requests were made to a specific host?;request,method,uri_authority
+CQ-045;UC-HTTP-2;;Retrieval;Which GET requests were made to a specific path?;request,method,uri_path
+CQ-046;UC-HTTP-2;;Retrieval;Which POST requests were made to a specific host?;request,method,uri_authority
+CQ-047;UC-HTTP-2;;Retrieval;Which POST requests were made to a specific path?;request,method,uri_path
+CQ-048;UC-HTTP-2;;Retrieval;Which PUT requests were made to a specific host?;request,method,uri_authority
+CQ-049;UC-HTTP-2;;Retrieval;Which PUT requests were made to a specific path?;request,method,uri_path
+CQ-050;UC-HTTP-2;;Retrieval;Which DELETE requests were made to a specific host?;request,method,uri_authority
+CQ-051;UC-HTTP-2;;Retrieval;Which DELETE requests were made to a specific path?;request,method,uri_path
+CQ-052;UC-HTTP-2;;Retrieval;Which PATCH requests were made to a specific host?;request,method,uri_authority
+CQ-053;UC-HTTP-2;;Retrieval;Which PATCH requests were made to a specific path?;request,method,uri_path
+CQ-054;UC-HTTP-2;;Retrieval;Which HEAD requests were made to a specific host?;request,method,uri_authority
+CQ-055;UC-HTTP-2;;Retrieval;Which HEAD requests were made to a specific path?;request,method,uri_path
+CQ-056;UC-HTTP-2;;Retrieval;Which OPTIONS requests were made to a specific host?;request,method,uri_authority
+CQ-057;UC-HTTP-2;;Retrieval;Which OPTIONS requests were made to a specific path?;request,method,uri_path
+CQ-058;UC-HTTP-3;;Retrieval;Which headers are associated with each HTTP message?;message,headers_any
+CQ-059;UC-HTTP-3;;Retrieval;Which nomi of header appear in the dataset?;headers_any,header_fields
+CQ-060;UC-HTTP-3;;Quantification;How many times does each header name appear?;headers_any,header_fields
+CQ-061;UC-HTTP-3;;Retrieval;What is the value associated with each header of a message?;headers_any,header_fields
+CQ-062;UC-HTTP-3;;Validation;Are there headers without name o without value?;headers_any,header_fields
+CQ-063;UC-HTTP-3;;Retrieval;Which messages contain a specific header (for name)?;message,headers_any,header_fields
+CQ-064;UC-HTTP-3;;Retrieval;Which messages contain a specific header con a value specific?;message,headers_any,header_fields
+CQ-065;UC-HTTP-3;;Retrieval;Which messages include the'header 'Host'?;message,headers_any,header_fields
+CQ-066;UC-HTTP-3;;Retrieval;What is the value dell'header 'Host' For each message that the contains?;headers_any,header_fields
+CQ-067;UC-HTTP-3;;Quantification;How many times does the'header 'Host'?;headers_any,header_fields
+CQ-068;UC-HTTP-3;;Retrieval;Which messages include the'header 'User-Agent'?;message,headers_any,header_fields
+CQ-069;UC-HTTP-3;;Retrieval;What is the value dell'header 'User-Agent' For each message that the contains?;headers_any,header_fields
+CQ-070;UC-HTTP-3;;Quantification;How many times does the'header 'User-Agent'?;headers_any,header_fields
+CQ-071;UC-HTTP-3;;Retrieval;Which messages include the'header 'Accept'?;message,headers_any,header_fields
+CQ-072;UC-HTTP-3;;Retrieval;What is the value dell'header 'Accept' For each message that the contains?;headers_any,header_fields
+CQ-073;UC-HTTP-3;;Quantification;How many times does the'header 'Accept'?;headers_any,header_fields
+CQ-074;UC-HTTP-3;;Retrieval;Which messages include the'header 'Accept-Encoding'?;message,headers_any,header_fields
+CQ-075;UC-HTTP-3;;Retrieval;What is the value dell'header 'Accept-Encoding' For each message that the contains?;headers_any,header_fields
+CQ-076;UC-HTTP-3;;Quantification;How many times does the'header 'Accept-Encoding'?;headers_any,header_fields
+CQ-077;UC-HTTP-3;;Retrieval;Which messages include the'header 'Content-Type'?;message,headers_any,header_fields
+CQ-078;UC-HTTP-3;;Retrieval;What is the value dell'header 'Content-Type' For each message that the contains?;headers_any,header_fields
+CQ-079;UC-HTTP-3;;Quantification;How many times does the'header 'Content-Type'?;headers_any,header_fields
+CQ-080;UC-HTTP-3;;Retrieval;Which messages include the'header 'Content-Length'?;message,headers_any,header_fields
+CQ-081;UC-HTTP-3;;Retrieval;What is the value dell'header 'Content-Length' For each message that the contains?;headers_any,header_fields
+CQ-082;UC-HTTP-3;;Quantification;How many times does the'header 'Content-Length'?;headers_any,header_fields
+CQ-083;UC-HTTP-3;;Retrieval;Which messages include the'header 'Authorization'?;message,headers_any,header_fields
+CQ-084;UC-HTTP-3;;Retrieval;What is the value dell'header 'Authorization' For each message that the contains?;headers_any,header_fields
+CQ-085;UC-HTTP-3;;Quantification;How many times does the'header 'Authorization'?;headers_any,header_fields
+CQ-086;UC-HTTP-3;;Retrieval;Which messages include the'header 'Cookie'?;message,headers_any,header_fields
+CQ-087;UC-HTTP-3;;Retrieval;What is the value dell'header 'Cookie' For each message that the contains?;headers_any,header_fields
+CQ-088;UC-HTTP-3;;Quantification;How many times does the'header 'Cookie'?;headers_any,header_fields
+CQ-089;UC-HTTP-3;;Retrieval;Which messages include the'header 'Set-Cookie'?;message,headers_any,header_fields
+CQ-090;UC-HTTP-3;;Retrieval;What is the value dell'header 'Set-Cookie' For each message that the contains?;headers_any,header_fields
+CQ-091;UC-HTTP-3;;Quantification;How many times does the'header 'Set-Cookie'?;headers_any,header_fields
+CQ-092;UC-HTTP-3;;Retrieval;Which messages include the'header 'Cache-Control'?;message,headers_any,header_fields
+CQ-093;UC-HTTP-3;;Retrieval;What is the value dell'header 'Cache-Control' For each message that the contains?;headers_any,header_fields
+CQ-094;UC-HTTP-3;;Quantification;How many times does the'header 'Cache-Control'?;headers_any,header_fields
+CQ-095;UC-HTTP-3;;Retrieval;Which messages include the'header 'ETag'?;message,headers_any,header_fields
+CQ-096;UC-HTTP-3;;Retrieval;What is the value dell'header 'ETag' For each message that the contains?;headers_any,header_fields
+CQ-097;UC-HTTP-3;;Quantification;How many times does the'header 'ETag'?;headers_any,header_fields
+CQ-098;UC-HTTP-3;;Retrieval;Which messages include the'header 'If-None-Match'?;message,headers_any,header_fields
+CQ-099;UC-HTTP-3;;Retrieval;What is the value dell'header 'If-None-Match' For each message that the contains?;headers_any,header_fields
+CQ-100;UC-HTTP-3;;Quantification;How many times does the'header 'If-None-Match'?;headers_any,header_fields
+CQ-101;UC-HTTP-3;;Retrieval;Which messages include the'header 'Location'?;message,headers_any,header_fields
+CQ-102;UC-HTTP-3;;Retrieval;What is the value dell'header 'Location' For each message that the contains?;headers_any,header_fields
+CQ-103;UC-HTTP-3;;Quantification;How many times does the'header 'Location'?;headers_any,header_fields
+CQ-104;UC-HTTP-3;;Retrieval;Which messages include the'header 'Referer'?;message,headers_any,header_fields
+CQ-105;UC-HTTP-3;;Retrieval;What is the value dell'header 'Referer' For each message that the contains?;headers_any,header_fields
+CQ-106;UC-HTTP-3;;Quantification;How many times does the'header 'Referer'?;headers_any,header_fields
+CQ-107;UC-HTTP-3;;Retrieval;Which messages include the'header 'Connection'?;message,headers_any,header_fields
+CQ-108;UC-HTTP-3;;Retrieval;What is the value dell'header 'Connection' For each message that the contains?;headers_any,header_fields
+CQ-109;UC-HTTP-3;;Quantification;How many times does the'header 'Connection'?;headers_any,header_fields
+CQ-110;UC-HTTP-3;;Retrieval;Which messages include the'header 'Upgrade'?;message,headers_any,header_fields
+CQ-111;UC-HTTP-3;;Retrieval;What is the value dell'header 'Upgrade' For each message that the contains?;headers_any,header_fields
+CQ-112;UC-HTTP-3;;Quantification;How many times does the'header 'Upgrade'?;headers_any,header_fields
+CQ-113;UC-HTTP-3;;Retrieval;Which messages include the'header 'Transfer-Encoding'?;message,headers_any,header_fields
+CQ-114;UC-HTTP-3;;Retrieval;What is the value dell'header 'Transfer-Encoding' For each message that the contains?;headers_any,header_fields
+CQ-115;UC-HTTP-3;;Quantification;How many times does the'header 'Transfer-Encoding'?;headers_any,header_fields
+CQ-116;UC-HTTP-3;;Classification;Which headers are of type 'request' relative to 'response'?;header_type
+CQ-117;UC-HTTP-3;;Classification;Which headers are of type 'general' relative to 'entity/payload/representation'?;header_type
+CQ-118;UC-HTTP-3;;Retrieval;For a message, which headers appartengono to the gruppo 'payload'?;header_type,headers_any
+CQ-119;UC-HTTP-3;;Retrieval;For a message, which headers appartengono to the gruppo 'representation'?;header_type,headers_any
+CQ-120;UC-HTTP-3;;Retrieval;For a'header strutturata, which elementi (token) the compongono?;header_elements
+CQ-121;UC-HTTP-3;;Retrieval;For a elemento of header, which parameters (name/value) are associated?;header_elements,header_params
+CQ-122;UC-HTTP-3;;Retrieval;Which values of 'charset' are dichiarati in the headers that supportano parameters (es. Content-Type)?;header_elements,header_params
+CQ-123;UC-HTTP-3;;Validation;Are there parameters of header without name o without value?;header_params
+CQ-124;UC-HTTP-3;;Retrieval;Which responses include a header Location And What is the'URI indicato?;headers_any,header_fields
+CQ-125;UC-HTTP-3;;Retrieval;Which responses are redirect And indicano a Location?;status_code_number,headers_any,header_fields
+CQ-126;UC-HTTP-4;;Retrieval;Which messages have a body (entity body) present?;message,body
+CQ-127;UC-HTTP-4;;Retrieval;For each message con body, what is the representation of the content associated?;body
+CQ-128;UC-HTTP-4;;Quantification;How many messages contain a body?;message,body
+CQ-129;UC-HTTP-4;;Retrieval;Which requests include a body?;request,body
+CQ-130;UC-HTTP-4;;Retrieval;Which responses include a body?;response,body
+CQ-131;UC-HTTP-4;;Retrieval;Se the body is testuale, what is the content in characters?;content_text
+CQ-132;UC-HTTP-4;;Retrieval;What is the codifica of the characters of the content testuale?;content_text
+CQ-133;UC-HTTP-4;;Retrieval;Se the body is binario, which are i bytes (base64) associated?;content_binary
+CQ-134;UC-HTTP-4;;Validation;Are there contenuti testuali without indicazione of codifica (charset)?;content_text
+CQ-135;UC-HTTP-4;;Retrieval;Which messages contain a body that can essere interpretato as RDF?;body,content_as_rdf
+CQ-136;UC-HTTP-4;;Retrieval;For i messages con content RDF, what is the grafo that represents quel content?;content_as_rdf,content_about_graph
+CQ-137;UC-HTTP-5;;Retrieval;Which connections HTTP are present?;connection
+CQ-138;UC-HTTP-5;;Retrieval;For each connection, which requests appartengono a quella connection?;connection,request
+CQ-139;UC-HTTP-5;;Quantification;How many requests are present in each connection?;connection,request
+CQ-140;UC-HTTP-5;;Retrieval;What is the'authority/host associated with the contesto of a connection?;connection,uri_authority
+CQ-141;UC-HTTP-5;;Validation;Are there connections without requests associated?;connection
+CQ-142;UC-HTTP-5;;Retrieval;What is the sequenza temporale/ordine of the requests within of a connection (se modellato)?;connection,request
+CQ-143;UC-HTTP-5;;Retrieval;Which connections include almeno a request to a certo host?;connection,request,uri_authority
+CQ-144;UC-HTTP-5;;Retrieval;What is the distribuzione of the methods (GET/POST/...) for connection?;connection,request,method
+CQ-145;UC-HTTP-5;;Retrieval;Which connections have generato almeno a errore 4xx o 5xx?;connection,response,status_code_number
+CQ-146;UC-HTTP-5;;Quantification;How many responses of successo (2xx) for connection?;connection,response,status_code_number
+CQ-147;UC-HTTP-6;;Retrieval;Which cookie vengono scambiati in the interazioni HTTP?;cookie
+CQ-148;UC-HTTP-6;;Retrieval;Which are i nomi unici of the cookie observed?;cookie,cookie
+CQ-149;UC-HTTP-6;;Quantification;How many times does each name of cookie appear?;cookie
+CQ-150;UC-HTTP-6;;Retrieval;Which domini are associated withi cookie (se disponibili)?;cookie
+CQ-151;UC-HTTP-6;;Retrieval;Which cookie are associated with a specific request o response?;cookie,cookie_link
+CQ-152;UC-HTTP-6;;Retrieval;Which messages include a cookie con a certo name?;cookie,cookie_link
+CQ-153;UC-HTTP-6;;Retrieval;Which messages include a cookie con a certo dominio?;cookie,cookie_link
+CQ-154;UC-HTTP-6;;Validation;Are there cookie without name o without dominio (When the dominio is richiesto)?;cookie
+CQ-155;UC-HTTP-6;;Retrieval;Which responses impostano cookie (es. Set-Cookie) relative to quelli inviati dal client?;cookie
+CQ-156;UC-HTTP-6;;Comparison;For a dato cookie, how varia the dominio between diverse interazioni?;cookie
+CQ-157;UC-HTTP-6;;Retrieval;Which cookie appear insieme nello same message?;cookie,cookie_link
+CQ-158;UC-HTTP-6;;Quantification;How many cookie are present for message in media?;cookie,cookie_link
+CQ-159;UC-HTTP-7;;Retrieval;Which host distinct are present in the URL richiesti?;uri_authority
+CQ-160;UC-HTTP-7;;Quantification;How many host distinct were contacted?;uri_authority
+CQ-161;UC-HTTP-7;;Retrieval;Which path distinct were richiesti?;uri_path
+CQ-162;UC-HTTP-7;;Quantification;How many path distinct are present?;uri_path
+CQ-163;UC-HTTP-7;;Retrieval;For each host, which path were richiesti?;uri_authority,uri_path
+CQ-164;UC-HTTP-7;;Quantification;For each host, how many requests totali were made?;uri_authority,request
+CQ-165;UC-HTTP-7;;Retrieval;For each endpoint (host+path), which methods were usati?;uri_authority,uri_path,method
+CQ-166;UC-HTTP-7;;Retrieval;For each endpoint (host+path), which codes of status were observed?;uri_authority,uri_path,status_code_number
+CQ-167;UC-HTTP-7;;Quantification;For each endpoint (host+path), how many responses 2xx/3xx/4xx/5xx were observed?;uri_authority,uri_path,status_code_number
+CQ-168;UC-HTTP-7;;Retrieval;Which endpoint generate more frequently errors 4xx?;uri_authority,uri_path,status_code_number
+CQ-169;UC-HTTP-7;;Retrieval;Which endpoint generate more frequently errors 5xx?;uri_authority,uri_path,status_code_number
+CQ-170;UC-HTTP-7;;Retrieval;Which requests repeat the same URL more times?;request_uri
+CQ-171;UC-HTTP-7;;Quantification;For each URL, how many times is status richiesto?;request_uri
+CQ-172;UC-HTTP-7;;Retrieval;Which URL were richiesti con methods diversi (es. sia GET that POST)?;request_uri,method
+CQ-173;UC-HTTP-7;;Traceability;For each request, riportare URL, method, status code And (se present) Location?;request_uri,method,status_code_number,headers_any,header_fields
+CQ-174;UC-HTTP-7;;Validation;Are there requests con method mancante o not riconosciuto?;request,method
+CQ-175;UC-HTTP-7;;Validation;Are there responses con status code mancante?;response,status_code_number
+CQ-176;UC-HTTP-7;;Validation;Are there URL privi of scheme (http/https) When dovrebbe essere noto?;request_uri
+CQ-177;UC-HTTP-7;;Retrieval;Which requests include parameters of query potentially duplicati (same name more times)?;query_params
+CQ-178;UC-HTTP-7;;Retrieval;Which parameters of query appear more spesso on the endpoint that fail (4xx/5xx)?;query_params,status_code_number
+CQ-179;UC-HTTP-7;;Retrieval;Which responses 3xx include a header Location (redirect esplicito)?;status_code_number,headers_any,header_fields
+CQ-180;UC-HTTP-7;;Traceability;For each redirect (3xx), what is the'URL of destination indicato in Location?;status_code_number,headers_any,header_fields
+CQ-181;UC-HTTP-7;;Validation;Are there responses 3xx without Location?;status_code_number,headers_any,header_fields
+CQ-182;UC-HTTP-7;;Retrieval;Which requests dichiarano a Accept (content negotiation) And con Which values?;headers_any,header_fields
+CQ-183;UC-HTTP-7;;Retrieval;Which responses dichiarano a Content-Type And con Which values?;headers_any,header_fields
+CQ-184;UC-HTTP-7;;Retrieval;Which requests use cache validators (es. If-None-Match) And Which responses restituiscono 304?;headers_any,header_fields,status_code_number
+CQ-185;UC-HTTP-7;;Retrieval;Which responses include ETag And con Which values?;headers_any,header_fields
+CQ-186;UC-HTTP-7;;Retrieval;Which messages use Content-Encoding o Transfer-Encoding?;headers_any,header_fields
+CQ-187;UC-HTTP-7;;Retrieval;Which requests include a header Authorization?;headers_any,header_fields
+CQ-188;UC-HTTP-7;;Retrieval;Which responses include a header WWW-Authenticate (se modellato) o a code 401?;status_code_number,headers_any,header_fields
+CQ-189;UC-HTTP-7;;Quantification;How many requests are autenticare vs not autenticare (in base to the presenza of Authorization)?;headers_any,header_fields

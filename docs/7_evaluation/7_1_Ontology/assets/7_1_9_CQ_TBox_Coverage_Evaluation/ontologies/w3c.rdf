@@ -1,0 +1,510 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rdf:RDF
+  xmlns:owl="http://www.w3.org/2002/07/owl#"
+  xmlns:ns1="http://www.w3.org/2011/http#"
+  xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+  xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+>
+  <ns1:StatusCode rdf:about="http://www.w3.org/2011/http-statusCodes#Conflict">
+    <rdfs:label>Conflict</rdfs:label>
+    <ns1:statusCodeNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int">409</ns1:statusCodeNumber>
+  </ns1:StatusCode>
+  <ns1:StatusCode rdf:about="http://www.w3.org/2011/http-statusCodes#ExpectationFailed">
+    <rdfs:label>Expectation Failed</rdfs:label>
+    <ns1:statusCodeNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int">417</ns1:statusCodeNumber>
+  </ns1:StatusCode>
+  <ns1:StatusCode rdf:about="http://www.w3.org/2011/http-statusCodes#ProxyAuthenticationRequired">
+    <rdfs:label>Proxy Authentication Required</rdfs:label>
+    <ns1:statusCodeNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int">407</ns1:statusCodeNumber>
+  </ns1:StatusCode>
+  <ns1:StatusCode rdf:about="http://www.w3.org/2011/http-statusCodes#UnprocessableEntity">
+    <rdfs:label>Unprocessable Entity</rdfs:label>
+    <ns1:statusCodeNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int">422</ns1:statusCodeNumber>
+  </ns1:StatusCode>
+  <ns1:StatusCode rdf:about="http://www.w3.org/2011/http-statusCodes#Gone">
+    <rdfs:label>Gone</rdfs:label>
+    <ns1:statusCodeNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int">410</ns1:statusCodeNumber>
+  </ns1:StatusCode>
+  <owl:DatatypeProperty rdf:about="http://www.w3.org/2011/content#chars">
+    <rdfs:domain rdf:resource="http://www.w3.org/2011/content#ContentAsText"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <rdfs:label>chars</rdfs:label>
+    <rdfs:comment>Content in characters (text form).</rdfs:comment>
+  </owl:DatatypeProperty>
+  <owl:ObjectProperty rdf:about="http://www.w3.org/2011/http#hdrName">
+    <rdfs:domain rdf:resource="http://www.w3.org/2011/http#MessageHeader"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2011/http#HeaderName"/>
+    <rdfs:label>hdrName</rdfs:label>
+    <rdfs:comment>Links a message header to a registered header name resource.</rdfs:comment>
+  </owl:ObjectProperty>
+  <owl:DatatypeProperty rdf:about="http://www.w3.org/2011/http#absolutePath">
+    <rdfs:domain rdf:resource="http://www.w3.org/2011/http#Request"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <rdfs:label>absolutePath</rdfs:label>
+    <rdfs:comment>Request URI that is an absolute path.</rdfs:comment>
+    <rdfs:subPropertyOf>
+      <owl:DatatypeProperty rdf:about="http://www.w3.org/2011/http#requestURI">
+        <rdfs:domain rdf:resource="http://www.w3.org/2011/http#Request"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label>requestURI</rdfs:label>
+        <rdfs:comment>The request URI (literal form).</rdfs:comment>
+      </owl:DatatypeProperty>
+    </rdfs:subPropertyOf>
+  </owl:DatatypeProperty>
+  <ns1:StatusCode rdf:about="http://www.w3.org/2011/http-statusCodes#Forbidden">
+    <rdfs:label>Forbidden</rdfs:label>
+    <ns1:statusCodeNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int">403</ns1:statusCodeNumber>
+  </ns1:StatusCode>
+  <owl:Class rdf:about="http://www.w3.org/2011/http#EntityHeader">
+    <rdfs:label>EntityHeader</rdfs:label>
+    <rdfs:comment>An HTTP entity header field.</rdfs:comment>
+    <rdfs:subClassOf rdf:resource="http://www.w3.org/2011/http#MessageHeader"/>
+  </owl:Class>
+  <owl:DatatypeProperty rdf:about="http://www.w3.org/2011/content#bytes">
+    <rdfs:domain rdf:resource="http://www.w3.org/2011/content#ContentAsBase64"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#base64Binary"/>
+    <rdfs:label>bytes</rdfs:label>
+    <rdfs:comment>Content in bytes (binary form, base64-encoded).</rdfs:comment>
+  </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:about="http://www.w3.org/2011/http#methodName">
+    <rdfs:domain rdf:resource="http://www.w3.org/2011/http#Request"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <rdfs:label>methodName</rdfs:label>
+    <rdfs:comment>HTTP method name (literal form).</rdfs:comment>
+  </owl:DatatypeProperty>
+  <owl:Class rdf:about="http://www.w3.org/2011/http#ResponseHeader">
+    <rdfs:label>ResponseHeader</rdfs:label>
+    <rdfs:comment>An HTTP response header field.</rdfs:comment>
+    <rdfs:subClassOf rdf:resource="http://www.w3.org/2011/http#MessageHeader"/>
+  </owl:Class>
+  <owl:ObjectProperty rdf:about="http://www.w3.org/2011/http#body">
+    <rdfs:domain rdf:resource="http://www.w3.org/2011/http#Message"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2011/content#Content"/>
+    <rdfs:label>body</rdfs:label>
+    <rdfs:comment>Associates an HTTP message with its entity body content.</rdfs:comment>
+  </owl:ObjectProperty>
+  <ns1:StatusCode rdf:about="http://www.w3.org/2011/http-statusCodes#Locked">
+    <rdfs:label>Locked</rdfs:label>
+    <ns1:statusCodeNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int">423</ns1:statusCodeNumber>
+  </ns1:StatusCode>
+  <ns1:StatusCode rdf:about="http://www.w3.org/2011/http-statusCodes#FailedDependency">
+    <rdfs:label>Failed Dependency</rdfs:label>
+    <ns1:statusCodeNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int">424</ns1:statusCodeNumber>
+  </ns1:StatusCode>
+  <ns1:StatusCode rdf:about="http://www.w3.org/2011/http-statusCodes#ServiceUnavailable">
+    <rdfs:label>Service Unavailable</rdfs:label>
+    <ns1:statusCodeNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int">503</ns1:statusCodeNumber>
+  </ns1:StatusCode>
+  <owl:DatatypeProperty rdf:about="http://www.w3.org/2011/http#absoluteURI">
+    <rdfs:domain rdf:resource="http://www.w3.org/2011/http#Request"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <rdfs:label>absoluteURI</rdfs:label>
+    <rdfs:comment>Request URI that is an absolute URI.</rdfs:comment>
+    <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2011/http#requestURI"/>
+  </owl:DatatypeProperty>
+  <owl:ObjectProperty rdf:about="http://www.w3.org/2011/http#headerElements">
+    <rdfs:domain rdf:resource="http://www.w3.org/2011/http#MessageHeader"/>
+    <rdfs:range rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#List"/>
+    <rdfs:label>headerElements</rdfs:label>
+    <rdfs:comment>Collection of elements of a header field value (rdf:List).</rdfs:comment>
+  </owl:ObjectProperty>
+  <owl:DatatypeProperty rdf:about="http://www.w3.org/2011/http#authority">
+    <rdfs:domain rdf:resource="http://www.w3.org/2011/http#Request"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <rdfs:label>authority</rdfs:label>
+    <rdfs:comment>Request URI that is an authority component (host[:port]).</rdfs:comment>
+    <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2011/http#requestURI"/>
+  </owl:DatatypeProperty>
+  <owl:ObjectProperty rdf:about="http://www.w3.org/2011/http#params">
+    <rdfs:domain rdf:resource="http://www.w3.org/2011/http#HeaderElement"/>
+    <rdfs:range rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#List"/>
+    <rdfs:label>params</rdfs:label>
+    <rdfs:comment>Collection of parameters attached to a header element (rdf:List).</rdfs:comment>
+  </owl:ObjectProperty>
+  <ns1:StatusCode rdf:about="http://www.w3.org/2011/http-statusCodes#OK">
+    <rdfs:label>OK</rdfs:label>
+    <ns1:statusCodeNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int">200</ns1:statusCodeNumber>
+  </ns1:StatusCode>
+  <ns1:StatusCode rdf:about="http://www.w3.org/2011/http-statusCodes#TemporaryRedirect">
+    <rdfs:label>Temporary Redirect</rdfs:label>
+    <ns1:statusCodeNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int">307</ns1:statusCodeNumber>
+  </ns1:StatusCode>
+  <ns1:Method rdf:about="http://www.w3.org/2011/http-methods#GET">
+    <rdfs:label>GET</rdfs:label>
+  </ns1:Method>
+  <owl:DatatypeProperty rdf:about="http://www.w3.org/2011/http#reasonPhrase">
+    <rdfs:domain rdf:resource="http://www.w3.org/2011/http#Response"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <rdfs:label>reasonPhrase</rdfs:label>
+    <rdfs:comment>Reason phrase associated with a status line, when present.</rdfs:comment>
+  </owl:DatatypeProperty>
+  <owl:Class rdf:about="http://www.w3.org/2011/http#RequestHeader">
+    <rdfs:label>RequestHeader</rdfs:label>
+    <rdfs:comment>An HTTP request header field.</rdfs:comment>
+    <rdfs:subClassOf rdf:resource="http://www.w3.org/2011/http#MessageHeader"/>
+  </owl:Class>
+  <owl:DatatypeProperty rdf:about="http://www.w3.org/2011/http#fieldValue">
+    <rdfs:domain rdf:resource="http://www.w3.org/2011/http#MessageHeader"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <rdfs:label>fieldValue</rdfs:label>
+    <rdfs:comment>Header value (literal form).</rdfs:comment>
+  </owl:DatatypeProperty>
+  <ns1:StatusCode rdf:about="http://www.w3.org/2011/http-statusCodes#ResetContent">
+    <rdfs:label>Reset Content</rdfs:label>
+    <ns1:statusCodeNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int">205</ns1:statusCodeNumber>
+  </ns1:StatusCode>
+  <owl:ObjectProperty rdf:about="http://www.w3.org/2011/http#mthd">
+    <rdfs:domain rdf:resource="http://www.w3.org/2011/http#Request"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2011/http#Method"/>
+    <rdfs:label>mthd</rdfs:label>
+    <rdfs:comment>The method used by an HTTP request (resource form).</rdfs:comment>
+  </owl:ObjectProperty>
+  <ns1:StatusCode rdf:about="http://www.w3.org/2011/http-statusCodes#InternalServerError">
+    <rdfs:label>Internal Server Error</rdfs:label>
+    <ns1:statusCodeNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int">500</ns1:statusCodeNumber>
+  </ns1:StatusCode>
+  <ns1:StatusCode rdf:about="http://www.w3.org/2011/http-statusCodes#InsufficientStorage">
+    <rdfs:label>Insufficient Storage</rdfs:label>
+    <ns1:statusCodeNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int">507</ns1:statusCodeNumber>
+  </ns1:StatusCode>
+  <ns1:StatusCode rdf:about="http://www.w3.org/2011/http-statusCodes#Found">
+    <rdfs:label>Found</rdfs:label>
+    <ns1:statusCodeNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int">302</ns1:statusCodeNumber>
+  </ns1:StatusCode>
+  <ns1:StatusCode rdf:about="http://www.w3.org/2011/http-statusCodes#NotExtended">
+    <rdfs:label>Not Extended</rdfs:label>
+    <ns1:statusCodeNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int">510</ns1:statusCodeNumber>
+  </ns1:StatusCode>
+  <owl:DatatypeProperty rdf:about="http://www.w3.org/2011/http#paramValue">
+    <rdfs:domain rdf:resource="http://www.w3.org/2011/http#Parameter"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <rdfs:label>paramValue</rdfs:label>
+    <rdfs:comment>Value of a parameter.</rdfs:comment>
+  </owl:DatatypeProperty>
+  <ns1:Method rdf:about="http://www.w3.org/2011/http-methods#DELETE">
+    <rdfs:label>DELETE</rdfs:label>
+  </ns1:Method>
+  <owl:DatatypeProperty rdf:about="http://www.w3.org/2011/http#fieldName">
+    <rdfs:domain rdf:resource="http://www.w3.org/2011/http#MessageHeader"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <rdfs:label>fieldName</rdfs:label>
+    <rdfs:comment>Header name (literal form).</rdfs:comment>
+  </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:about="http://www.w3.org/2011/http#connectionAuthority">
+    <rdfs:domain rdf:resource="http://www.w3.org/2011/http#Connection"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <rdfs:label>connectionAuthority</rdfs:label>
+    <rdfs:comment>Authority/host information for the connection context (host[:port]).</rdfs:comment>
+  </owl:DatatypeProperty>
+  <owl:ObjectProperty rdf:about="http://www.w3.org/2011/http#requests">
+    <rdfs:domain rdf:resource="http://www.w3.org/2011/http#Connection"/>
+    <rdfs:range rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#List"/>
+    <rdfs:label>requests</rdfs:label>
+    <rdfs:comment>Collection of HTTP requests belonging to a connection (rdf:List).</rdfs:comment>
+  </owl:ObjectProperty>
+  <ns1:StatusCode rdf:about="http://www.w3.org/2011/http-statusCodes#BadGateway">
+    <rdfs:label>Bad Gateway</rdfs:label>
+    <ns1:statusCodeNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int">502</ns1:statusCodeNumber>
+  </ns1:StatusCode>
+  <ns1:StatusCode rdf:about="http://www.w3.org/2011/http-statusCodes#LengthRequired">
+    <rdfs:label>Length Required</rdfs:label>
+    <ns1:statusCodeNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int">411</ns1:statusCodeNumber>
+  </ns1:StatusCode>
+  <ns1:StatusCode rdf:about="http://www.w3.org/2011/http-statusCodes#MultipleChoices">
+    <rdfs:label>Multiple Choices</rdfs:label>
+    <ns1:statusCodeNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int">300</ns1:statusCodeNumber>
+  </ns1:StatusCode>
+  <ns1:StatusCode rdf:about="http://www.w3.org/2011/http-statusCodes#UseProxy">
+    <rdfs:label>Use Proxy</rdfs:label>
+    <ns1:statusCodeNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int">305</ns1:statusCodeNumber>
+  </ns1:StatusCode>
+  <ns1:StatusCode rdf:about="http://www.w3.org/2011/http-statusCodes#NonAuthoritativeInformation">
+    <rdfs:label>Non-Authoritative Information</rdfs:label>
+    <ns1:statusCodeNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int">203</ns1:statusCodeNumber>
+  </ns1:StatusCode>
+  <ns1:Method rdf:about="http://www.w3.org/2011/http-methods#CONNECT">
+    <rdfs:label>CONNECT</rdfs:label>
+  </ns1:Method>
+  <owl:DatatypeProperty rdf:about="http://www.w3.org/2011/http#statusCodeValue">
+    <rdfs:domain rdf:resource="http://www.w3.org/2011/http#Response"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <rdfs:label>statusCodeValue</rdfs:label>
+    <rdfs:comment>The actual status code value sent by the server (literal form).</rdfs:comment>
+  </owl:DatatypeProperty>
+  <ns1:StatusCode rdf:about="http://www.w3.org/2011/http-statusCodes#NoContent">
+    <rdfs:label>No Content</rdfs:label>
+    <ns1:statusCodeNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int">204</ns1:statusCodeNumber>
+  </ns1:StatusCode>
+  <ns1:StatusCode rdf:about="http://www.w3.org/2011/http-statusCodes#Unauthorized">
+    <rdfs:label>Unauthorized</rdfs:label>
+    <ns1:statusCodeNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int">401</ns1:statusCodeNumber>
+  </ns1:StatusCode>
+  <ns1:StatusCode rdf:about="http://www.w3.org/2011/http-statusCodes#Created">
+    <rdfs:label>Created</rdfs:label>
+    <ns1:statusCodeNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int">201</ns1:statusCodeNumber>
+  </ns1:StatusCode>
+  <ns1:StatusCode rdf:about="http://www.w3.org/2011/http-statusCodes#RequestURITooLong">
+    <rdfs:label>Request-URI Too Long</rdfs:label>
+    <ns1:statusCodeNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int">414</ns1:statusCodeNumber>
+  </ns1:StatusCode>
+  <ns1:StatusCode rdf:about="http://www.w3.org/2011/http-statusCodes#SwitchingProtocols">
+    <rdfs:label>Switching Protocols</rdfs:label>
+    <ns1:statusCodeNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int">101</ns1:statusCodeNumber>
+  </ns1:StatusCode>
+  <ns1:StatusCode rdf:about="http://www.w3.org/2011/http-statusCodes#UnsupportedMediaType">
+    <rdfs:label>Unsupported Media Type</rdfs:label>
+    <ns1:statusCodeNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int">415</ns1:statusCodeNumber>
+  </ns1:StatusCode>
+  <ns1:StatusCode rdf:about="http://www.w3.org/2011/http-statusCodes#MethodNotAllowed">
+    <rdfs:label>Method Not Allowed</rdfs:label>
+    <ns1:statusCodeNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int">405</ns1:statusCodeNumber>
+  </ns1:StatusCode>
+  <owl:DatatypeProperty rdf:about="http://www.w3.org/2011/http#statusCodeNumber">
+    <rdfs:domain rdf:resource="http://www.w3.org/2011/http#StatusCode"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#int"/>
+    <rdfs:label>statusCodeNumber</rdfs:label>
+    <rdfs:comment>The standardized status code value (integer) for a StatusCode resource.</rdfs:comment>
+  </owl:DatatypeProperty>
+  <ns1:StatusCode rdf:about="http://www.w3.org/2011/http-statusCodes#VariantAlsoNegotiates">
+    <rdfs:label>Variant Also Negotiates (Experimental)</rdfs:label>
+    <ns1:statusCodeNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int">506</ns1:statusCodeNumber>
+  </ns1:StatusCode>
+  <owl:DatatypeProperty rdf:about="http://www.w3.org/2011/http#elementName">
+    <rdfs:domain rdf:resource="http://www.w3.org/2011/http#HeaderElement"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <rdfs:label>elementName</rdfs:label>
+    <rdfs:comment>Header element name (literal form).</rdfs:comment>
+  </owl:DatatypeProperty>
+  <ns1:StatusCode rdf:about="http://www.w3.org/2011/http-statusCodes#UpgradeRequired">
+    <rdfs:label>Upgrade Required</rdfs:label>
+    <ns1:statusCodeNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int">426</ns1:statusCodeNumber>
+  </ns1:StatusCode>
+  <ns1:StatusCode rdf:about="http://www.w3.org/2011/http-statusCodes#BadRequest">
+    <rdfs:label>Bad Request</rdfs:label>
+    <ns1:statusCodeNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int">400</ns1:statusCodeNumber>
+  </ns1:StatusCode>
+  <ns1:StatusCode rdf:about="http://www.w3.org/2011/http-statusCodes#HTTPVersionNotSupported">
+    <rdfs:label>HTTP Version Not Supported</rdfs:label>
+    <ns1:statusCodeNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int">505</ns1:statusCodeNumber>
+  </ns1:StatusCode>
+  <owl:ObjectProperty rdf:about="http://www.w3.org/2011/http#resp">
+    <rdfs:domain rdf:resource="http://www.w3.org/2011/http#Request"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2011/http#Response"/>
+    <rdfs:label>resp</rdfs:label>
+    <rdfs:comment>Links an HTTP request to its corresponding response.</rdfs:comment>
+  </owl:ObjectProperty>
+  <owl:DatatypeProperty rdf:about="http://www.w3.org/2011/http#elementValue">
+    <rdfs:domain rdf:resource="http://www.w3.org/2011/http#HeaderElement"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <rdfs:label>elementValue</rdfs:label>
+    <rdfs:comment>Header element value (literal form).</rdfs:comment>
+  </owl:DatatypeProperty>
+  <ns1:StatusCode rdf:about="http://www.w3.org/2011/http-statusCodes#Reserved">
+    <rdfs:label>(Reserved)</rdfs:label>
+    <ns1:statusCodeNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int">306</ns1:statusCodeNumber>
+  </ns1:StatusCode>
+  <owl:Class rdf:about="http://www.w3.org/2011/http#GeneralHeader">
+    <rdfs:label>GeneralHeader</rdfs:label>
+    <rdfs:comment>An HTTP general header field.</rdfs:comment>
+    <rdfs:subClassOf rdf:resource="http://www.w3.org/2011/http#MessageHeader"/>
+  </owl:Class>
+  <ns1:StatusCode rdf:about="http://www.w3.org/2011/http-statusCodes#GatewayTimeout">
+    <rdfs:label>Gateway Timeout</rdfs:label>
+    <ns1:statusCodeNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int">504</ns1:statusCodeNumber>
+  </ns1:StatusCode>
+  <ns1:StatusCode rdf:about="http://www.w3.org/2011/http-statusCodes#NotImplemented">
+    <rdfs:label>Not Implemented</rdfs:label>
+    <ns1:statusCodeNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int">501</ns1:statusCodeNumber>
+  </ns1:StatusCode>
+  <ns1:Method rdf:about="http://www.w3.org/2011/http-methods#TRACE">
+    <rdfs:label>TRACE</rdfs:label>
+  </ns1:Method>
+  <owl:ObjectProperty rdf:about="http://www.w3.org/2011/http#sc">
+    <rdfs:domain rdf:resource="http://www.w3.org/2011/http#Response"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2011/http#StatusCode"/>
+    <rdfs:label>sc</rdfs:label>
+    <rdfs:comment>The status code of an HTTP response (resource form).</rdfs:comment>
+  </owl:ObjectProperty>
+  <ns1:StatusCode rdf:about="http://www.w3.org/2011/http-statusCodes#NotFound">
+    <rdfs:label>Not Found</rdfs:label>
+    <ns1:statusCodeNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int">404</ns1:statusCodeNumber>
+  </ns1:StatusCode>
+  <ns1:Method rdf:about="http://www.w3.org/2011/http-methods#HEAD">
+    <rdfs:label>HEAD</rdfs:label>
+  </ns1:Method>
+  <owl:DatatypeProperty rdf:about="http://www.w3.org/2011/content#characterEncoding">
+    <rdfs:domain rdf:resource="http://www.w3.org/2011/content#ContentAsText"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <rdfs:label>characterEncoding</rdfs:label>
+    <rdfs:comment>Character encoding of textual content.</rdfs:comment>
+  </owl:DatatypeProperty>
+  <ns1:StatusCode rdf:about="http://www.w3.org/2011/http-statusCodes#PaymentRequired">
+    <rdfs:label>Payment Required</rdfs:label>
+    <ns1:statusCodeNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int">402</ns1:statusCodeNumber>
+  </ns1:StatusCode>
+  <owl:DatatypeProperty rdf:about="http://www.w3.org/2011/http#paramName">
+    <rdfs:domain rdf:resource="http://www.w3.org/2011/http#Parameter"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <rdfs:label>paramName</rdfs:label>
+    <rdfs:comment>Name of a parameter.</rdfs:comment>
+  </owl:DatatypeProperty>
+  <ns1:StatusCode rdf:about="http://www.w3.org/2011/http-statusCodes#Continue">
+    <rdfs:label>Continue</rdfs:label>
+    <ns1:statusCodeNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int">100</ns1:statusCodeNumber>
+  </ns1:StatusCode>
+  <ns1:StatusCode rdf:about="http://www.w3.org/2011/http-statusCodes#PreconditionFailed">
+    <rdfs:label>Precondition Failed</rdfs:label>
+    <ns1:statusCodeNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int">412</ns1:statusCodeNumber>
+  </ns1:StatusCode>
+  <ns1:StatusCode rdf:about="http://www.w3.org/2011/http-statusCodes#NotModified">
+    <rdfs:label>Not Modified</rdfs:label>
+    <ns1:statusCodeNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int">304</ns1:statusCodeNumber>
+  </ns1:StatusCode>
+  <owl:ObjectProperty rdf:about="http://www.w3.org/2011/http#headers">
+    <rdfs:domain rdf:resource="http://www.w3.org/2011/http#Message"/>
+    <rdfs:range rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#List"/>
+    <rdfs:label>headers</rdfs:label>
+    <rdfs:comment>Collection of header fields associated with a message (represented as an rdf:List).</rdfs:comment>
+  </owl:ObjectProperty>
+  <ns1:StatusCode rdf:about="http://www.w3.org/2011/http-statusCodes#MovedPermanently">
+    <rdfs:label>Moved Permanently</rdfs:label>
+    <ns1:statusCodeNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int">301</ns1:statusCodeNumber>
+  </ns1:StatusCode>
+  <ns1:StatusCode rdf:about="http://www.w3.org/2011/http-statusCodes#MultiStatus">
+    <rdfs:label>Multi-Status</rdfs:label>
+    <ns1:statusCodeNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int">207</ns1:statusCodeNumber>
+  </ns1:StatusCode>
+  <owl:DatatypeProperty rdf:about="http://www.w3.org/2011/http#httpVersion">
+    <rdfs:domain rdf:resource="http://www.w3.org/2011/http#Message"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <rdfs:label>httpVersion</rdfs:label>
+    <rdfs:comment>HTTP protocol version of a message, e.g., '1.1'.</rdfs:comment>
+  </owl:DatatypeProperty>
+  <ns1:Method rdf:about="http://www.w3.org/2011/http-methods#PUT">
+    <rdfs:label>PUT</rdfs:label>
+  </ns1:Method>
+  <ns1:StatusCode rdf:about="http://www.w3.org/2011/http-statusCodes#Processing">
+    <rdfs:label>Processing</rdfs:label>
+    <ns1:statusCodeNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int">102</ns1:statusCodeNumber>
+  </ns1:StatusCode>
+  <ns1:Method rdf:about="http://www.w3.org/2011/http-methods#POST">
+    <rdfs:label>POST</rdfs:label>
+  </ns1:Method>
+  <ns1:StatusCode rdf:about="http://www.w3.org/2011/http-statusCodes#IMUsed">
+    <rdfs:label>IM Used</rdfs:label>
+    <ns1:statusCodeNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int">226</ns1:statusCodeNumber>
+  </ns1:StatusCode>
+  <ns1:StatusCode rdf:about="http://www.w3.org/2011/http-statusCodes#RequestedRangeNotSatisfiable">
+    <rdfs:label>Requested Range Not Satisfiable</rdfs:label>
+    <ns1:statusCodeNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int">416</ns1:statusCodeNumber>
+  </ns1:StatusCode>
+  <ns1:StatusCode rdf:about="http://www.w3.org/2011/http-statusCodes#NotAcceptable">
+    <rdfs:label>Not Acceptable</rdfs:label>
+    <ns1:statusCodeNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int">406</ns1:statusCodeNumber>
+  </ns1:StatusCode>
+  <ns1:StatusCode rdf:about="http://www.w3.org/2011/http-statusCodes#PartialContent">
+    <rdfs:label>Partial Content</rdfs:label>
+    <ns1:statusCodeNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int">206</ns1:statusCodeNumber>
+  </ns1:StatusCode>
+  <ns1:StatusCode rdf:about="http://www.w3.org/2011/http-statusCodes#RequestTimeout">
+    <rdfs:label>Request Timeout</rdfs:label>
+    <ns1:statusCodeNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int">408</ns1:statusCodeNumber>
+  </ns1:StatusCode>
+  <ns1:StatusCode rdf:about="http://www.w3.org/2011/http-statusCodes#RequestEntityTooLarge">
+    <rdfs:label>Request Entity Too Large</rdfs:label>
+    <ns1:statusCodeNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int">413</ns1:statusCodeNumber>
+  </ns1:StatusCode>
+  <ns1:StatusCode rdf:about="http://www.w3.org/2011/http-statusCodes#SeeOther">
+    <rdfs:label>See Other</rdfs:label>
+    <ns1:statusCodeNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int">303</ns1:statusCodeNumber>
+  </ns1:StatusCode>
+  <ns1:StatusCode rdf:about="http://www.w3.org/2011/http-statusCodes#Accepted">
+    <rdfs:label>Accepted</rdfs:label>
+    <ns1:statusCodeNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#int">202</ns1:statusCodeNumber>
+  </ns1:StatusCode>
+  <ns1:Method rdf:about="http://www.w3.org/2011/http-methods#OPTIONS">
+    <rdfs:label>OPTIONS</rdfs:label>
+  </ns1:Method>
+  <ns1:Method rdf:about="http://www.w3.org/2011/http-methods#PATCH">
+    <rdfs:label>PATCH</rdfs:label>
+  </ns1:Method>
+  <owl:Ontology rdf:about="http://www.w3.org/2011/content">
+    <rdfs:label>Content in RDF Vocabulary (reconstructed/verified)</rdfs:label>
+    <rdfs:comment>A lightweight OWL/RDFS rendition of the W3C Content-in-RDF vocabulary, aligned with terms referenced by HTTP-in-RDF 1.0.</rdfs:comment>
+  </owl:Ontology>
+  <owl:Class rdf:about="http://www.w3.org/2011/http#StatusCode">
+    <rdfs:label>StatusCode</rdfs:label>
+    <rdfs:comment>An HTTP status code (e.g., 200, 404).</rdfs:comment>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.w3.org/2011/http#Method">
+    <rdfs:label>Method</rdfs:label>
+    <rdfs:comment>An HTTP method (e.g., GET, POST).</rdfs:comment>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.w3.org/2011/content#ContentAsText">
+    <rdfs:label>ContentAsText</rdfs:label>
+    <rdfs:comment>Content represented in character (text) form.</rdfs:comment>
+    <rdfs:subClassOf rdf:resource="http://www.w3.org/2011/content#Content"/>
+  </owl:Class>
+  <owl:Ontology rdf:about="http://www.w3.org/2011/http">
+    <rdfs:label>HTTP in RDF Vocabulary (reconstructed/verified)</rdfs:label>
+    <rdfs:comment>A lightweight OWL/RDFS rendition of the W3C HTTP-in-RDF 1.0 vocabulary terms, built from the published specification for loading into triple stores.</rdfs:comment>
+    <owl:imports rdf:resource="http://www.w3.org/2011/content"/>
+    <owl:imports>
+      <owl:Ontology rdf:about="http://www.w3.org/2011/http-methods">
+        <rdfs:label>HTTP Methods in RDF (reconstructed)</rdfs:label>
+        <rdfs:comment>A lightweight RDF/OWL rendition of HTTP method resources referenced by the HTTP-in-RDF 1.0 vocabulary.</rdfs:comment>
+        <owl:imports rdf:resource="http://www.w3.org/2011/http"/>
+      </owl:Ontology>
+    </owl:imports>
+    <owl:imports>
+      <owl:Ontology rdf:about="http://www.w3.org/2011/http-statusCodes">
+        <rdfs:label>HTTP Status Codes in RDF (reconstructed)</rdfs:label>
+        <rdfs:comment>A lightweight RDF/OWL rendition of HTTP status code resources referenced by the HTTP-in-RDF 1.0 vocabulary.</rdfs:comment>
+        <owl:imports rdf:resource="http://www.w3.org/2011/http"/>
+      </owl:Ontology>
+    </owl:imports>
+  </owl:Ontology>
+  <owl:Class rdf:about="http://www.w3.org/2011/http#MessageHeader">
+    <rdfs:label>MessageHeader</rdfs:label>
+    <rdfs:comment>An HTTP header field.</rdfs:comment>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.w3.org/2011/http#Response">
+    <rdfs:label>Response</rdfs:label>
+    <rdfs:comment>An HTTP response message.</rdfs:comment>
+    <rdfs:subClassOf rdf:resource="http://www.w3.org/2011/http#Message"/>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.w3.org/2011/http#HeaderElement">
+    <rdfs:label>HeaderElement</rdfs:label>
+    <rdfs:comment>A structured element occurring inside a header field value.</rdfs:comment>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.w3.org/2011/content#ContentAsBase64">
+    <rdfs:label>ContentAsBase64</rdfs:label>
+    <rdfs:comment>Content represented in base64-encoded binary form.</rdfs:comment>
+    <rdfs:subClassOf rdf:resource="http://www.w3.org/2011/content#Content"/>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.w3.org/2011/http#HeaderName">
+    <rdfs:label>HeaderName</rdfs:label>
+    <rdfs:comment>A header field name (e.g., Content-Type).</rdfs:comment>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.w3.org/2011/content#Content">
+    <rdfs:label>Content</rdfs:label>
+    <rdfs:comment>Representation/content that may appear as the body of an HTTP message.</rdfs:comment>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.w3.org/2011/http#Parameter">
+    <rdfs:label>Parameter</rdfs:label>
+    <rdfs:comment>A parameter attached to a header element.</rdfs:comment>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.w3.org/2011/http#Message">
+    <rdfs:label>Message</rdfs:label>
+    <rdfs:comment>An HTTP message (common superclass for Request and Response).</rdfs:comment>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.w3.org/2011/http#Connection">
+    <rdfs:label>Connection</rdfs:label>
+    <rdfs:comment>A sequence of HTTP request/response exchanges (messages) between parties.</rdfs:comment>
+  </owl:Class>
+  <owl:Class rdf:about="http://www.w3.org/2011/http#Request">
+    <rdfs:label>Request</rdfs:label>
+    <rdfs:comment>An HTTP request message.</rdfs:comment>
+    <rdfs:subClassOf rdf:resource="http://www.w3.org/2011/http#Message"/>
+  </owl:Class>
+</rdf:RDF>

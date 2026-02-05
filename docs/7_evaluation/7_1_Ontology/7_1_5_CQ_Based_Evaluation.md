@@ -82,6 +82,44 @@ The output was intentionally broad to cover:
 - data quality questions (missing fields, incomplete links),
 - named-graph isolation and provenance.
 
+
+### AI Prompt (Step 1 – Generate CQs from Use Cases and Scenarios)
+
+Use the following prompt to generate **`1_competency_questions_usecases_scenarios.csv`** starting from the text of the Use Cases and Use Case Scenarios (copied from the thesis).
+
+```text
+You are an ontology engineer helping me design a CQ-based evaluation for a knowledge-graph platform about web penetration testing evidence.
+
+I will paste:
+1) A set of Use Cases (UC-1, UC-2, ...) and
+2) Their Use Case Scenarios (steps).
+
+TASK
+- Generate as many competency questions as reasonably possible (aim for 150–300) that are answerable *in principle* by a knowledge graph representing the system evidence, workflows, and results described by the use cases.
+- Questions must be in ENGLISH.
+- Questions must be generic (do not mention “this ontology”, “GraphDB”, “OntoWeb-PT”, or implementation details).
+- Each CQ must be linked to:
+  - use_case: one of the UC identifiers I provide (e.g., UC-1)
+  - scenario_step: the relevant scenario step (short label or step number); if not applicable, leave it blank
+  - dimension: choose one value from: Retrieval | Consistency | Completeness | Provenance | Validation
+
+OUTPUT FORMAT (IMPORTANT)
+Return ONLY a semicolon-separated CSV (no commentary, no markdown), with this header and columns exactly:
+
+cq_id;use_case;scenario_step;dimension;question
+
+ID RULES
+- cq_id must be sequential and zero-padded with 5 digits, starting from CQ00001 (e.g., CQ00001, CQ00002, ...).
+- Keep IDs unique.
+
+QUALITY RULES
+- Avoid near-duplicates. If two questions are similar, merge them into one stronger question.
+- Mix granular questions (single aspect) and higher-level questions (combining multiple aspects).
+- Prefer questions that stress the ability to link evidence to derived results and to preserve provenance across steps.
+
+Now wait for my pasted Use Cases and Scenarios, then produce the CSV.
+```
+
 ## 4. Step 2 — HTTP-only filtering (Interceptor + PCAP)
 
 The initial set (1820) was filtered to keep only questions related to HTTP evidence and HTTP findings, for both acquisition paths:
@@ -105,6 +143,45 @@ The initial set (1820) was filtered to keep only questions related to HTTP evide
 
 The filtered set resulted in 1084 HTTP-only CQs.
 
+
+### AI Prompt (Step 2 – Filter to HTTP-only scope)
+
+Use the following prompt to derive **`2_competency_questions_http_only.csv`** by filtering the broader CQ set to only the HTTP-representation scope (requests, responses, headers, URIs, methods, status codes, bodies, connections, and closely related metadata). This keeps the same schema as Step 1.
+
+```text
+You are helping me refine a CQ list to a narrower scope.
+
+INPUT
+I will paste a semicolon-separated CSV with header:
+cq_id;use_case;scenario_step;dimension;question
+
+TASK
+- Keep ONLY the competency questions that are clearly related to HTTP message representation and navigation, including:
+  - requests and responses
+  - HTTP methods
+  - URIs and their components (scheme, authority/host, path, query, fragment)
+  - headers (names, values, header elements/parameters where applicable)
+  - status codes / reason phrases
+  - message bodies / content representations (text/base64/RDF content) when tied to HTTP messages
+  - connection / exchanges (request-response linkage)
+  - any minimal capture metadata that is strictly necessary to interpret HTTP evidence
+- Remove everything that is about:
+  - vulnerabilities, findings, OWASP categories, attacks, mitigations
+  - scanning, exploitation logic, or security results not strictly tied to HTTP representation
+  - non-HTTP entities (users, assets, organization, risk, etc.)
+
+OUTPUT FORMAT (IMPORTANT)
+Return ONLY a semicolon-separated CSV (no commentary, no markdown), with the SAME header and columns exactly:
+
+cq_id;use_case;scenario_step;dimension;question
+
+RULES
+- Preserve the original cq_id values for the rows you keep.
+- Do NOT renumber IDs.
+- Do NOT rewrite the questions unless needed to remove non-HTTP references; if you rewrite, keep the original intent.
+- Ensure the result is still diverse (methods, URIs, headers, bodies, status codes, linkage, provenance).
+```
+
 ## 5. Step 3 — SPARQL mapping for each CQ
 
 Each CQ was associated with a SPARQL query to verify that the ontology, when populated, can answer the question. The mapping follows a template-based approach depending on the CQ intent:
@@ -117,6 +194,48 @@ Each CQ was associated with a SPARQL query to verify that the ontology, when pop
 Each CQ row includes:
 - `sparql_kind`: ASK or SELECT.
 - `pass_rule`: the decision rule used by the script.
+
+
+### AI Prompt (Step 3 – Attach SPARQL queries and PASS/FAIL rules)
+
+Use the following prompt to generate **`3_competency_questions_interceptor_with_sparql.csv`** by attaching SPARQL query templates and evaluation rules to each HTTP-only CQ.
+
+```text
+You are an RDF/SPARQL engineer.
+
+CONTEXT
+- I have a GraphDB repository containing an RDF dataset produced by an HTTP “Interceptor” evidence producer.
+- The dataset uses an ontology to represent HTTP requests, responses, headers, URIs, methods, status codes, and bodies.
+- I will provide a CSV of HTTP-only competency questions.
+
+INPUT
+I will paste a semicolon-separated CSV with header:
+cq_id;use_case;scenario_step;dimension;question
+
+TASK
+For EACH CQ, produce:
+- sparql_kind: SELECT or ASK
+- sparql: a SPARQL 1.1 query template that answers the CQ (or checks a constraint relevant to the CQ)
+- pass_rule: choose one value from this controlled vocabulary:
+  - non_empty   (PASS if SELECT returns at least 1 row)
+  - count>=1    (PASS if a SELECT COUNT returns a count >= 1)
+  - ask=true    (PASS if ASK returns true)
+  - empty_ok    (PASS if query executes successfully even if empty; use when CQ is exploratory)
+  - query_ok    (PASS if the query executes successfully; use only when result set may vary)
+- notes: short text explaining assumptions (e.g., which classes/properties are expected) and any placeholders
+
+OUTPUT FORMAT (IMPORTANT)
+Return ONLY a semicolon-separated CSV (no commentary, no markdown), with this header and columns exactly:
+
+cq_id;use_case;scenario_step;dimension;question;sparql_kind;sparql;pass_rule;notes
+
+RULES
+- Preserve cq_id and the original columns verbatim.
+- Use PREFIX declarations when helpful.
+- Keep queries robust: avoid relying on a specific named graph unless explicitly required.
+- When a CQ mentions a “specific host/path/header”, treat it as a template by using a placeholder variable or a FILTER with an obvious placeholder (e.g., "example.com", "/login", "Content-Type").
+- Prefer simple and executable queries over perfect semantic coverage.
+```
 
 ## 6. Step 4 — Automated execution on GraphDB
 
